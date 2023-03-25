@@ -19,11 +19,13 @@ setwd(find_rstudio_root_file())
 ScriptDir = paste0(find_rstudio_root_file(),"/Scripts/")
 importableScriptDir = paste0(ScriptDir,"Imports/")
 
-parameterScriptDir = paste0(ScriptDir,"Parameters/")
-source(file.path(paste0(parameterScriptDir,"01-Parameters.R")))
+parameterScriptDir = paste0(importableScriptDir,"Parameters/")
+source(file.path(paste0(parameterScriptDir,"Parameters.R")))
 
-functionScriptDir = paste0(ScriptDir,"Functions/")
-source(file.path(paste0(functionScriptDir,"02-Tournament_Data_Import.R")))
+functionScriptDir = paste0(importableScriptDir,"Functions/")
+source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
+source(file.path(paste0(functionScriptDir,"02-Metagame_Data_Treatment.R")))
+source(file.path(paste0(functionScriptDir,"03-Metagame_Graph_Generation.R")))
 
 tournamentDf=generate_df(EventType,MTGFormat,TournamentResultFile)
 

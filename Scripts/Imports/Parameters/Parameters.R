@@ -69,6 +69,6 @@ PieShare=2
 PieShare.autoupdate=T
 
 #Required metagame share to appear on histogram (gets converted to % later)
-HistShare=2
+BarShare=2
 #Automatically update this value with the average presence if TRUE
-HistShare.autoupdate=T
+BarShare.autoupdate=T

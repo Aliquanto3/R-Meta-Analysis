@@ -16,7 +16,7 @@ library("jsonlite")
 library("readr")
 library("devtools")
 
-#' Structure of a MTGO Preliminary dataset
+#' Structure a MTGO Preliminary dataset
 #' 
 #' Get the raw data of MTGO Preliminaries results, then add columns for its
 #' treatment based on the specific structure of those results. 
@@ -211,8 +211,7 @@ generate_Tournament_Data = function(tournamentData) {
   return(tournamentData)
 }
 
-#' Generate cleaned and completed data for metagame analysis with the chosen
-#' filtering parameters.
+#' Import and clean tournament data
 #'
 #' @param eventType the category of events to keep in the data. It can be:
 #' Event type:
@@ -344,7 +343,7 @@ generate_df = function(eventType, mtgFormat, tournamentDataPath) {
   return(df)
 }
 
-#' Return URL of archetypes parsed with conflicts in the data
+#' Get conflicted archetype URL
 #'
 #' @param df the dataframe returned by generate_df()
 #'
@@ -356,7 +355,7 @@ getConflictURL = function(df){
   return(df[startsWith(df$Archetype$Archetype,"Conflict")==TRUE,]$AnchorUri)
 }
 
-#' Return archetype names of archetypes parsed with conflicts in the data
+#' Get conflicted archetype names
 #'
 #' @param df the dataframe returned bygenerate_df()
 #'
@@ -369,7 +368,7 @@ getConflictArchetype = function(df){
                        "Conflict")==TRUE,]$Archetype$Archetype)
 }
 
-#' Return Unknown URL in the data
+#' Get Unknown archetype URL
 #'
 #' @param df the dataframe returned by generate_df()
 #'
@@ -381,7 +380,7 @@ getUnknown = function(df){
   return(df[df$Archetype$Archetype=="Unknown",]$AnchorUri)
 }
 
-#' Return URL of decks with a specific card in the data
+#' Get all URL of decks with a given card
 #'
 #' @param cardName a string with the name of the card to find
 #' @param df the dataframe returned by generate_df()
@@ -399,10 +398,10 @@ getURLofCard=function(cardName,df){
       archetypeURL = c(archetypeURL,df$AnchorUri[[i]])
     }
   }
-  print(archetypeURL)
+  return(archetypeURL)
 }
 
-#' Return URL of decks of a given archetype
+#' Get all URL of decks of a given archetype
 #'
 #' @param deckName a string with the name of the archetype to find
 #' @param df the dataframe returned by generate_df()
@@ -413,10 +412,10 @@ getURLofCard=function(cardName,df){
 #'
 #' @examples
 getURLofDeck=function(deckName,df){
-  print(df[df$Archetype$Archetype==deckName,]$AnchorUri)
+  return(df[df$Archetype$Archetype==deckName,]$AnchorUri)
 }
 
-#' Return URL of the deck with the most points for a given archetype
+#' Get the URL of the deck with the most points for a given archetype
 #'
 #' @param deckName a string with the name of the archetype to find
 #' @param df the dataframe returned by generate_df()
