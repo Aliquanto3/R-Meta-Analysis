@@ -11,19 +11,26 @@
 
 # Names of the main directories in the project
 DataDir = "Data/"
+tournamentDataDir = paste0(DataDir,"Tournament/")
 ResultDir = "Results/"
 
 # Format of the wanted events
 # # Leave this vector untouched if used, to avoid typing mistakes
-# MTGFormats = c("Sealed","Standard","Pioneer","Modern","Pauper","Legacy",
-#                "Vintage","All Formats")
+# MTGFormats = c("Sealed",
+#                "Standard",
+#                "Pioneer",
+#                "Modern",
+#                "Pauper",
+#                "Legacy",
+#                "Vintage",
+#                "All Formats")
 # MTGFormat = MTGFormats[4]
 
 MTGFormat = "Modern"
 
 # Name of the tournament result data source file for the corresponding format
 # Currently automatically updated based on the format name
-TournamentResultFile = paste0(DataDir,MTGFormat,"_data.json")
+TournamentResultFile = paste0(tournamentDataDir,MTGFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
 Beginning="2022-11-15"

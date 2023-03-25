@@ -17,9 +17,13 @@ setwd(find_rstudio_root_file())
 # Import the parameters, libraries and functions from other scripts
 # Once the code is stable, it should be turned into packages
 ScriptDir = paste0(find_rstudio_root_file(),"/Scripts/")
+importableScriptDir = paste0(ScriptDir,"Imports/")
 
-source(file.path(paste0(ScriptDir,"01-Parameters.R")))
-source(file.path(paste0(ScriptDir,"02-Tournament_Data_Import.R")))
+parameterScriptDir = paste0(importableScriptDir,"Parameters/")
+source(file.path(paste0(parameterScriptDir,"Parameters.R")))
+
+functionScriptDir = paste0(importableScriptDir,"Functions/")
+source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
 
 tournamentDf=generate_df(EventType,MTGFormat,TournamentResultFile)
 

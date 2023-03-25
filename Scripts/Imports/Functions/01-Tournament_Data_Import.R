@@ -428,8 +428,8 @@ getURLofDeck=function(deckName,df){
 #' @examples
 getBestDeck=function(deckName,df){
   df2=df[df$Archetype$Archetype==deckName,]
-  if(nrow(df)>0){
-    df2=df2[df2$Points+df2$T8Points==max(df2$Points+df2$T8Points),]s
+  if(nrow(df2)>0){
+    df2=df2[df2$Points+df2$T8Points==max(df2$Points+df2$T8Points),]
   }
   return(df2$AnchorUri)
 }
