@@ -204,8 +204,8 @@ archetype_ranking = function(archetypeMetricsDf,presence){
   metric_df_start_at_0 = archetypeMetricsDf
   
   metric_df_start_at_0$NormalizedPresence = 
-    unlist(metric_df_start_at_0[presence] - 
-    min(metric_df_start_at_0[presence]))
+    unlist(log(metric_df_start_at_0[presence]) - 
+    log(min(metric_df_start_at_0[presence])))
   
   metric_df_start_at_0$NormalizedMeasuredWinrate = 
     metric_df_start_at_0$MeasuredWinrate -
