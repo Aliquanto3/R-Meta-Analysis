@@ -226,7 +226,8 @@ generate_Tournament_Data = function(tournamentData) {
 #' MTGO Preliminaries = As per name
 #' @param mtgFormat the format of the tournaments to keep
 #' @param tournamentDataPath the path of the JSON file to import
-#' weeks in the data (T) or keep the global variables of Beginning and End (F)
+#' @param beginning the earliest date to keep in the dataset
+#' @param end the latest date to keep in the dataset
 #'
 #' @return a dataframe with the structure and elements you need for metagame 
 #' analysis
@@ -234,7 +235,7 @@ generate_Tournament_Data = function(tournamentData) {
 #' @export
 #'
 #' @examples
-generate_df = function(eventType, mtgFormat, tournamentDataPath) {
+generate_df = function(eventType, mtgFormat, tournamentDataPath, beginning, end) {
   setwd(rprojroot::find_rstudio_root_file())
   #Import raw data
   rawData = fromJSON(TournamentResultFile)[[1]]
@@ -246,16 +247,9 @@ generate_df = function(eventType, mtgFormat, tournamentDataPath) {
   rawData$Date = as.Date(rawData$Date)
   rawData$Points = as.numeric(rawData$Points)
   
-  if (is.na(Beginning)) {
-    Beginning = min(rawData$Date)
-  }
-  if (is.na(End)) {
-    End = max(rawData$Date)
-  }
-  
   #Select data for a specific period
-  periodData = subset(rawData, Date >= as.Date(Beginning) &
-                        Date < as.Date(End))
+  periodData = subset(rawData, Date >= as.Date(beginning) &
+                        Date < as.Date(end))
   
   # Names and date don't allow the identification of an event on  their own, but
   # the combination of both can, hence the addition of another column for this

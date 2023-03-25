@@ -21,6 +21,8 @@ library(ggrepel)
 # end = End
 # eventType = EventType
 # mtgFormat = MTGFormat
+archetypeMetricsDf = archetype_metrics(df)
+archetypeRankingDf = archetype_ranking(archetypeMetricsDf,presence)
 
 #' Title of metagame share graphs
 #'
@@ -201,4 +203,81 @@ metagame_bar_chart =
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           text = element_text(size=16))
+  }
+
+
+
+#' Win rate and their confidence intervals for the most played archetypes
+#'
+#' @param archetypeRankingDf the dataframe returned by archetype_ranking()
+#' @param pieShare the value of the cut to be set in "Others" for an archetype.
+#' @param presence the definition of metagame presence (aka share) to use. 
+#' It can be:
+#' - "Copies": the number of lines in the dataframe dedicated to that archetype
+#' - "Players": the number of different players piloting that archetype
+#' - "Matches": the number of matches played by the archetype
+#' @param beginning the date to be displayed in the title as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the title as the end of the dataset
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param mtgFormat the format of the events in the data
+#' @param sortValue the value used for sorting the data in the graph.
+#' It can be either "MeasuredWinrate" or "CI95LowerBound" (the lower bound of
+#' the 95% confidence interval on the win rate).
+#'
+#' @return a ggplot with the win rate and the confidence intervals.
+#' @export
+#'
+#' @examples
+winrates_graph = function(archetypeRankingDf,pieShare,presence,beginning,end,
+                          eventType,mtgFormat,sortValue){
+  
+  #GET ONLY THE DECKS APPEARING THE MOST IN THE DATA
+  presence_min = pieShare/100*sum(archetypeRankingDf[presence])
+  arch_most_played = 
+    archetypeRankingDf[archetypeRankingDf[presence] >= presence_min,]
+  
+  #REORDER ARCHETYPES BY ASCENDING AVERAGE WINRATE
+  arch_most_played$Archetype = 
+    reorder(arch_most_played$Archetype, unlist(arch_most_played[sortValue]))
+  
+  #PLOT THE AVERAGE WINRATE AND THE CONFIDENCE INTERVALS
+  y_label_winrate = "Winrates of the most popular archetypes (%)"
+  graph_title_winrate = paste0(
+    "Confidence intervals on the winrates of the most present ",mtgFormat,
+    " archetypes\n",  "(at least ",pieShare,"% of the ",presence,") between\n", 
+    beginning, " and ", end, " in ", EventType)
+  
+  ggplot(arch_most_played, aes(x=Archetype, y=MeasuredWinrate*100)) + 
+    theme(axis.text.x = element_text(angle = -nrow(arch_most_played)),
+          axis.title.y = 
+            element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
+          panel.background = element_blank()) + 
+    geom_point(size=2, color="blue") +  
+    geom_text_repel(aes(label=format(round(MeasuredWinrate*100,1), nsmall = 1)),
+                    hjust=-0.3, vjust=-0.3,point.padding = NA)+ 
+    labs(x=NULL, y=y_label_winrate, title=graph_title_winrate,
+         subtitle=paste("Red lines for the average of the bounds of the CI",
+"Green line for the average of the measured winrate", 
+"by Anaël Yahi", sep = "\n"))+
+    geom_errorbar(aes(ymax = CI95UpperBound *100, ymin = CI95LowerBound*100)) + 
+    geom_hline(yintercept = mean(arch_most_played$MeasuredWinrate*100), 
+               color="green", linetype="dashed", size=1)+ 
+    geom_hline(yintercept = mean(arch_most_played$CI95LowerBound*100), 
+               color="red", linetype="dashed", size=0.5)+ 
+    geom_hline(yintercept = mean(arch_most_played$CI95UpperBound*100), 
+               color="red", linetype="dashed", size=0.5) + 
+    theme(axis.text.x  = element_text(size=12)) 
+
 }
