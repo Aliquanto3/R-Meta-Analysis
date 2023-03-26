@@ -13,15 +13,15 @@ library(dplyr)
 library(tidyverse)
 
 # # For development
-df = tournamentDf
-chartShare = ChartShare
-presence = "Matches"
-beginning = Beginning
-end = End
-eventType = EventType
-mtgFormat = MtgFormat
-statShare = StatShare
-archetype = "Omnath Scapeshift"
+# df = tournamentDf
+# chartShare = ChartShare
+# presence = "Matches"
+# beginning = Beginning
+# end = End
+# eventType = EventType
+# mtgFormat = MtgFormat
+# statShare = StatShare
+# archetype = "Omnath Scapeshift"
 
 #' List of all the different archetypes in the data
 #'

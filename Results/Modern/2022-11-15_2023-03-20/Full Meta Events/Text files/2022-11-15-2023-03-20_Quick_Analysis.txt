@@ -1,0 +1,12 @@
+QUICK ANALYSIS OF THE DATA
+Beginning: 2022-11-15
+End: 2023-03-20
+Type of MTGO events: Full Meta Events
+Number of decks in the data: 4785
+Cut to be displayed: 1%
+Number of exact archetypes in the data: 177
+Number of rounds played in the data (with top8): 29690
+Average number of rounds in the data (w/o top8): 6.15
+Minimum number of rounds in the data (w/o top8): 1
+Maximum number of rounds in the data (w/o top8): 17
+Number of events in the data: 19

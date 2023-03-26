@@ -23,12 +23,18 @@ parameterScriptDir = paste0(importableScriptDir,"Parameters/")
 source(file.path(paste0(parameterScriptDir,"Parameters.R")))
 
 functionScriptDir = paste0(importableScriptDir,"Functions/")
+source(file.path(paste0(functionScriptDir,"00-Output_Export.R")))
 source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
 source(file.path(paste0(functionScriptDir,"02-Metagame_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"03-Metagame_Graph_Generation.R")))
 
+# Create all the directories where results will be written
+PathToLastDirs = 
+  createResultDirectories(ResultDir, MtgFormat, Beginning, End, EventType,
+                          CsvResultDir, PictureResultDir, TextResultDir)
+
 tournamentDf = 
-  generate_df(EventType,MtgFormat,TournamentResultFile, Beginning, End)
+  generate_df(EventType, MtgFormat, TournamentResultFile, Beginning, End)
 
 # Get the following columns: 
 # Archetype Copies Players Matches MeasuredWinrate CI95LowerBound CI95UpperBound
@@ -41,6 +47,9 @@ if(Share.autoupdate){
 }else {
   StatShare = ChartShare
 }
+
+exportTextAnalysis(tournamentDf, PathToLastDirs, Beginning, End, EventType, 
+                   ChartShare,TextResultDir)
 
 # Draw the metagame pie chart
 metagame_pie_chart(tournamentDf, ChartShare, Presence, Beginning, End, EventType,
@@ -85,3 +94,5 @@ muMatrixDataArchetype = generate_matchup_data(tournamentDf, ChartShare,
 # Draw the corresponding matchup matrix
 generate_matchup_matrix(muMatrixDataArchetype, ChartShare, Presence, Beginning, 
                         End, MtgFormat, EventType)
+
+
