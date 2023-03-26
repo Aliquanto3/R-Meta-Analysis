@@ -685,11 +685,19 @@ generate_matchup_matrix = function(muMatrixData,chartShare,presence,beginning,
     paste("Win rate of Y (ordinates) against X (abscissa)", 
           "by Anaël Yahi", sep = "\n")
   
-  ggplot(muMatrixData,aes(x = Archetype2, y = reorder(ArchShare1,-DisplayOrder), 
-                          col = MUWinrate, fill = MUWinrate, 
-                          label = OutputText)) +
-    
-    geom_tile(color = "black",lwd = 0.5,linetype = 1) +
+  if(length(unique(muMatrixData$Archetype1))>1){
+    MUMatrixPlot = ggplot(muMatrixData,aes(x = Archetype2, 
+                                           y = reorder(ArchShare1,-DisplayOrder), 
+                                           col = MUWinrate, fill = MUWinrate, 
+                                           label = OutputText))
+  }else{
+    MUMatrixPlot = ggplot(muMatrixData,aes(x = Archetype2, 
+                                           y = unique(Archetype1),
+                                           col = MUWinrate, 
+                                           fill = MUWinrate, label = OutputText))
+  }
+  
+  MUMatrixPlot = MUMatrixPlot + 
     
     theme(panel.background = element_blank(),
           axis.text.x = element_text(face="bold", size=11, angle = -10),
@@ -705,7 +713,13 @@ generate_matchup_matrix = function(muMatrixData,chartShare,presence,beginning,
     
     labs(x=NULL, y=NULL, title = MUMatrixTitle, subtitle = MUMatrixSubtitle) +
     
+    geom_tile(color = "black",lwd = 0.5,linetype = 1) +
+    
     geom_richtext( fill = NA, label.color = NA, # remove background and outline
                    label.padding = grid::unit(rep(0, 4), "pt"), # remove padding
                    color = "black") 
+  
+  
+  
+  MUMatrixPlot
 }

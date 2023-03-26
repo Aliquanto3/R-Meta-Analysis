@@ -13,14 +13,15 @@ library(dplyr)
 library(tidyverse)
 
 # # For development
-# df = tournamentDf
-# chartShare = ChartShare
-# presence = "Matches"
-# beginning = Beginning
-# end = End
-# eventType = EventType
-# mtgFormat = MtgFormat
-# statShare = StatShare
+df = tournamentDf
+chartShare = ChartShare
+presence = "Matches"
+beginning = Beginning
+end = End
+eventType = EventType
+mtgFormat = MtgFormat
+statShare = StatShare
+archetype = "Omnath Scapeshift"
 
 #' List of all the different archetypes in the data
 #'
@@ -298,6 +299,9 @@ archetype_tiers = function(archetypeRankingDf, presence, statShare){
 #' - "Copies": the number of lines in the dataframe dedicated to that archetype
 #' - "Players": the number of different players piloting that archetype
 #' - "Matches": the number of matches played by the archetype
+#' @param archetype NA by default. If NA, generate a NxN matchup matrix.
+#' Otherwise, if a string with an archetype name is given, return a single row,
+#' for the matchups against the most played decks of the chosen archetype.
 #'
 #' @return a dataframe with multiple rows by archetype, one for each matchup.
 #' Used for building the matchup matrix. Cut done by chartShare, with a maximum
@@ -305,15 +309,23 @@ archetype_tiers = function(archetypeRankingDf, presence, statShare){
 #' @export
 #'
 #' @examples
-generate_matchup_data = function(df, chartShare, presence){
+generate_matchup_data = function(df, chartShare, presence, archetype = NA){
+  
   df_gen = generate_metagame_data(df, chartShare, presence)
-  df_gen = df_gen[1:18,]
+  if(nrow(df_gen)>18){
+    df_gen = df_gen[1:18,]
+  }
   
   archetypeList = df_gen$Archetype
   otherName = tail(archetypeList, n=1)
   
-  win_matrix = matrix(0, ncol = nrow(df_gen), nrow = nrow(df_gen))
-  rownames(win_matrix) = df_gen$Archetype
+  win_matrix = ifelse(is.na(archetype),
+                      list(matrix(0, ncol = nrow(df_gen), nrow = nrow(df_gen))),
+                      list(matrix(0, ncol = nrow(df_gen), nrow = 1)))[[1]]
+  
+  rownames(win_matrix) = ifelse(is.na(archetype),
+                                list(df_gen$Archetype),
+                                archetype)[[1]]
   colnames(win_matrix) = df_gen$Archetype
   
   loss_matrix = win_matrix
@@ -321,24 +333,51 @@ generate_matchup_data = function(df, chartShare, presence){
   wr_matrix = win_matrix
   wr95Min_matrix = win_matrix
   wr95Max_matrix = win_matrix
-  output_matrix = data.frame(win_matrix)
-  
-  conditionMUNotNull = !sapply(df$Matchups, function(x) length(x) == 0 )
-  for (i in (1:nrow(df))[conditionMUNotNull]){
-    
-    archetype1I = df[i,]$Archetype$Archetype
-    archetype1I = ifelse(archetype1I%in% archetypeList,archetype1I,otherName)
-    matchesI = df[i,]$Matchups[[1]]
-    
-    for (j in 1:nrow(matchesI)){
-      matchesIJ = matchesI[j,]
-      archetype2IJ = matchesIJ$OpponentArchetype
-      archetype2IJ = ifelse(archetype2IJ%in% archetypeList,archetype2IJ,otherName)
+
+  if(is.na(archetype)){
+    conditionMUNotNull = !sapply(df$Matchups, function(x) length(x) == 0 )
+    for (i in (1:nrow(df))[conditionMUNotNull]){
       
-      if(matchesIJ$Wins > matchesIJ$Losses){
-        win_matrix[archetype1I,archetype2IJ] = win_matrix[archetype1I,archetype2IJ] + 1
-      }else if(matchesIJ$Wins < matchesIJ$Losses){
-        loss_matrix[archetype1I,archetype2IJ] = loss_matrix[archetype1I,archetype2IJ] + 1
+      archetype1I = df[i,]$Archetype$Archetype
+      archetype1I = ifelse(archetype1I%in% archetypeList,archetype1I,otherName)
+      matchesI = df[i,]$Matchups[[1]]
+      
+      for (j in 1:nrow(matchesI)){
+        matchesIJ = matchesI[j,]
+        archetype2IJ = matchesIJ$OpponentArchetype
+        archetype2IJ = ifelse(archetype2IJ%in% archetypeList,
+                              archetype2IJ,otherName)
+        
+        if(matchesIJ$Wins > matchesIJ$Losses){
+          win_matrix[archetype1I,archetype2IJ] = 
+            win_matrix[archetype1I,archetype2IJ] + 1
+        }else if(matchesIJ$Wins < matchesIJ$Losses){
+          loss_matrix[archetype1I,archetype2IJ] = 
+            loss_matrix[archetype1I,archetype2IJ] + 1
+        }
+      }
+    }
+  }else{
+    dfArchetype = df[df$Archetype$Archetype == archetype, ]
+    conditionMUNotNull = 
+      !sapply(dfArchetype$Matchups, function(x) length(x) == 0 )
+    for (i in (1:nrow(dfArchetype))[conditionMUNotNull]){
+      
+      matchesI = dfArchetype[i,]$Matchups[[1]]
+      
+      for (j in 1:nrow(matchesI)){
+        matchesIJ = matchesI[j,]
+        archetype2IJ = matchesIJ$OpponentArchetype
+        archetype2IJ = ifelse(archetype2IJ%in% archetypeList,
+                              archetype2IJ, otherName)
+        
+        if(matchesIJ$Wins > matchesIJ$Losses){
+          win_matrix[archetype,archetype2IJ] = 
+            win_matrix[archetype,archetype2IJ] + 1
+        }else if(matchesIJ$Wins < matchesIJ$Losses){
+          loss_matrix[archetype,archetype2IJ] = 
+            loss_matrix[archetype,archetype2IJ] + 1
+        }
       }
     }
   }
@@ -348,7 +387,7 @@ generate_matchup_data = function(df, chartShare, presence){
   wr_matrix = round(win_matrix/match_matrix*100,digits = 1)
   
   for(i in 1:nrow(wr95Min_matrix)){
-    for(j in 1:nrow(wr95Min_matrix)){
+    for(j in 1:ncol(wr95Min_matrix)){
       wr95Min_matrix[i,j] = 
         ifelse(match_matrix[i,j] > 0,
                binom.test(win_matrix[i,j], match_matrix[i,j], 
@@ -359,7 +398,7 @@ generate_matchup_data = function(df, chartShare, presence){
   wr95Min_matrix = round(wr95Min_matrix*100,digits = 1)
   
   for(i in 1:nrow(wr95Max_matrix)){
-    for(j in 1:nrow(wr95Max_matrix)){
+    for(j in 1:ncol(wr95Max_matrix)){
       wr95Max_matrix[i,j] = 
         ifelse(match_matrix[i,j] > 0,
                binom.test(win_matrix[i,j], match_matrix[i,j], 
@@ -369,16 +408,9 @@ generate_matchup_data = function(df, chartShare, presence){
   }
   wr95Max_matrix = round(wr95Max_matrix*100,digits = 1)
   
-  for(i in 1:nrow(wr95Max_matrix)){
-    for(j in 1:nrow(wr95Max_matrix)){
-      output_matrix[i,j] = paste0(wr95Min_matrix[i,j],"% - ",
-                                  wr95Max_matrix[i,j],"%\n",
-                                  wr_matrix[i,j],"%\n",
-                                  match_matrix[i,j]," matches")
-    }
-  }
-  
-  arch1Vec = rep(colnames(wr_matrix),each=nrow(wr_matrix)) 
+  arch1Vec = ifelse(is.na(archetype),
+    list(rep(colnames(wr_matrix),each=nrow(wr_matrix))),
+    archetype)[[1]]
   arch2Vec = rep(colnames(wr_matrix),nrow(wr_matrix)) 
   displayOrder = rep(1:nrow(wr_matrix),each=nrow(wr_matrix)) 
   share = rep(df_gen$Share,each=nrow(wr_matrix)) 
@@ -400,7 +432,9 @@ generate_matchup_data = function(df, chartShare, presence){
   plotTableWR$Archetype2 = paste0("vs ",plotTableWR$Archetype2)
   
   plotTableWR$Archetype2 = factor(plotTableWR$Archetype2, 
-                                  levels=unique(plotTableWR$Archetype2[order(plotTableWR$DisplayOrder)]), ordered=TRUE)
+                                  levels = 
+                                    unique(plotTableWR$Archetype2[order(
+                                      plotTableWR$DisplayOrder)]), ordered=TRUE)
   
   plotTableWR$OutputText = paste0("<span style = 'font-size:8pt'>",
                                   plotTableWR$WR95Min,"% - ",plotTableWR$WR95Max,

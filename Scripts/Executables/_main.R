@@ -72,9 +72,16 @@ detailed_winrate_and_presence_graph(archetypeTiersDf, StatShare, Presence,
                                    Beginning, End, EventType, MtgFormat, 
                                    PresenceAxisLogScale)
 
-# Get the required data to build the matchup matrix
+# Get the required data to build the matchup matrix of the most present
+# archetypes
 muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)
-  
-# Draw the matchup matrix
+# Draw the corresponding matchup matrix
 generate_matchup_matrix(muMatrixData, ChartShare, Presence, Beginning, End,
                         MtgFormat, EventType)
+
+# Get the required data to build the matchup matrix of a single archetype
+muMatrixDataArchetype = generate_matchup_data(tournamentDf, ChartShare, 
+                                              Presence, "Omnath Scapeshift")
+# Draw the corresponding matchup matrix
+generate_matchup_matrix(muMatrixDataArchetype, ChartShare, Presence, Beginning, 
+                        End, MtgFormat, EventType)
