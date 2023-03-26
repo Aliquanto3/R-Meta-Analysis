@@ -265,9 +265,9 @@ archetype_tiers = function(archetypeRankingDf, presence, statShare){
   archetypeRankingDf$MeasuredWinrate = archetypeRankingDf$MeasuredWinrate
   
   # Keep only the most present archetypes 
-  presence_min = statShare / 100 * sum(archetypeRankingDf[presence])
+  presence_min = statShare / 100 * sum(archetypeRankingDf$Presence)
   tier_archetypes = 
-    archetypeRankingDf[archetypeRankingDf[presence] >= presence_min,]
+    archetypeRankingDf[archetypeRankingDf$Presence >= presence_min,]
   
   meanMetric = mean(tier_archetypes$NormalizedSum)
   sdMetric = sd(tier_archetypes$NormalizedSum)

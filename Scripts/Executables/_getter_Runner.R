@@ -37,3 +37,10 @@ getURLofCard("Wrenn and Six",tournamentDf)
 getURLofDeck("Omnath Scapeshift",tournamentDf)
 getBestDeck("Omnath Scapeshift",tournamentDf)
 get_matchup_data(tournamentDf,"Omnath Scapeshift","Izzet Murktide")
+
+# Get the required data to build the matchup matrix of a single archetype
+muMatrixDataArchetype = generate_matchup_data(tournamentDf, ChartShare, 
+                                              Presence, "Omnath Scapeshift")
+# Draw the corresponding matchup matrix
+generate_matchup_matrix(muMatrixDataArchetype, ChartShare, Presence, Beginning, 
+                        End, MtgFormat, EventType)

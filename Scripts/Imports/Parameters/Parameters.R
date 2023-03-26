@@ -33,10 +33,10 @@ MtgFormat = "Modern"
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2022-11-15"
+Beginning = "2023-02-26"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2023-03-20"
+End = "2023-03-26"
 
 # Event type:
 # All sources = Everything (except MTGO Leagues - for any filter)
@@ -61,7 +61,7 @@ EventTypes = c("All sources",
                "MTGO Events Top32",
                "MTGO Preliminaries")
 
-EventType = EventTypes[3]
+EventType = EventTypes[2]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2
@@ -95,6 +95,6 @@ PresenceAxisLogScale = T
 # - "Matches": the number of matches played by the archetype
 Diameters = "Players"
 
-CsvResultDir = "CSV files"
-PictureResultDir = "Picture files"
-TextResultDir = "Text files"
+CsvResultDir = "CSV files/"
+PictureResultDir = "Picture files/"
+TextResultDir = "Text files/"

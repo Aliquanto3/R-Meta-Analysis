@@ -119,7 +119,7 @@ metagame_pie_chart = function(df, chartShare, presence,beginning, end,eventType,
     
     geom_label_repel(data = positions_df, 
                      aes(y = position, label = paste0(Archetype,"\n",Share,"%"),
-                         fill = Archetype), size = 4, nudge_x = 0.9,
+                         fill = Archetype), size = 3, nudge_x = 0.9,
                      show.legend = FALSE,
                      max.overlaps = getOption("ggrepel.max.overlaps", 
                                               default = nrow(metagame_df))) +
@@ -131,8 +131,8 @@ metagame_pie_chart = function(df, chartShare, presence,beginning, end,eventType,
     theme(axis.line = element_blank(),
           axis.text = element_blank(),
           axis.ticks = element_blank(),
-          plot.title = element_text(hjust = 0.5, color = "#111111",size = 20),
-          plot.subtitle = element_text(hjust = 0.5,size = 18),
+          plot.title = element_text(hjust = 0.5, color = "#111111",size = 18),
+          plot.subtitle = element_text(hjust = 0.5,size = 16),
           panel.background = element_rect(fill = "white"),
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
@@ -210,14 +210,16 @@ metagame_bar_chart =
     
     coord_flip() +
     
-    scale_y_continuous(limits = c(0,nrow(metagame_df)), expand = c(0.01, 0)) +
+    scale_y_continuous(limits = c(0,max(metagame_df$Share)*1.1), expand = c(0.01, 0)) +
     
-    theme(plot.title = element_text(hjust = 0.5, color = "#111111",size = 20),
-          plot.subtitle = element_text(hjust = 0.5,size = 18),
+    theme(plot.title = element_text(hjust = 0.5, color = "#111111",size = 18),
+          plot.subtitle = element_text(hjust = 0.5,size = 16),
           axis.line.x=element_line(color="black"),
           axis.line.y=element_line(color="black"),
           panel.background = element_blank(),
-          text = element_text(size=16))
+          text = element_text(size=16),
+          plot.title.position = "plot") 
+
   }
 
 #' Win rate and their confidence intervals for the most played archetypes
@@ -289,13 +291,17 @@ winrates_graph = function(archetypeRankingDf,chartShare,presence,beginning,end,
     labs(x = NULL, y = yLabelWinrate, title = winrateGraphTitle,
          subtitle = winrateGraphSubtitle) +
     
-    theme(axis.text.x = element_text(size=12, angle = -nrow(most_present_archetypes)),
+    theme(axis.text.x = element_text(size = 10, 
+                                     angle = -nrow(most_present_archetypes)),
           axis.title.y = 
-            element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
+            element_text(margin = margin(t = 0, r = 20, b = 0, l = 0), 
+                         size=14, face = "bold"),
           panel.background = element_blank(),
+          axis.line.x = element_line(color="black"),
+          axis.line.y = element_line(color="black"),
           axis.ticks.y = element_blank(),
-          plot.title = element_text(hjust = 0.5, color = "#111111",size = 20),
-          plot.subtitle = element_text(hjust = 0.5,size = 18),
+          plot.title = element_text(hjust = 0.5, color = "#111111", size = 16),
+          plot.subtitle = element_text(hjust = 0.5, size = 14),
           text = element_text(size = 16)) + 
     
     geom_errorbar(aes(ymax = CI95UpperBound, ymin = CI95LowerBound)) + 
@@ -368,29 +374,33 @@ normalized_sum_graph = function(archetypeRankingDf,chartShare,presence,
   xDodge = 0
   yDodgeTierExplanation = 0.01
   sizeHline = 1
-  sizeTierNameText = 5
-  sizeTierExplanationText = 4
+  sizeTierNameText = 8
+  sizeTierExplanationText = 6
   
-  ggplot(most_present_archetypes, aes(x=Archetype, y=NormalizedSum)) +
+  ggplot(most_present_archetypes, aes(x = Archetype, y = NormalizedSum)) +
     
     geom_point(size=4,color="blue") +  
     
     geom_text_repel(aes(label=format(round(NormalizedSum,2), nsmall = 2)), 
-                    hjust = -0.3, vjust = -0.3, point.padding = NA, size = 5,
+                    hjust = -0.3, vjust = -0.2, point.padding = NA, size = 6,
                     min.segment.length = Inf) + 
     
-    labs(x=NULL, y = "Value of the normalized sum metric", 
+    labs(x = NULL, y = "Value of the normalized sum metric", 
          title = normalizedSumGraphTitle,
          subtitle = normalizedSumGraphSubtitle) + 
     
     theme(axis.text.x = 
-            element_text(angle = -nrow(most_present_archetypes), size = 12),
+            element_text(angle = - nrow(most_present_archetypes), size = 20),
+          axis.text.y = element_text(size = 20),
+          axis.title.y = 
+            element_text(margin = margin(t = 0, r = 20, b = 0, l = 0), 
+                         size = 30, face = "bold"),
           panel.background = element_blank(),
           axis.ticks.y = element_blank(),
-          axis.line.x=element_line(color="black"),
-          axis.line.y=element_line(color="black"),
-          plot.title = element_text(hjust = 0.5, color = "#111111",size = 20),
-          plot.subtitle = element_text(hjust = 0.5,size = 18)) +
+          axis.line.x = element_line(color="black"),
+          axis.line.y = element_line(color="black"),
+          plot.title = element_text(hjust = 0.5, color = "#111111", size = 30),
+          plot.subtitle = element_text(hjust = 0.5, size = 24)) +
     
     #Add tier list lines and labels
     geom_hline(yintercept = meanData - 3 * sdData, color = "#004CA3", 
@@ -449,7 +459,7 @@ normalized_sum_graph = function(archetypeRankingDf,chartShare,presence,
                   label = "Mean + 3*SD"), colour = "grey", 
               size = sizeTierExplanationText) + 
     # Added to update enlarge the frame of the graph so the text is not cut
-    geom_text(aes(x = xDodge-0.5, y = meanData, label = ""))
+    geom_text(aes(x = xDodge - 1, y = meanData, label = ""))
 }
 
 
@@ -523,13 +533,18 @@ detailed_winrate_and_presence_graph =
                      min.segment.length = 0) +
     
     theme(panel.background = element_blank(),
-          axis.line.x=element_line(color="black"),
-          axis.line.y=element_line(color="black"),
+          axis.line.x = element_line(color="black"),
+          axis.line.y = element_line(color="black"),
+          axis.text = element_text(size = 20),
+          axis.title = 
+            element_text(margin = margin(t = 0, r = 40, b = 0, l = 0), 
+                         size = 24, face = "bold"),
           axis.ticks.x = element_blank(),
           axis.ticks.y = element_blank(),
-          text = element_text(size = 14),
-          plot.title = element_text(hjust = 0.5, color = "#111111",size = 20),
-          plot.subtitle = element_text(hjust = 0.5,size = 18)) +
+          plot.title = element_text(hjust = 0.5, color = "#111111",size = 28),
+          plot.subtitle = element_text(hjust = 0.5,size = 24),
+          legend.title = element_text(size = 20),
+          legend.text = element_text(size = 18)) +
     
   geom_point(aes(size=Players)) 
   
@@ -624,8 +639,12 @@ simple_winrate_and_presence_graph =
           axis.line.y=element_line(color="black"),
           axis.ticks.x = element_blank(),
           axis.ticks.y = element_blank(),
-          plot.title = element_text(hjust = 0.5, color = "#111111",size = 20),
-          plot.subtitle = element_text(hjust = 0.5,size = 18)) + 
+          axis.text = element_text(size = 16),
+          axis.title = 
+            element_text(margin = margin(t = 0, r = 80, b = 0, l = 0), 
+                         size = 20, face = "bold"),
+          plot.title = element_text(hjust = 0.5, color = "#111111",size = 28),
+          plot.subtitle = element_text(hjust = 0.5, size = 24)) + 
     
     labs(x = x_label, y = y_label, title=graph_title, subtitle=graph_subtitle) +
     
@@ -703,6 +722,7 @@ generate_matchup_matrix = function(muMatrixData,chartShare,presence,beginning,
           axis.text.x = element_text(face="bold", size=11, angle = -10),
           axis.text.y = element_markdown(),
           legend.position = "none",
+          axis.ticks = element_blank(),
           plot.title = element_text(hjust = 0.5),
           plot.subtitle = element_text(hjust = 0.5)) + 
     

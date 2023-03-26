@@ -43,13 +43,13 @@
 createResultDirectories = function(resultDir,mtgFormat,beginning,end,eventType,
                                    csvResultDir,pictureResultDir,textResultDir){
   dir.create(file.path(resultDir,mtgFormat))
-  dir.create(file.path(paste(resultDir,mtgFormat,sep="/"), 
+  dir.create(file.path(paste0(resultDir,mtgFormat,"/"), 
                        paste(beginning,end,sep="_")))
-  dir.create(file.path(paste(resultDir,mtgFormat,paste(beginning,end,sep="_"),
-                             sep="/"), eventType))
+  dir.create(file.path(paste0(resultDir,mtgFormat,"/",
+                              paste(beginning,end,sep="_")), eventType))
   
-  pathToLastDirs = paste(resultDir,mtgFormat,paste(beginning,end,sep="_"),
-                         eventType,sep="/")
+  pathToLastDirs = paste0(resultDir,mtgFormat,"/",
+                          paste(beginning,end,sep="_"),"/",eventType,"/")
   dir.create(file.path(pathToLastDirs, csvResultDir))
   dir.create(file.path(pathToLastDirs, pictureResultDir))
   dir.create(file.path(pathToLastDirs, textResultDir))
@@ -89,7 +89,7 @@ createResultDirectories = function(resultDir,mtgFormat,beginning,end,eventType,
 exportTextAnalysis = 
   function(df,pathToLastDirs,beginning,end,eventType,chartShare,textResultDir){
     
-  writingPath = paste0(pathToLastDirs,"/",textResultDir,"/")
+  writingPath = paste0(pathToLastDirs,textResultDir)
   
   nDecks = nrow(df)
   # nDiffPlayers = "N/A"
