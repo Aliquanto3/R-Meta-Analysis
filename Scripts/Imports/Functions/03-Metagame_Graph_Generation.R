@@ -5,25 +5,30 @@
 #####            https://github.com/Badaro/MTGOArchetypeParser             #####
 ################################################################################
 #####                    03-Metagame_Graph_Generation.R                    #####
-##### Use this file to import functions that will generate the classical   #####
+##### Use this file to import functions that will generate the usual       #####
 ##### metagame visualisation graphs.                                       #####
 ################################################################################
 
+library(dplyr)
+library(tidyverse)
 library(ggplot2)
 library(ggrepel)
 library(ggtext)
 
 # # For development
 # df = tournamentDf
-# pieShare = PieShare
-# barShare = BarShare
+# chartShare = ChartShare
+# chartShare = ChartShare
 # presence = "Matches"
 # beginning = Beginning
 # end = End
 # eventType = EventType
 # mtgFormat = MTGFormat
-archetypeMetricsDf = archetype_metrics(df)
-archetypeRankingDf = archetype_ranking(archetypeMetricsDf,presence)
+# diameters = "Players"
+# presenceAxisLogScale = T
+# archetypeMetricsDf = archetype_metrics(df)
+# archetypeRankingDf = archetype_ranking(archetypeMetricsDf,presence)
+# archetypeTiersDf = archetype_tiers(archetypeRankingDf, presence, chartShare)
 
 #' Title of metagame share graphs
 #'
@@ -63,8 +68,8 @@ generate_metagame_graph_title =
 #' Pie chart of the most played archetypes
 #'
 #' @param df the dataframe returned by generate_df()
-#' @param pieShare the value of the cut to be set in "Others" for an archetype.
-#' It must be a numeric value. For a cut at 2%, use pieShare=2 (not 0.02).
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
 #' @param presence the definition of metagame presence (aka share) to use. 
 #' It can be:
 #' - "Copies": the number of lines in the dataframe dedicated to that archetype
@@ -89,15 +94,14 @@ generate_metagame_graph_title =
 #'
 #' @return a ggplot of a pie chart representing the most played archetypes,
 #' including a part for all the undisplayed archetypes in the data, labeled as
-#' "Other (each <pieShare%)".
+#' "Other (each <chartShare%)".
 #' @export
 #'
 #' @examples
-metagame_pie_chart = function(df, pieShare = PieShare, presence = "Matches",
-                              beginning = Beginning, end = End,
-                              eventType = EventType, mtgFormat = MTGFormat){
+metagame_pie_chart = function(df, chartShare, presence,beginning, end,eventType,
+                              mtgFormat){
   # Get the necessary data for the graph
-  metagame_df = generate_metagame_data(df,pieShare,presence)
+  metagame_df = generate_metagame_data(df,chartShare,presence)
   
   positions_df = metagame_df %>% 
     mutate(csum = rev(cumsum(rev(-Share))), 
@@ -110,16 +114,19 @@ metagame_pie_chart = function(df, pieShare = PieShare, presence = "Matches",
   #graph_colors = colorRampPalette(brewer.pal(9, "Spectral"))(nrow(metagame_df))
   # scale_fill_manual(values = graph_colors) +
   
-  ggplot(metagame_df, 
-         aes(x="", -Share, fill = Archetype))  + 
+  ggplot(metagame_df, aes(x="", -Share, fill = Archetype))  + 
+    
     geom_label_repel(data = positions_df, 
                      aes(y = position, label = paste0(Archetype,"\n",Share,"%"),
                          fill = Archetype), size = 4, nudge_x = 0.9,
                      show.legend = FALSE,
                      max.overlaps = getOption("ggrepel.max.overlaps", 
                                               default = nrow(metagame_df))) +
+    
     geom_bar(width = 1, linewidth = 0.2, color = "white", stat = "identity") + 
-    coord_polar("y", start=0) +
+    
+    coord_polar("y", start=0) + 
+    
     theme(axis.line = element_blank(),
           axis.text = element_blank(),
           axis.ticks = element_blank(),
@@ -129,19 +136,19 @@ metagame_pie_chart = function(df, pieShare = PieShare, presence = "Matches",
           panel.grid.major = element_blank(), 
           panel.grid.minor = element_blank(),
           legend.position = "none") + 
+    
     labs(x = NULL, y = NULL, fill = NULL, subtitle = "by Anaël Yahi",
          title = generate_metagame_graph_title(
            presence, beginning, end, eventType, mtgFormat)) + 
-    guides(color = FALSE, size = FALSE) +
-    scale_color_gradient(low="red", high="blue")
-  
+    
+    guides(color = FALSE, size = FALSE, scale = "none")
 }
 
 #' Bar chart of the most played archetypes
 #'
 #' @param df the dataframe returned by generate_df()
-#' @param barShare the value of the cut to be set in "Others" for an archetype.
-#' It must be a numeric value. For a cut at 2%, use pieShare=2 (not 0.02).
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
 #' @param presence the definition of metagame presence (aka share) to use. 
 #' It can be:
 #' - "Copies": the number of lines in the dataframe dedicated to that archetype
@@ -169,10 +176,10 @@ metagame_pie_chart = function(df, pieShare = PieShare, presence = "Matches",
 #'
 #' @examples
 metagame_bar_chart = 
-  function(df,barShare,presence,beginning,end,eventType,mtgFormat){
+  function(df,chartShare,presence,beginning,end,eventType,mtgFormat){
   
   # Get the necessary data for the graph
-  metagame_df = generate_metagame_data(df,histShare,presence)
+  metagame_df = generate_metagame_data(df,chartShare,presence)
   # Remove the "Other" category
   metagame_df = metagame_df[!grepl("Other",metagame_df$Archetype),]
   # Reorder archetypes by ascending presence
@@ -182,7 +189,7 @@ metagame_bar_chart =
   # Generate a title
   bar_chart_title=paste(generate_metagame_graph_title(
     presence,beginning,end,eventType,mtgFormat),
-    "\nArchetype cut at",histShare,"%")
+    "\nArchetype cut at",chartShare,"%")
   
   # Another nice color palette
   # library(RColorBrewer)
@@ -192,26 +199,31 @@ metagame_bar_chart =
   
   #plot is much clearer
   ggplot(metagame_df, aes(x=Archetype, y=as.numeric(Share), fill=Archetype)) + 
+    
     geom_bar(stat="identity") + theme_minimal() + guides( fill = FALSE) +
-    geom_text(aes(label = paste0(Share, "%")), hjust = 1.5, size = 4) +
+    
+    geom_text(aes(label = paste0(Share, "%")), hjust = 1.1, size = 4) +
+    
     labs(x = NULL, y = NULL, fill = NULL, 
          title = bar_chart_title, subtitle = "by Anaël Yahi") + 
-    scale_color_gradient(low="red", high="blue") + coord_flip() +
+    
+    coord_flip() +
+    
     scale_y_continuous(limits = c(0,nrow(metagame_df)), expand = c(0.01, 0)) +
+    
     theme(plot.title = element_text(hjust = 0.5, color = "#111111",size = 20),
           plot.subtitle = element_text(hjust = 0.5,size = 18),
+          axis.line.x=element_line(color="black"),
+          axis.line.y=element_line(color="black"),
           panel.background = element_blank(),
-          # panel.grid.major = element_blank(), 
-          # panel.grid.minor = element_blank(),
           text = element_text(size=16))
   }
-
-
 
 #' Win rate and their confidence intervals for the most played archetypes
 #'
 #' @param archetypeRankingDf the dataframe returned by archetype_ranking()
-#' @param pieShare the value of the cut to be set in "Others" for an archetype.
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
 #' @param presence the definition of metagame presence (aka share) to use. 
 #' It can be:
 #' - "Copies": the number of lines in the dataframe dedicated to that archetype
@@ -241,24 +253,24 @@ metagame_bar_chart =
 #' @export
 #'
 #' @examples
-winrates_graph = function(archetypeRankingDf,pieShare,presence,beginning,end,
+winrates_graph = function(archetypeRankingDf,chartShare,presence,beginning,end,
                           eventType,mtgFormat,sortValue){
   
   # Keep only the most present decks
-  presence_min = pieShare/100*sum(archetypeRankingDf[presence])
-  arch_most_played = 
+  presence_min = chartShare/100*sum(archetypeRankingDf[presence])
+  most_present_archetypes = 
     archetypeRankingDf[archetypeRankingDf[presence] >= presence_min,]
   
   # Reorder archetypes by ascending average winrate
-  arch_most_played$Archetype = 
-    reorder(arch_most_played$Archetype, unlist(arch_most_played[sortValue]))
+  most_present_archetypes$Archetype = 
+    reorder(most_present_archetypes$Archetype, unlist(most_present_archetypes[sortValue]))
   
   # Plot the average winrate and the confidence intervals
   yLabelWinrate = "Winrates of the most popular archetypes (%)"
   
   winrateGraphTitle = paste0(
     "Confidence intervals on the winrates of the most present ",mtgFormat,
-    " archetypes\n",  "(at least ",pieShare,"% of the ",presence,") between ", 
+    " archetypes\n",  "(at least ",chartShare,"% of the ",presence,") between ", 
     beginning, " and ", end, " in ", EventType)
   
   winrateGraphSubtitle = 
@@ -266,34 +278,42 @@ winrates_graph = function(archetypeRankingDf,pieShare,presence,beginning,end,
         "Green line for the average of the measured winrate", 
         "by Anaël Yahi", sep = "\n")
   
-  ggplot(arch_most_played, aes(x=Archetype, y=MeasuredWinrate*100)) + 
-    geom_point(size=2, color = "blue") +  
-    geom_text_repel(aes(label = format(round(
-      MeasuredWinrate*100,1), nsmall = 1)), 
+  ggplot(most_present_archetypes, aes(x = Archetype, y = MeasuredWinrate)) + 
+    
+    geom_point(size = 2, color = "blue") +  
+    
+    geom_text_repel(aes(label = format(round(MeasuredWinrate, 1), nsmall = 1)), 
       hjust = -0.3, vjust = -0.3, point.padding = NA) + 
+    
     labs(x = NULL, y = yLabelWinrate, title = winrateGraphTitle,
          subtitle = winrateGraphSubtitle) +
-    theme(axis.text.x = element_text(angle = -nrow(arch_most_played)),
+    
+    theme(axis.text.x = element_text(size=12, angle = -nrow(most_present_archetypes)),
           axis.title.y = 
             element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
           panel.background = element_blank(),
           axis.ticks.y = element_blank(),
+          plot.title = element_text(hjust = 0.5, color = "#111111",size = 20),
+          plot.subtitle = element_text(hjust = 0.5,size = 18),
           text = element_text(size = 16)) + 
-    geom_errorbar(aes(ymax = CI95UpperBound *100, ymin = CI95LowerBound*100)) + 
-    geom_hline(yintercept = mean(arch_most_played$MeasuredWinrate*100), 
-               color="green", linetype="dashed", size=1)+ 
-    geom_hline(yintercept = mean(arch_most_played$CI95LowerBound*100), 
-               color="red", linetype="dashed", size=0.5)+ 
-    geom_hline(yintercept = mean(arch_most_played$CI95UpperBound*100), 
-               color="red", linetype="dashed", size=0.5) + 
-    theme(axis.text.x  = element_text(size=12)) 
+    
+    geom_errorbar(aes(ymax = CI95UpperBound, ymin = CI95LowerBound)) + 
+    
+    geom_hline(yintercept = mean(most_present_archetypes$MeasuredWinrate), 
+               color="green", linetype="dashed", linewidth = 1)+ 
+    
+    geom_hline(yintercept = mean(most_present_archetypes$CI95LowerBound), 
+               color="red", linetype="dashed", linewidth = 0.5)+ 
+    
+    geom_hline(yintercept = mean(most_present_archetypes$CI95UpperBound), 
+               color="red", linetype="dashed", linewidth = 0.5)
 }
-
 
 #' Graph of the archetype tier list based on normalized sum of metrics
 #'
 #' @param archetypeRankingDf the dataframe returned by archetype_ranking()
-#' @param pieShare the value of the cut to be set in "Others" for an archetype.
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
 #' @param presence the definition of metagame presence (aka share) to use. 
 #' It can be:
 #' - "Copies": the number of lines in the dataframe dedicated to that archetype
@@ -321,25 +341,25 @@ winrates_graph = function(archetypeRankingDf,pieShare,presence,beginning,end,
 #' @export
 #'
 #' @examples
-normalized_sum_graph = function(archetypeRankingDf,pieShare,presence,beginning,end,
-                            eventType,mtgFormat){
+normalized_sum_graph = function(archetypeRankingDf,chartShare,presence,
+                                beginning,end,eventType,mtgFormat){
   
   # Keep only the most present decks
-  presence_min = pieShare/100*sum(archetypeRankingDf[presence])
-  arch_most_played = 
+  presence_min = chartShare/100*sum(archetypeRankingDf[presence])
+  most_present_archetypes = 
     archetypeRankingDf[archetypeRankingDf[presence] >= presence_min,]
   
-  meanData = mean(arch_most_played$NormalizedSum)
-  sdData = sd(arch_most_played$NormalizedSum)
+  meanData = mean(most_present_archetypes$NormalizedSum)
+  sdData = sd(most_present_archetypes$NormalizedSum)
   meanPlusSd = meanData + sdData
   meanMinusSd = meanData - sdData
   
-  arch_most_played$Archetype=reorder(arch_most_played$Archetype,
-                                     arch_most_played$NormalizedSum)
+  most_present_archetypes$Archetype=reorder(most_present_archetypes$Archetype,
+                                     most_present_archetypes$NormalizedSum)
   
   normalizedSumGraphTitle = paste0(
     "Sum of the normalized metrics of the most present ",mtgFormat,
-    " archetypes\n",  "(at least ",pieShare,"% of the ",presence,") between ", 
+    " archetypes\n",  "(at least ",chartShare,"% of the ",presence,") between ", 
     beginning, " and ", end, " in ", EventType)
   
   normalizedSumGraphSubtitle = "by Anaël Yahi"
@@ -350,18 +370,30 @@ normalized_sum_graph = function(archetypeRankingDf,pieShare,presence,beginning,e
   sizeTierNameText = 5
   sizeTierExplanationText = 4
   
-  ggplot(arch_most_played, aes(x=Archetype, y=NormalizedSum)) + 
-    theme_classic() + geom_point(size=4,color="blue") +  
+  ggplot(most_present_archetypes, aes(x=Archetype, y=NormalizedSum)) +
+    
+    geom_point(size=4,color="blue") +  
+    
     geom_text_repel(aes(label=format(round(NormalizedSum,2), nsmall = 2)), 
-                    hjust = -0.3, vjust = -0.3, point.padding = NA, size = 5) + 
-    labs(x=NULL, y="Value of the normalized sum metric", 
+                    hjust = -0.3, vjust = -0.3, point.padding = NA, size = 5,
+                    min.segment.length = Inf) + 
+    
+    labs(x=NULL, y = "Value of the normalized sum metric", 
          title = normalizedSumGraphTitle,
          subtitle = normalizedSumGraphSubtitle) + 
-    theme(axis.text.x = element_text(angle = -nrow(arch_most_played), size = 12)) +
+    
+    theme(axis.text.x = 
+            element_text(angle = -nrow(most_present_archetypes), size = 12),
+          panel.background = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.line.x=element_line(color="black"),
+          axis.line.y=element_line(color="black"),
+          plot.title = element_text(hjust = 0.5, color = "#111111",size = 20),
+          plot.subtitle = element_text(hjust = 0.5,size = 18)) +
     
     #Add tier list lines and labels
     geom_hline(yintercept = meanData - 3 * sdData, color = "#004CA3", 
-               linetype="dashed", size = sizeHline) +
+               linetype="dashed", linewidth = sizeHline) +
     geom_text(aes(x = xDodge, y = meanData - 3 * sdData, label = "Tier 3\n"), 
               colour = "#004CA3", size = sizeTierNameText) +
     geom_text(aes(x = xDodge, y = meanData -3 * sdData - yDodgeTierExplanation,
@@ -369,7 +401,7 @@ normalized_sum_graph = function(archetypeRankingDf,pieShare,presence,beginning,e
               size = sizeTierExplanationText) + 
     
     geom_hline(yintercept = meanData - 2 * sdData, color = "#8A51A5", 
-               linetype = "dashed", size = sizeHline) +
+               linetype = "dashed", linewidth = sizeHline) +
     geom_text(aes(x = xDodge, y = meanData - 2 * sdData, label = "Tier 2.5\n"), 
               colour = "#8A51A5", size = sizeTierNameText) + 
     geom_text(aes(x = xDodge, y = meanData - 2 * sdData - yDodgeTierExplanation, 
@@ -377,7 +409,7 @@ normalized_sum_graph = function(archetypeRankingDf,pieShare,presence,beginning,e
               size = sizeTierExplanationText) +
     
     geom_hline(yintercept = meanData - sdData, color = "#CB5E99", 
-               linetype = "dashed", size = sizeHline) +
+               linetype = "dashed", linewidth = sizeHline) +
     geom_text(aes(x = xDodge, y = meanData - sdData, label = "Tier 2\n"), 
               colour = "#CB5E99", size = sizeTierNameText) +
     geom_text(aes(x = xDodge, y = meanData - sdData - yDodgeTierExplanation,
@@ -385,7 +417,7 @@ normalized_sum_graph = function(archetypeRankingDf,pieShare,presence,beginning,e
               size = sizeTierExplanationText) +
     
     geom_hline(yintercept = meanData, color = "#F47B89", linetype = "dashed", 
-               size = sizeHline)+
+               linewidth = sizeHline)+
     geom_text(aes(x = xDodge, y = meanData, label = "Tier 1.5\n"), 
               colour = "#F47B89", size = sizeTierNameText) +
     geom_text(aes(x = xDodge, y = meanData - yDodgeTierExplanation, 
@@ -393,7 +425,7 @@ normalized_sum_graph = function(archetypeRankingDf,pieShare,presence,beginning,e
               size = sizeTierExplanationText) +
     
     geom_hline(yintercept = meanData+sdData, color = "#FFA47E", 
-               linetype = "dashed", size = sizeHline) + 
+               linetype = "dashed", linewidth = sizeHline) + 
     geom_text(aes(x = xDodge, y = meanData + sdData, label = "Tier 1\n"),
               colour="#FFA47E", size = sizeTierNameText) +
     geom_text(aes(x = xDodge, y = meanData + sdData - yDodgeTierExplanation,
@@ -401,7 +433,7 @@ normalized_sum_graph = function(archetypeRankingDf,pieShare,presence,beginning,e
               size = sizeTierExplanationText) +
     
     geom_hline(yintercept = meanData + 2 * sdData, color="#FFD286", 
-               linetype="dashed", size = sizeHline) + 
+               linetype="dashed", linewidth = sizeHline) + 
     geom_text(aes(x = xDodge, y = meanData + 2 * sdData, label = "Tier 0.5\n"), 
               colour = "#FFD286", size = sizeTierNameText) +
     geom_text(aes(x = xDodge, y = meanData + 2 * sdData - yDodgeTierExplanation,
@@ -409,7 +441,7 @@ normalized_sum_graph = function(archetypeRankingDf,pieShare,presence,beginning,e
               size = sizeTierExplanationText) +
     
     geom_hline(yintercept = meanData + 3 * sdData, color="#90EE90", 
-               linetype = "dashed", size = sizeHline) + 
+               linetype = "dashed", linewidth = sizeHline) + 
     geom_text(aes(x = xDodge, y = meanData + 3 * sdData, label = "Tier 0\n"), 
               colour = "#90EE90", size = sizeTierNameText) +
     geom_text(aes(x = xDodge, y = meanData + 3 * sdData - yDodgeTierExplanation,
@@ -419,11 +451,12 @@ normalized_sum_graph = function(archetypeRankingDf,pieShare,presence,beginning,e
     geom_text(aes(x = xDodge-0.5, y = meanData, label = ""))
 }
 
-#SORT THE ARCHETYPES IN CLUSTERS BASED ON PRESENCE AND WINRATE
-#' Title
+
+#' Bidimensional view of the win rate and presence of the most present decks
 #'
 #' @param archetypeRankingDf the dataframe returned by archetype_ranking()
-#' @param pieShare the value of the cut to be set in "Others" for an archetype.
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
 #' @param presence the definition of metagame presence (aka share) to use. 
 #' It can be:
 #' - "Copies": the number of lines in the dataframe dedicated to that archetype
@@ -445,63 +478,137 @@ normalized_sum_graph = function(archetypeRankingDf,pieShare,presence,beginning,e
 #' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
 #' MTGO Preliminaries = As per name
 #' @param mtgFormat the format of the events in the data
+#' @param presenceAxisLogScale draw the presence axis with a linear scale if TRUE
 #'
-#' @return
+#' @return a ggplot in two dimensions displaying the presence and win rate of 
+#' the most present archetypes as well as their tiers
 #' @export
 #'
 #' @examples
-winrate_and_presence_graph = function (archetypeRankingDf,pieShare,presence,
-                                       beginning,end,eventType,mtgFormat){
-  # Keep only the most present decks
-  arch_most_played = archetypeRankingDf
-  arch_most_played$Presence = 100 * unlist(arch_most_played[presence]) / 
-    sum(unlist(arch_most_played[presence]))
-  arch_most_played$MeasuredWinrate = 100 * arch_most_played$MeasuredWinrate
-  presence_min = pieShare / 100 * sum(archetypeRankingDf[presence])
-  arch_most_played = 
-    arch_most_played[arch_most_played[presence] >= presence_min,]
-
-  # arch_most_played$LabelRich = paste0("**",arch_most_played$Archetype,"**",
-  #                                 "<br>Presence: ",
-  #                                 round(arch_most_played$Presence, digits = 1)
-  #                                 ,"%<br>Win rate: ",
-  #                                 round(arch_most_played$MeasuredWinrate,
-  #                                       digits = 1),"%")
-  # 
-  # arch_most_played$Label = paste0(arch_most_played$Archetype,
-  #                                 "\nPresence: ",
-  #                                 round(arch_most_played$Presence, digits = 1)
-  #                                 ,"%\nWin rate: ",
-  #                                 round(arch_most_played$MeasuredWinrate,
-  #                                       digits = 1),"%")
+winrate_and_presence_graph_focused = 
+  function (archetypeTiersDf,chartShare,presence, beginning,end,eventType,
+            mtgFormat,presenceAxisLogScale){
+  # Keep only the most present decks and compute their tiers
   
-  x_label = "Presence"
-  y_label = "Winrate"
-  graph_title=paste0("Win rates depending on presence (",presence,") of ",
-                     mtgFormat, " archetypes\nbetween ", beginning, " and ",
+    archetypeTiersDf$Label = paste0(archetypeTiersDf$Archetype,
+                                  "\nPresence: ",
+                                  round(archetypeTiersDf$Presence, 
+                                        digits = 1)
+                                  ,"%\nWin rate: ",
+                                  round(archetypeTiersDf$MeasuredWinrate,
+                                        digits = 1),"%")
+  
+  x_label = "Presence (%)"
+  y_label = "Win rate (%)"
+  graph_title=paste0("Win rates depending on presence of the most present ",
+                     mtgFormat, " archetypes\n(at least ",chartShare,
+                     "% of the ", presence,") between ", beginning, " and ",
                      end, " in ", eventType)
   graph_subtitle=paste("by Anaël Yahi")
   
-  ggplot(arch_most_played, 
-         aes(x = Presence, y = MeasuredWinrate, color = Archetype)) + 
-    coord_cartesian() + scale_x_continuous(trans = 'log10') + 
+  winrate_and_presence_plot_focused =
+    ggplot(archetypeTiersDf, aes(x = Presence, y = MeasuredWinrate, 
+                               color = Tiers, label = Label)) +
+    
+    # scale_color_gradient(low="blue", high="red") +
+    
+    coord_cartesian() +
+    
     labs(x = x_label, y = y_label, title = graph_title, 
          subtitle = graph_subtitle) + 
     
-    # geom_richtext(aes(label=LabelRich)) +
-    # geom_label_repel(aes(label=Label)) +
-    geom_label_repel(aes(label=Archetype)) +
+    geom_label_repel(box.padding = 0.5, nudge_x = c(-0.05, 0.05),
+                     min.segment.length = 0) +
     
-    theme(axis.title.x = 
-            element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          axis.title.y = 
-            element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
-          panel.background = element_blank(),
+    theme(panel.background = element_blank(),
           axis.line.x=element_line(color="black"),
           axis.line.y=element_line(color="black"),
           axis.ticks.x = element_blank(),
           axis.ticks.y = element_blank(),
           text = element_text(size = 14),
-          legend.position = "none") +
-  geom_point(aes(size=Players))
+          plot.title = element_text(hjust = 0.5, color = "#111111",size = 20),
+          plot.subtitle = element_text(hjust = 0.5,size = 18)) +
+    
+  geom_point(aes(size=Players)) 
+  
+  if (presenceAxisLogScale){
+    winrate_and_presence_plot_focused = 
+      winrate_and_presence_plot_focused + scale_x_continuous(trans = 'log10')
+  }
+  
+  winrate_and_presence_plot_focused
 }
+
+#PROVIDE A GRAPH FOR A METRIC DATAFRAME DISPLAYING WINRATES DEPENDING ON
+#PRESENCE, WHICH IS HIGHLIGHTED BY THE DIAMETERS OF ANOTHER TYPE OF PRESENCE
+#presence AND diameters CAN BE EITHER "Copies", "Players" or "Matches"
+#tiers CAN BE EITHER "Win+Pres","Pres M+SD" or "Pres %"
+#presenceAxisLogScale is a boolean
+#only_best is a boolean
+full_winrate_and_presence_graph = 
+  function(archetypeRankingDf,chartShare,presence,diameters,beginning,end,
+           eventType,mtgFormat,presenceAxisLogScale) {
+  
+    archetypeTiersDf = archetype_tiers(archetypeRankingDf, presence, chartShare)
+      
+  #COMPUTES THE PARAMETERS OF THE LINES TO APPEAR ON THE GRAPH
+  coeffdir = -max(archetypeTiersDf$MeasuredWinrate)/
+    max(unlist(archetypeTiersDf[presence]))/
+          sum(unlist(archetypeTiersDf[presence]))
+
+  average = mean(archetypeTiersDf$MeasuredWinrate)
+  sdeviation = sd(archetypeTiersDf$MeasuredWinrate)
+  
+  #GENERATES THE LABELS
+  x_label = ifelse(presence=="Copies",
+                   "Number of copies of each archetype (%)",
+                   ifelse(presence=="Players",
+                          "Number of different players for each archetype (%)",
+                          ifelse(presence=="Matches",
+                                 "Number of matches for each archetype (%)",
+                                 NA
+                          )))
+  
+  y_label="Average winrate of each archetype (%)"
+  
+  graph_title = paste0("Win rates depending on presence (",presence,") of ",
+                     mtgFormat, " archetypes\nbetween ", beginning, " and ",
+                     end, " in ", eventType)
+  
+  graph_subtitle=paste("Circle diameters depending on",diameters,
+                       "\nby Anaël Yahi")
+  
+  avg_presence = mean(archetypeTiersDf$Presence)
+  sd_presence = sd(archetypeTiersDf$Presence)
+  
+  metric_plot = ggplot(archetypeTiersDf, aes(Presence, MeasuredWinrate)) +
+    
+    geom_point(aes(color = Archetype), 
+               size = archetypeTiersDf$Presence/
+                 max(archetypeTiersDf$Presence) * 25,
+               show.legend = FALSE) + 
+    
+    coord_cartesian() + 
+    
+    theme(panel.background = element_blank(),
+          axis.line.x=element_line(color="black"),
+          axis.line.y=element_line(color="black"),
+          axis.ticks.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          plot.title = element_text(hjust = 0.5, color = "#111111",size = 20),
+          plot.subtitle = element_text(hjust = 0.5,size = 18)) + 
+    
+    labs(x = x_label, y = y_label, title=graph_title, subtitle=graph_subtitle) +
+    
+    geom_text_repel(aes(label=Archetype), hjust = 0, vjust = 0, 
+                    point.padding = NA, size = 3, nudge_x = 0.1, direction = "y",
+                    segment.size = 0.2, segment.color="dark grey", 
+                    segment.alpha = 0.8) 
+  
+  if (presenceAxisLogScale){
+    metric_plot = metric_plot + scale_x_continuous(trans = 'log10')
+  }
+  
+  metric_plot
+  
+  }

@@ -27,5 +27,48 @@ source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
 source(file.path(paste0(functionScriptDir,"02-Metagame_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"03-Metagame_Graph_Generation.R")))
 
-tournamentDf=generate_df(EventType,MTGFormat,TournamentResultFile)
+tournamentDf = 
+  generate_df(EventType,MtgFormat,TournamentResultFile, Beginning, End)
+
+# Get the following columns: 
+# Archetype Copies Players Matches MeasuredWinrate CI95LowerBound CI95UpperBound
+archetypeMetricsDf = archetype_metrics(tournamentDf)
+
+if(Share.autoupdate){
+  StatShare = round(mean(unlist(archetypeMetricsDf[Presence])) / 
+    sum(unlist(archetypeMetricsDf[Presence])) * 100, digits = 2)
+  ChartShare = max(StatShare, 1)
+}else {
+  StatShare = ChartShare
+}
+
+# Draw the metagame pie chart
+metagame_pie_chart(tournamentDf, ChartShare, Presence, Beginning, End, EventType,
+                   MtgFormat)
+# Draw the metagame bar chart
+metagame_bar_chart(tournamentDf, ChartShare, Presence, Beginning, End, EventType, 
+                   MtgFormat)
+
+# Add the following columns:
+# NormalizedPresence NormalizedMeasuredWinrate NormalizedSum Rank
+archetypeRankingDf = archetype_ranking(archetypeMetricsDf, Presence)
+# Draw the win rate graph with confidence intervals
+winrates_graph(archetypeRankingDf, StatShare, Presence, Beginning, End,
+                          EventType, MtgFormat, SortValue)
+# Draw the repartition of archetypes by tier depending on their normalized score
+normalized_sum_graph(archetypeRankingDf, StatShare, Presence,Beginning, End, 
+                     EventType, MtgFormat)
+# Draw the 2D map of the archetypes based on presence and win rate
+full_winrate_and_presence_graph(archetypeRankingDf, 0, Presence, 
+                                Diameters, Beginning, End, EventType, 
+                                MtgFormat, PresenceAxisLogScale)
+
+# Keep only the most played decks and add some columns:
+# Presence Tiers
+archetypeTiersDf = archetype_tiers(archetypeRankingDf, Presence, StatShare)
+# Draw the 2D map of the most present archetypes based on presence and win rate,
+# adding the metrics as labels
+winrate_and_presence_graph_focused(archetypeTiersDf, StatShare, Presence, 
+                                   Beginning, End, EventType, MtgFormat, 
+                                   PresenceAxisLogScale)
 

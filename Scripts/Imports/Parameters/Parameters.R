@@ -16,7 +16,7 @@ ResultDir = "Results/"
 
 # Format of the wanted events
 # # Leave this vector untouched if used, to avoid typing mistakes
-# MTGFormats = c("Sealed",
+# MtgFormats = c("Sealed",
 #                "Standard",
 #                "Pioneer",
 #                "Modern",
@@ -24,13 +24,13 @@ ResultDir = "Results/"
 #                "Legacy",
 #                "Vintage",
 #                "All Formats")
-# MTGFormat = MTGFormats[4]
+# MtgFormat = MtgFormats[4]
 
-MTGFormat = "Modern"
+MtgFormat = "Modern"
 
 # Name of the tournament result data source file for the corresponding format
 # Currently automatically updated based on the format name
-TournamentResultFile = paste0(tournamentDataDir,MTGFormat,"_data.json")
+TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
 Beginning="2022-11-15"
@@ -63,12 +63,34 @@ EventTypes = c("All sources",
 
 EventType = EventTypes[3]
 
-#Required metagame share to appear on pie chart (gets converted to % later)
-PieShare=2
-#Automatically update this value with the average presence if TRUE
-PieShare.autoupdate=T
+#Required metagame share to appear on charts (gets converted to % later)
+ChartShare = 2
+# Cut for the metagame analysis
+StatShare = ChartShare
+# Automatically update this Share values above with the average presence if TRUE
+# The minimum value for ChartShare is 1 (otherwise too small for graphs) 
+Share.autoupdate = T
 
-#Required metagame share to appear on histogram (gets converted to % later)
-BarShare=2
-#Automatically update this value with the average presence if TRUE
-BarShare.autoupdate=T
+# The definition of metagame presence (aka share) to use. 
+# It can be:
+# - "Copies": the number of lines in the dataframe dedicated to that archetype
+# - "Players": the number of different players piloting that archetype
+# - "Matches": the number of matches played by the archetype
+Presence = "Matches"
+
+# The value used for sorting the data in the win rate graph.
+# It can be either "MeasuredWinrate" or "CI95LowerBound" (the lower bound of
+# the 95% confidence interval on the win rate).
+SortValue = "CI95LowerBound"
+
+# Draw the presence axis with a logarithmic scale if TRUE, linear if FALSE
+PresenceAxisLogScale = T
+
+# The definition of metagame presence (aka share) to use, specifically to set
+# the metric used to determine the size of the circles in 
+# full_winrate_and_presence_graph(). 
+# It can be:
+# - "Copies": the number of lines in the dataframe dedicated to that archetype
+# - "Players": the number of different players piloting that archetype
+# - "Matches": the number of matches played by the archetype
+Diameters = "Players"

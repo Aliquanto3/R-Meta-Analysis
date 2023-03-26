@@ -25,7 +25,8 @@ source(file.path(paste0(parameterScriptDir,"Parameters.R")))
 functionScriptDir = paste0(importableScriptDir,"Functions/")
 source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
 
-tournamentDf=generate_df(EventType,MTGFormat,TournamentResultFile)
+tournamentDf = 
+  generate_df(EventType,MTGFormat,TournamentResultFile, Beginning, End)
 
 ################################################################################
 
