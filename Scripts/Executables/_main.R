@@ -59,7 +59,7 @@ winrates_graph(archetypeRankingDf, StatShare, Presence, Beginning, End,
 normalized_sum_graph(archetypeRankingDf, StatShare, Presence,Beginning, End, 
                      EventType, MtgFormat)
 # Draw the 2D map of the archetypes based on presence and win rate
-full_winrate_and_presence_graph(archetypeRankingDf, 0, Presence, 
+simple_winrate_and_presence_graph(archetypeRankingDf, 0, Presence, 
                                 Diameters, Beginning, End, EventType, 
                                 MtgFormat, PresenceAxisLogScale)
 
@@ -68,7 +68,13 @@ full_winrate_and_presence_graph(archetypeRankingDf, 0, Presence,
 archetypeTiersDf = archetype_tiers(archetypeRankingDf, Presence, StatShare)
 # Draw the 2D map of the most present archetypes based on presence and win rate,
 # adding the metrics as labels
-winrate_and_presence_graph_focused(archetypeTiersDf, StatShare, Presence, 
+detailed_winrate_and_presence_graph(archetypeTiersDf, StatShare, Presence, 
                                    Beginning, End, EventType, MtgFormat, 
                                    PresenceAxisLogScale)
 
+# Get the required data to build the matchup matrix
+muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)
+  
+# Draw the matchup matrix
+generate_matchup_matrix(muMatrixData, ChartShare, Presence, Beginning, End,
+                        MtgFormat, EventType)

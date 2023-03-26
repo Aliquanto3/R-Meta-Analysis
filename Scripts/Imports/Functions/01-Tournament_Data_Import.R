@@ -426,3 +426,33 @@ getBestDeck=function(deckName,df){
   }
   return(df2$AnchorUri)
 }
+
+
+#' Matchup data between two given archetypes
+#'
+#' @param df the dataframe returned by generate_df()
+#' @param arch1 a string with the name of the archetype compared to the other
+#' @param arch2 a string with the name of the archetype as opponent of the arch1
+#'
+#' @return a vector with the number of wins and losses in that matchup.
+#' @export
+#'
+#' @examples
+get_matchup_data = function(df,arch1,arch2){
+  winsArch1VS2 = 0
+  lossesArch1VS2 = 0
+  dfArch1 = df[df$Archetype$Archetype==arch1,]
+  conditionMUNotNull = !sapply(dfArch1$Matchups, function(x) length(x) == 0 )
+  for (i in (1:nrow(dfArch1))[conditionMUNotNull]){
+    matchesI = dfArch1[i,]$Matchups[[1]]
+    matchesArch1VS2 = matchesI[matchesI$OpponentArchetype == arch2,]
+    
+    WinsI = matchesArch1VS2$Wins 
+    DefeatsI = matchesArch1VS2$Losses 
+    
+    winsArch1VS2 = winsArch1VS2 + sum(WinsI > DefeatsI)
+    lossesArch1VS2 = lossesArch1VS2 + sum(WinsI < DefeatsI) 
+  }
+  
+  return(c(Wins = winsArch1VS2, Losses = lossesArch1VS2))
+}

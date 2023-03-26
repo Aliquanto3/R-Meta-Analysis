@@ -14,16 +14,17 @@ library(tidyverse)
 library(ggplot2)
 library(ggrepel)
 library(ggtext)
+library(paletteer)
 
 # # For development
 # df = tournamentDf
 # chartShare = ChartShare
-# chartShare = ChartShare
+# statShare = StatShare
 # presence = "Matches"
 # beginning = Beginning
 # end = End
 # eventType = EventType
-# mtgFormat = MTGFormat
+# mtgFormat = MtgFormat
 # diameters = "Players"
 # presenceAxisLogScale = T
 # archetypeMetricsDf = archetype_metrics(df)
@@ -452,7 +453,7 @@ normalized_sum_graph = function(archetypeRankingDf,chartShare,presence,
 }
 
 
-#' Bidimensional view of the win rate and presence of the most present decks
+#' Detailed 2D view of the win rate and presence of the most present decks
 #'
 #' @param archetypeRankingDf the dataframe returned by archetype_ranking()
 #' @param chartShare the value of the cut to be set in "Others" for an archetype.
@@ -481,11 +482,12 @@ normalized_sum_graph = function(archetypeRankingDf,chartShare,presence,
 #' @param presenceAxisLogScale draw the presence axis with a linear scale if TRUE
 #'
 #' @return a ggplot in two dimensions displaying the presence and win rate of 
-#' the most present archetypes as well as their tiers
+#' the most present archetypes, including the detail in labels, in addition to
+#' their tiers with different colors
 #' @export
 #'
 #' @examples
-winrate_and_presence_graph_focused = 
+detailed_winrate_and_presence_graph = 
   function (archetypeTiersDf,chartShare,presence, beginning,end,eventType,
             mtgFormat,presenceAxisLogScale){
   # Keep only the most present decks and compute their tiers
@@ -539,27 +541,54 @@ winrate_and_presence_graph_focused =
   winrate_and_presence_plot_focused
 }
 
-#PROVIDE A GRAPH FOR A METRIC DATAFRAME DISPLAYING WINRATES DEPENDING ON
-#PRESENCE, WHICH IS HIGHLIGHTED BY THE DIAMETERS OF ANOTHER TYPE OF PRESENCE
-#presence AND diameters CAN BE EITHER "Copies", "Players" or "Matches"
-#tiers CAN BE EITHER "Win+Pres","Pres M+SD" or "Pres %"
-#presenceAxisLogScale is a boolean
-#only_best is a boolean
-full_winrate_and_presence_graph = 
+#' Detailed 2D view of the win rate and presence of the most present decks
+#'
+#' @param archetypeRankingDf the dataframe returned by archetype_ranking()
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
+#' @param presence the definition of metagame presence (aka share) to use. 
+#' It can be:
+#' - "Copies": the number of lines in the dataframe dedicated to that archetype
+#' - "Players": the number of different players piloting that archetype
+#' - "Matches": the number of matches played by the archetype
+#' @param diameters the metagame presence metric used for the points size. 
+#' It can be:
+#' - "Copies": the number of lines in the dataframe dedicated to that archetype
+#' - "Players": the number of different players piloting that archetype
+#' - "Matches": the number of matches played by the archetype 
+#' @param beginning the date to be displayed in the title as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the title as the end of the dataset
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param mtgFormat the format of the events in the data
+#' @param presenceAxisLogScale draw the presence axis with a linear scale if TRUE
+#'
+#' @return a ggplot in two dimensions displaying the presence and win rate of 
+#' the most present archetypes, with points changing size depending on a chosen
+#' type of presence.
+#' @export
+#'
+#' @examples
+simple_winrate_and_presence_graph = 
   function(archetypeRankingDf,chartShare,presence,diameters,beginning,end,
            eventType,mtgFormat,presenceAxisLogScale) {
   
     archetypeTiersDf = archetype_tiers(archetypeRankingDf, presence, chartShare)
-      
-  #COMPUTES THE PARAMETERS OF THE LINES TO APPEAR ON THE GRAPH
-  coeffdir = -max(archetypeTiersDf$MeasuredWinrate)/
-    max(unlist(archetypeTiersDf[presence]))/
-          sum(unlist(archetypeTiersDf[presence]))
 
   average = mean(archetypeTiersDf$MeasuredWinrate)
   sdeviation = sd(archetypeTiersDf$MeasuredWinrate)
   
-  #GENERATES THE LABELS
   x_label = ifelse(presence=="Copies",
                    "Number of copies of each archetype (%)",
                    ifelse(presence=="Players",
@@ -612,3 +641,71 @@ full_winrate_and_presence_graph =
   metric_plot
   
   }
+
+#' Win rate matrix of the most present archetypes
+#'
+#' @param muMatrixData the dataframe generated by generate_matchup_data()
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' @param presence the definition of metagame presence (aka share) to use. 
+#' It can be:
+#' - "Copies": the number of lines in the dataframe dedicated to that archetype
+#' - "Players": the number of different players piloting that archetype
+#' - "Matches": the number of matches played by the archetype
+#' @param beginning the date to be displayed in the title as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the title as the end of the dataset
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param mtgFormat the format of the events in the data
+#'
+#' @return ggplot with a 2D table presenting the matchup results between all the
+#' main archetypes
+#' @export
+#'
+#' @examples
+generate_matchup_matrix = function(muMatrixData,chartShare,presence,beginning,
+                                   end,mtgFormat,eventType){
+  
+  MUMatrixTitle = paste0("Match Up Matrix of the most present ",  mtgFormat, 
+                     " archetypes\n(at least ", min(muMatrixData$Share), 
+                     "% of the ",  presence,") between ", beginning, " and ", 
+                     end, " in ",  eventType)
+  
+  MUMatrixSubtitle = 
+    paste("Win rate of Y (ordinates) against X (abscissa)", 
+          "by Anaël Yahi", sep = "\n")
+  
+  ggplot(muMatrixData,aes(x = Archetype2, y = reorder(ArchShare1,-DisplayOrder), 
+                          col = MUWinrate, fill = MUWinrate, 
+                          label = OutputText)) +
+    
+    geom_tile(color = "black",lwd = 0.5,linetype = 1) +
+    
+    theme(panel.background = element_blank(),
+          axis.text.x = element_text(face="bold", size=11, angle = -10),
+          axis.text.y = element_markdown(),
+          legend.position = "none",
+          plot.title = element_text(hjust = 0.5),
+          plot.subtitle = element_text(hjust = 0.5)) + 
+    
+    scale_fill_gradientn(
+      colours = paletteer_c("ggthemes::Red-Green-Gold Diverging", 30)) +
+    
+    scale_x_discrete(position = "top") +
+    
+    labs(x=NULL, y=NULL, title = MUMatrixTitle, subtitle = MUMatrixSubtitle) +
+    
+    geom_richtext( fill = NA, label.color = NA, # remove background and outline
+                   label.padding = grid::unit(rep(0, 4), "pt"), # remove padding
+                   color = "black") 
+}
