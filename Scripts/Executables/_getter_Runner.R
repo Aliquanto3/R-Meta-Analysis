@@ -24,23 +24,37 @@ source(file.path(paste0(parameterScriptDir,"Parameters.R")))
 
 functionScriptDir = paste0(importableScriptDir,"Functions/")
 source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
+source(file.path(paste0(functionScriptDir,"99-Output_Export.R")))
+
+PathToLastDirs = 
+  createResultDirectories(ResultDir, MtgFormat, Beginning, End, EventType,
+                          CsvResultDir, PictureResultDir, TextResultDir)
 
 tournamentDf = 
   generate_df(EventType,MTGFormat,TournamentResultFile, Beginning, End)
 
 ################################################################################
 
+cardName = "Wrenn and Six"
+archetypeName = "Creativity"
+archetypeName2 = "Murktide"
+
 getConflictURL(tournamentDf)
 getConflictArchetype(tournamentDf)
 getUnknown(tournamentDf)
-getURLofCard("Wrenn and Six",tournamentDf)
-getURLofDeck("Omnath Scapeshift",tournamentDf)
-getBestDeck("Omnath Scapeshift",tournamentDf)
-get_matchup_data(tournamentDf,"Omnath Scapeshift","Izzet Murktide")
+getURLofCard(cardName, tournamentDf)
+getURLofDeck(archetypeName, tournamentDf)
+getBestDeck(archetypeName, tournamentDf)
+get_matchup_data(tournamentDf, archetypeName, archetypeName2)
 
 # Get the required data to build the matchup matrix of a single archetype
 muMatrixDataArchetype = generate_matchup_data(tournamentDf, ChartShare, 
-                                              Presence, "Omnath Scapeshift")
+                                              Presence, archetypeName)
 # Draw the corresponding matchup matrix
+# TODO : 
 generate_matchup_matrix(muMatrixDataArchetype, ChartShare, Presence, Beginning, 
                         End, MtgFormat, EventType)
+
+exportAchetypeCardData(archetypeName, tournamentDf)
+
+

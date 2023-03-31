@@ -236,7 +236,7 @@ generate_Tournament_Data = function(tournamentData) {
 #'
 #' @examples
 generate_df = function(eventType, mtgFormat, tournamentDataPath, beginning, end) {
-  setwd(rprojroot::find_rstudio_root_file())
+
   #Import raw data
   rawData = fromJSON(TournamentResultFile)[[1]]
   if (!mtgFormat == "All_Formats") {
@@ -245,11 +245,11 @@ generate_df = function(eventType, mtgFormat, tournamentDataPath, beginning, end)
     rawData = rawData[grep(pattern = mtgFormat, x = rawData$Tournament), ]
   }
   rawData$Date = as.Date(rawData$Date)
-  rawData$Points = as.numeric(rawData$Points)
   
   #Select data for a specific period
   periodData = subset(rawData, Date >= as.Date(beginning) &
                         Date < as.Date(end))
+  periodData$Points = as.numeric(periodData$Points)
   
   # Names and date don't allow the identification of an event on  their own, but
   # the combination of both can, hence the addition of another column for this
@@ -384,7 +384,7 @@ getUnknown = function(df){
 #' @export
 #'
 #' @examples
-getURLofCard=function(cardName,df){
+getURLofCard = function(cardName,df){
   archetypeURL = c()
   for (i in 1:nrow(df)){
     if (length(grep(cardName,df$Mainboard[[i]]$CardName)) + 
@@ -405,24 +405,28 @@ getURLofCard=function(cardName,df){
 #' @export
 #'
 #' @examples
-getURLofDeck=function(deckName,df){
+getURLofDeck = function(deckName,df){
   return(df[df$Archetype$Archetype==deckName,]$AnchorUri)
 }
 
-#' Get the URL of the deck with the most points for a given archetype
+#' Get the URL of the deck with the best win/loss ratio for a given archetype
 #'
 #' @param deckName a string with the name of the archetype to find
 #' @param df the dataframe returned by generate_df()
 #'
 #' @return the URL of the most successful deck of a given archetype.
+#' The most successful is defined as having the highest difference between its
+#' wins and defeats. A 7-0 is equivalent to a 10-3. Idea by Frank Karsten.
 #' Empty if nothing fits (wrong name or not in the data).
 #' @export
 #'
 #' @examples
-getBestDeck=function(deckName,df){
+getBestDeck = function(deckName,df){
   df2=df[df$Archetype$Archetype==deckName,]
+  df2$WinLossScore = df2$NWins + df2$T8Points/3 -
+    df2$NDefeats - df2$T8Defeats
   if(nrow(df2)>0){
-    df2=df2[df2$Points+df2$T8Points==max(df2$Points+df2$T8Points),]
+    df2=df2[df2$WinLossScore==max(df2$WinLossScore),]
   }
   return(df2$AnchorUri)
 }

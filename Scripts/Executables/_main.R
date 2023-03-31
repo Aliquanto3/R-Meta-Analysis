@@ -19,10 +19,11 @@ parameterScriptDir = paste0(importableScriptDir,"Parameters/")
 source(file.path(paste0(parameterScriptDir,"Parameters.R")))
 
 functionScriptDir = paste0(importableScriptDir,"Functions/")
-source(file.path(paste0(functionScriptDir,"00-Output_Export.R")))
 source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
 source(file.path(paste0(functionScriptDir,"02-Metagame_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"03-Metagame_Graph_Generation.R")))
+source(file.path(paste0(functionScriptDir,"04-Decklist_Analysis.R")))
+source(file.path(paste0(functionScriptDir,"99-Output_Export.R")))
 
 # Create all the directories where results will be written
 PathToLastDirs = 

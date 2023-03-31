@@ -16,27 +16,27 @@ ResultDir = "Results/"
 
 # Format of the wanted events
 # # Leave this vector untouched if used, to avoid typing mistakes
-# MtgFormats = c("Sealed",
-#                "Standard",
-#                "Pioneer",
-#                "Modern",
-#                "Pauper",
-#                "Legacy",
-#                "Vintage",
-#                "All Formats")
-# MtgFormat = MtgFormats[4]
+MtgFormats = c("1" = "Sealed",
+               "2" = "Standard",
+               "3" = "Pioneer",
+               "4" = "Modern",
+               "5" = "Pauper",
+               "6" = "Legacy",
+               "7" = "Vintage",
+               "8" = "All Formats")
+MtgFormat = MtgFormats[4]
 
-MtgFormat = "Modern"
+# MtgFormat = "Modern"
 
 # Name of the tournament result data source file for the corresponding format
 # Currently automatically updated based on the format name
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2023-02-26"
+Beginning = "2022-10-10"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2023-03-26"
+End = "2023-03-27"
 
 # Event type:
 # All sources = Everything (except MTGO Leagues - for any filter)
@@ -51,17 +51,17 @@ End = "2023-03-26"
 # MTGO Preliminaries = As per name
 
 # Leave this vector untouched if used, to avoid typing mistakes
-EventTypes = c("All sources",
-               "All Events Top32",
-               "Full Meta Events",
-               "ManaTraders", 
-               "Paper Events Full Meta",
-               "Paper Events Top32",
-               "MTGO Official Competitions", 
-               "MTGO Events Top32",
-               "MTGO Preliminaries")
+EventTypes = c("1" = "All sources",
+               "2" = "All Events Top32",
+               "3" = "Full Meta Events",
+               "4" = "ManaTraders", 
+               "5" = "Paper Events Full Meta",
+               "6" = "Paper Events Top32",
+               "7" = "MTGO Official Competitions", 
+               "8" = "MTGO Events Top32",
+               "9" = "MTGO Preliminaries")
 
-EventType = EventTypes[2]
+EventType = EventTypes[3]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2
@@ -96,5 +96,6 @@ PresenceAxisLogScale = T
 Diameters = "Players"
 
 CsvResultDir = "CSV files/"
+ArchetypeCardDataResultDir = paste0(CsvResultDir, "Archetype Card Data/")
 PictureResultDir = "Picture files/"
 TextResultDir = "Text files/"

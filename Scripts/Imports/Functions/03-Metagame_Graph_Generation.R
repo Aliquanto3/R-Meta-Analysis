@@ -272,7 +272,7 @@ winrates_graph = function(archetypeRankingDf,chartShare,presence,beginning,end,
   yLabelWinrate = "Winrates of the most popular archetypes (%)"
   
   winrateGraphTitle = paste0(
-    "Confidence intervals on the winrates of the most present ",mtgFormat,
+    "95% confidence intervals on the winrates of the most present ",mtgFormat,
     " archetypes\n",  "(at least ",chartShare,"% of the ",presence,") between ", 
     beginning, " and ", end, " in ", EventType)
   
