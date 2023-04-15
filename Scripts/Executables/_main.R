@@ -22,7 +22,8 @@ functionScriptDir = paste0(importableScriptDir,"Functions/")
 source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
 source(file.path(paste0(functionScriptDir,"02-Metagame_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"03-Metagame_Graph_Generation.R")))
-source(file.path(paste0(functionScriptDir,"04-Decklist_Analysis.R")))
+# source(file.path(paste0(functionScriptDir,"04-Decklist_Analysis.R")))
+source(file.path(paste0(functionScriptDir,"05-Player_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"99-Output_Export.R")))
 
 # Create all the directories where results will be written
@@ -58,8 +59,8 @@ if(Share.autoupdate){
   StatShare = ChartShare
 }
 
-exportTextAnalysis(tournamentDf, PathToLastDirs, Beginning, End, EventType, 
-                   ChartShare,TextResultDir)
+exportTextAnalysis(tournamentDf, PathToLastDirs, Beginning, End, MtgFormat, 
+                   EventType, ChartShare,TextResultDir)
 
 #############################   Draw the plots   ############################### 
 
@@ -127,6 +128,7 @@ generate_matchup_matrix(muMatrixData, ChartShare, Presence, Beginning, End,
 ggsave(matchupMatrixName, width = 60, height = 30, units = "cm")
 dev.off()
 
-
-
+# Write the player results
+exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
+                 PlayerDataResultDir)
 

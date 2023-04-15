@@ -89,22 +89,17 @@ createResultDirectories = function(resultDir,mtgFormat,beginning,end,eventType,
 #'
 #' @examples
 exportTextAnalysis = 
-  function(df,pathToLastDirs,beginning,end,eventType,chartShare,textResultDir){
+  function(df,pathToLastDirs,beginning,end,mtgFormat,eventType,chartShare,
+           textResultDir){
     
   writingPath = paste0(pathToLastDirs,textResultDir)
   
   nDecks = nrow(df)
-  # nDiffPlayers = "N/A"
-  # if(PlayerResults){
-  #   nDiffPlayers=length(unique(df$Player))
-  # }
-  # nbDiffCards="N/A"
-  # if(CardResults){
-  #   nDiffCards=length(unique(c(MDStats$CardNames,SBStats$CardNames)))
-  # }
+  nDiffPlayers = length(unique(df$Player))
+  # nDiffCards = length(unique(c(MDStats$CardNames, SBStats$CardNames)))
   nArchetypes = length(unique(df$Archetype$Archetype))
-  totNRounds = sum(df$NRounds)+sum(df$T8Matches)
-  # avgNbRoundsWTop8=as.numeric(format(round(
+  totNRounds = sum(df$NRounds) + sum(df$T8Matches)
+  # avgNbRoundsWTop8 = as.numeric(format(round(
   #   (sum(df$NRounds)+sum(df$T8Matches))/length(df$AnchorUri),2), nsmall = 2))
   avgNRounds = as.numeric(format(round(sum(df$NRounds) / 
                                           length(df$AnchorUri),2),nsmall=2))
@@ -113,12 +108,13 @@ exportTextAnalysis =
   nEvents = length(unique(df$TournamentName))
   
   eventInfo=paste("QUICK ANALYSIS OF THE DATA", 
+                  "\nFormat: ", mtgFormat,
                   "\nBeginning: ", beginning,
                   "\nEnd: ", end,
                   "\nType of MTGO events: ", eventType,
                   "\nNumber of decks in the data: ", nDecks,
                   "\nCut to be displayed: ", chartShare, "%",
-                  # "\nNumber of different players in the data: ", nDiffPlayers,
+                  "\nNumber of different players in the data: ", nDiffPlayers,
                   # "\nNumber of different cards in the data: ", nDiffCards,
                   "\nNumber of exact archetypes in the data: ", nArchetypes,
                   "\nNumber of rounds played in the data (with top8): ",
@@ -133,24 +129,28 @@ exportTextAnalysis =
                   maxNRounds,
                   "\nNumber of events in the data: ", nEvents,sep="")
   
-  analysisName = paste0(Beginning,'-',End,'_Quick_Analysis.txt')
-  cat(eventInfo,file=paste0(writingPath,analysisName))
+  analysisName = paste0(beginning,'-',end,"_",mtgFormat,"-",eventType,
+                        '_Quick_Analysis.txt')
+  cat(eventInfo, file = paste0(writingPath, analysisName))
   
   # Export the list of covered events with their URL
   coveredEvents=setNames(data.frame(matrix(ncol=2, nrow=nEvents)), 
                          c("TournamentName", "URL"))
   coveredEvents$TournamentName=unique(df$TournamentName)
   for (i in 1:nEvents){
-    coveredEvents$URL[i]=df[df$TournamentName==coveredEvents$TournamentName[i],]$AnchorUri[1]
+    coveredEvents$URL[i] = df[df$TournamentName == 
+                                coveredEvents$TournamentName[i],]$AnchorUri[1]
     coveredEvents$URL[i]<-gsub("#.*","",coveredEvents$URL[i])
   }
   
-  titleEventFile = paste("List of", EventType,"between",Beginning, "and", End)
+  titleEventFile = paste("List of", mtgFormat, eventType,"between",beginning, 
+                         "and", end, "\n")
   
-  listName = paste0(Beginning,'-',End,'_List_of_',EventType,'.txt')
-  cat(titleEventFile,file=paste0(writingPath,listName))
+  listName = paste0(beginning, '-', end, '_List_of_', mtgFormat, "_", eventType,
+                    '.txt')
+  cat(titleEventFile, file = paste0(writingPath, listName))
   
-  write.table(coveredEvents,paste0(writingPath,listName), 
+  write.table(coveredEvents, paste0(writingPath, listName), 
               append=TRUE, row.names = FALSE, col.names = FALSE, sep = " - ")
   }
 
@@ -166,5 +166,19 @@ exportAchetypeCardData = function(archetype, df){
             row.names = FALSE)
   write.xlsx(archetypeCardData,
              paste0(archetypeCardDataDirPath, archetypeCardDataFileName,'.xlsx'), 
+             row.names = FALSE)
+}
+
+exportPlayerData = 
+  function(df,pathToLastDirs,beginning,end,mtgFormat,eventType,
+           playerDataResultDir){
+  PlayerData = get_player_data(df)
+  PlayerDataDirPath = paste0(pathToLastDirs, playerDataResultDir)
+  PlayerDataFileName = paste0(beginning,'_', end, ' - Player Data in ', 
+                              MtgFormat, ' ', mtgFormat, ' ', eventType)
+  dir.create(file.path(PlayerDataDirPath))
+  write.csv(PlayerData, paste0(PlayerDataDirPath, PlayerDataFileName,'.csv'), 
+            row.names = FALSE)
+  write.xlsx(PlayerData, paste0(PlayerDataDirPath, PlayerDataFileName,'.xlsx'), 
              row.names = FALSE)
 }

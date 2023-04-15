@@ -24,7 +24,7 @@ MtgFormats = c("1" = "Sealed",
                "6" = "Legacy",
                "7" = "Vintage",
                "8" = "All Formats")
-MtgFormat = MtgFormats[4]
+MtgFormat = MtgFormats[7]
 
 # MtgFormat = "Modern"
 
@@ -33,10 +33,10 @@ MtgFormat = MtgFormats[4]
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2022-10-10"
+Beginning = "2023-03-13"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2023-03-27"
+End = "2023-04-10"
 
 # Event type:
 # All sources = Everything (except MTGO Leagues - for any filter)
@@ -55,13 +55,13 @@ EventTypes = c("1" = "All sources",
                "2" = "All Events Top32",
                "3" = "Full Meta Events",
                "4" = "ManaTraders", 
-               "5" = "Paper Events Full Meta",
-               "6" = "Paper Events Top32",
+               "5" = "Paper Events (Full Meta)",
+               "6" = "Paper Events (Top32)",
                "7" = "MTGO Official Competitions", 
                "8" = "MTGO Events Top32",
                "9" = "MTGO Preliminaries")
 
-EventType = EventTypes[3]
+EventType = EventTypes[8]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2
@@ -97,5 +97,8 @@ Diameters = "Players"
 
 CsvResultDir = "CSV files/"
 ArchetypeCardDataResultDir = paste0(CsvResultDir, "Archetype Card Data/")
+PlayerDataResultDir = paste0(CsvResultDir, "Player Data/")
 PictureResultDir = "Picture files/"
 TextResultDir = "Text files/"
+
+addColor = F

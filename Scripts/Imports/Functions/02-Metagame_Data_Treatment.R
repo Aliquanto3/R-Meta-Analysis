@@ -138,45 +138,46 @@ generate_metagame_data = function(df,statShare,presence){
 #' @examples
 archetype_metrics = function(df){
   #GET THE LIST OF THE DIFFERENT ARCHETYPES IN THE DATA
-  metric_df=generate_archetype_list(df)
+  metric_df = generate_archetype_list(df)
   
-  metric_df$Copies=rep(0,nrow(metric_df))
-  metric_df$Players=rep(0,nrow(metric_df))
-  metric_df$Matches=rep(0,nrow(metric_df))
-  metric_df$MeasuredWinrate=rep(0,nrow(metric_df))
-  metric_df$CI95LowerBound=rep(0,nrow(metric_df))
-  metric_df$CI95UpperBound=rep(0,nrow(metric_df))
+  metric_df$Copies = sapply(X = metric_df$Archetype, 
+                              FUN = function(archetype, df) {
+                                nrow(df[df$Archetype$Archetype == archetype,])
+                              }, df)
+  metric_df$Players = sapply(X = metric_df$Archetype, 
+                             FUN = function(archetype, df) {
+                               length(unique(df[df$Archetype$Archetype == 
+                                                  archetype,]$Player))
+                             }, df)
+  metric_df$Wins = sapply(X = metric_df$Archetype, 
+                           FUN = function(archetype, df) {
+                             sum(df[df$Archetype$Archetype == 
+                                      archetype,]$NWins)
+                           }, df)
+  metric_df$Defeats = sapply(X = metric_df$Archetype, 
+                              FUN = function(archetype, df) {
+                                sum(df[df$Archetype$Archetype == 
+                                         archetype,]$NDefeats)
+                              }, df)
+  metric_df$Draws = sapply(X = metric_df$Archetype, 
+                            FUN = function(archetype, df) {
+                              sum(df[df$Archetype$Archetype == 
+                                       archetype,]$NDraws)
+                            }, df)
+  metric_df$Matches = metric_df$Wins + metric_df$Draws + metric_df$Defeats
   
-  # Iterate over each archetype (1 row by archetype in metric_df)
-  for (i in 1:nrow(metric_df)){
-    # Filter only the data of the current archetype
-    dfArchetypeI = df[df$Archetype$Archetype==metric_df$Archetype[i],]
-    # Number of appearances in the data of the corresponding archetype
-    metric_df$Copies[i] = nrow(dfArchetypeI)
-    # Number of different players playing that deck
-    metric_df$Players[i] = length(unique(dfArchetypeI$Player))
-    # Number of matches played by that archetype in the data
-    metric_df$Matches[i] = 
-      sum(dfArchetypeI$NRounds, dfArchetypeI$T8Matches)
-    
-    # Number of wins of that archetype
-    total_wins_arch = sum(dfArchetypeI$NWins + dfArchetypeI$T8Points/3)
-    # Number of matches of that archetype - not accounting for draws
-    total_matches_arch = sum(dfArchetypeI$NRounds - dfArchetypeI$NDraws + dfArchetypeI$T8Matches)
-    
-    # Measured winrate in the data
-    metric_df$MeasuredWinrate[i] = binom.test(total_wins_arch, total_matches_arch, 
-                                           p=0.5,alternative="two.sided", 
-                                           conf.level=0.95)$estimate * 100
-    # Lower bound of the 95% confidence intervals of the winrate          
-    metric_df$CI95LowerBound[i] = binom.test(total_wins_arch, total_matches_arch, 
-                                         p=0.5,alternative="two.sided", 
-                                         conf.level=0.95)$conf.int[1] * 100
-    # Upper bound of the 95% confidence intervals of the winrate  
-    metric_df$CI95UpperBound[i] = binom.test(total_wins_arch, total_matches_arch, 
-                                         p=0.5,alternative="two.sided", 
-                                         conf.level=0.95)$conf.int[2] * 100
-  }
+  metric_df$MeasuredWinrate = metric_df$Wins / 
+    (metric_df$Wins + metric_df$Defeats)
+  
+  metric_df$CI95LowerBound = mapply(FUN = function(wins, defeats){
+    binom.test(wins, wins + defeats, p = 0.5, alternative = "two.sided", 
+               conf.level = 0.95)$conf.int[1] * 100
+  }, metric_df$Wins, metric_df$Defeats)
+  
+  metric_df$CI95UpperBound =  mapply(FUN = function(wins, defeats){
+    binom.test(wins, wins + defeats, p = 0.5, alternative = "two.sided", 
+               conf.level = 0.95)$conf.int[2] * 100
+  }, metric_df$Wins, metric_df$Defeats)
   
   return(metric_df)
 }

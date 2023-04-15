@@ -10,8 +10,8 @@
 ################################################################################
 
 # For development
-df = tournamentDf
-deckName = "Creativity"
+# df = tournamentDf
+# deckName = "Creativity"
 
 #' Round to the nearest number
 #'
@@ -234,11 +234,11 @@ get_archetype_colors = function(deckName, df){
   return(table(df[df$Archetype$Archetype == deckName,]$Archetype$Color))
 }
 
-# For development
-deckName = "Creativity"
-get_archetype_colors(deckName, df)
-archetypeMainColor = get_archetype_most_common_colors(deckName, df)
-color = "UBRG" 
+# # For development
+# deckName = "Creativity"
+# get_archetype_colors(deckName, df)
+# archetypeMainColor = get_archetype_most_common_colors(deckName, df)
+# color = "UBRG" 
 
 #' Get the average decklist for an archetype in a specific color combination
 #'

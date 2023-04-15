@@ -236,6 +236,13 @@ generate_Tournament_Data = function(tournamentData) {
 #'
 #' @examples
 generate_df = function(eventType, mtgFormat, tournamentDataPath, beginning, end) {
+  
+  # For development only
+  eventType = EventType
+  mtgFormat = MtgFormat
+  tournamentDataPath = TournamentResultFile
+  beginning = Beginning
+  end = End
 
   #Import raw data
   rawData = fromJSON(TournamentResultFile)[[1]]
@@ -267,21 +274,36 @@ generate_df = function(eventType, mtgFormat, tournamentDataPath, beginning, end)
   # (doesn't work for Prelims)
   periodData$NumericResult = parse_number(periodData$Result)
   
+  if(addColor){
+    periodData$Archetype$Archetype = 
+      mapply(function(archetypeName, archetypeColor) {
+        ifelse(archetypeName %in% c("Hammer Time", "Murktide", "Creativity",
+                                    "Prowess", "Footfalls", "Burn", 
+                                    "Living End", "Merfolk", "Grinding Breach",
+                                    "Mill","Hardened Scales","Asmo Food",
+                                    "Goryo Reanimator", "Breach Value", 
+                                    "Affinity"),
+               paste(archetypeColor, archetypeName),
+               archetypeName
+        )
+      }, periodData$Archetype$Archetype, periodData$Archetype$Color)
+  }
+  
   # /!\ Some events only have a top32, or don't even have one (Preliminary)
-  if (eventType == "All sources") {
+  if (eventType == EventTypes[1]) {
     Top32Data = periodData[!grepl("Preliminary", periodData$Tournament),]
     PrelimData = periodData[grep("Preliminary", periodData$Tournament),]
     df = rbind(generate_Tournament_Data(Top32Data),
                generate_Prelim_Data(PrelimData))
     
-  } else if (eventType == "All Events Top32") {
+  } else if (eventType == EventTypes[2]) {
     Top32Data = periodData[!grepl("Preliminary", periodData$Tournament),]
     # Keep only the top32
     Top32Data = Top32Data[Top32Data$NumericResult <= 32, ]
     df = generate_Tournament_Data(Top32Data)
     # Keep only the top32 of all those events
     
-  } else if (eventType == "Full Meta Events") {
+  } else if (eventType == EventTypes[3]) {
     # Use data from Manatraders and MTG Melee, not the partial MTGO website
     MTData = periodData[grep("https://www.manatraders.com/webshop/personal/",
                              periodData$AnchorUri),]
@@ -290,19 +312,19 @@ generate_df = function(eventType, mtgFormat, tournamentDataPath, beginning, end)
     df = rbind(generate_Tournament_Data(MTData),
                generate_Tournament_Data(PaperData))
     
-  } else if (eventType == "ManaTraders") {
+  } else if (eventType == EventTypes[4]) {
     # Use data from Manatraders
     MTData = periodData[grep("https://www.manatraders.com/webshop/personal/",
                              periodData$AnchorUri),]
     df = generate_Tournament_Data(MTData)
     
-  } else if (eventType == "Paper Events Full Meta") {
+  } else if (eventType == EventTypes[5]) {
     # Use data from MTG Melee
     PaperData = periodData[grep("https://mtgmelee.com/Decklist/View/",
                                 periodData$AnchorUri),]
     df = generate_Tournament_Data(PaperData)
     
-  } else if (eventType == "Paper Events Top32") {
+  } else if (eventType == EventTypes[6]) {
     # Use data from MTG Melee
     PaperData = periodData[grep("https://mtgmelee.com/Decklist/View/",
                                 periodData$AnchorUri),]
@@ -314,19 +336,19 @@ generate_df = function(eventType, mtgFormat, tournamentDataPath, beginning, end)
     MTGOData = periodData[grep("https://www.mtgo.com/en/mtgo/decklist/",
                                periodData$AnchorUri),]
     
-    if (eventType == "MTGO Official Competitions") {
+    if (eventType == EventTypes[7]) {
       MTGOTop32Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
       PrelimData = MTGOData[grep("Preliminary", MTGOData$Tournament),]
       df = rbind(generate_Tournament_Data(MTGOTop32Data),
                  generate_Prelim_Data(PrelimData))
       
-    } else if (eventType == "MTGO Events Top32") {
+    } else if (eventType == EventTypes[8]) {
       # MTGO tournaments with a top32, so not Preliminaries (nor Leagues,
       # already filtered)
       MTGOTop32Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
       df = generate_Tournament_Data(MTGOTop32Data)
       
-    } else if (eventType == "MTGO Preliminaries") {
+    } else if (eventType == EventTypes[9]) {
       # Preliminaries only
       PrelimData = MTGOData[grep("Preliminary", MTGOData$Tournament),]
       df = generate_Prelim_Data(PrelimData)
