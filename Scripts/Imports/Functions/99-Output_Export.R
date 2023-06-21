@@ -175,7 +175,7 @@ exportPlayerData =
   PlayerData = get_player_data(df)
   PlayerDataDirPath = paste0(pathToLastDirs, playerDataResultDir)
   PlayerDataFileName = paste0(beginning,'_', end, ' - Player Data in ', 
-                              MtgFormat, ' ', mtgFormat, ' ', eventType)
+                              mtgFormat, ' ', eventType)
   dir.create(file.path(PlayerDataDirPath))
   write.csv(PlayerData, paste0(PlayerDataDirPath, PlayerDataFileName,'.csv'), 
             row.names = FALSE)

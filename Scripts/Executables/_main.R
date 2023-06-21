@@ -31,14 +31,30 @@ PathToLastDirs =
   createResultDirectories(ResultDir, MtgFormat, Beginning, End, EventType,
                           CsvResultDir, PictureResultDir, TextResultDir)
 
-tournamentDf = 
-  generate_df(EventType, MtgFormat, TournamentResultFile, Beginning, End)
+#Import raw data
+RawData = fromJSON(TournamentResultFile)[[1]]
+
+
+tournamentDf = generate_df(
+  RawData, EventType, MtgFormat, TournamentResultFile, Beginning, End)
 
 ############################   Compute analysis   ############################## 
 
 # Get the following columns: 
 # Archetype Copies Players Matches MeasuredWinrate CI95LowerBound CI95UpperBound
 archetypeMetricsDf = archetype_metrics(tournamentDf)
+
+# Update the cut value based on the data. If too small, set at 1% for graph
+# readability.
+if(Share.autoupdate){
+  StatShare = 
+    round(mean(unlist(archetypeMetricsDf[Presence])) / 
+            sum(unlist(archetypeMetricsDf[Presence])) * 100, digits = 2)
+  ChartShare = max(StatShare, 1)
+}else {
+  StatShare = ChartShare
+}
+
 # Add the following columns:
 # NormalizedPresence NormalizedMeasuredWinrate NormalizedSum Rank
 archetypeRankingDf = archetype_ranking(archetypeMetricsDf, Presence)
@@ -48,16 +64,6 @@ archetypeTiersDf = archetype_tiers(archetypeRankingDf, Presence, StatShare)
 # Get the required data to build the matchup matrix of the most present
 # archetypes
 muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)
-
-# Update the cut value based on the data. If too small, set at 1% for graph
-# readability.
-if(Share.autoupdate){
-  StatShare = round(mean(unlist(archetypeMetricsDf[Presence])) / 
-    sum(unlist(archetypeMetricsDf[Presence])) * 100, digits = 2)
-  ChartShare = max(StatShare, 1)
-}else {
-  StatShare = ChartShare
-}
 
 exportTextAnalysis(tournamentDf, PathToLastDirs, Beginning, End, MtgFormat, 
                    EventType, ChartShare,TextResultDir)
@@ -71,7 +77,7 @@ pieName = paste0(plotDir,"01_Presence-Pie-Chart_", MtgFormat ,"_", Beginning,
                  "_", End,"_By-", Presence, ".jpg")
 metagame_pie_chart(tournamentDf, ChartShare, Presence, Beginning, End, EventType,
                    MtgFormat)
-ggsave(pieName, width = 25, height = 20, units = "cm")
+ggsave(pieName, width = 27, height = 20, units = "cm")
 dev.off()
 
 # Draw the metagame bar chart
@@ -86,7 +92,7 @@ dev.off()
 winrateName = paste0(plotDir,"03_Winrate-Mustache-Box_", MtgFormat ,"_", 
                      Beginning, "_", End,"_By-", Presence, ".jpg")
 winrates_graph(archetypeRankingDf, StatShare, Presence, Beginning, End,
-                          EventType, MtgFormat, SortValue)
+               EventType, MtgFormat, SortValue)
 ggsave(winrateName, width = 40, height = 20, units = "cm")
 dev.off()
 
@@ -103,8 +109,8 @@ winrateAndPresenceFullName =
   paste0(plotDir,"05_Winrate-&-Presence-Full-Scatterplot_", MtgFormat,"_", 
          Beginning, "_", End,"_By-", Presence,".jpg")
 simple_winrate_and_presence_graph(archetypeRankingDf, 0, Presence, 
-                                Diameters, Beginning, End, EventType, 
-                                MtgFormat, PresenceAxisLogScale)
+                                  Diameters, Beginning, End, EventType, 
+                                  MtgFormat, PresenceAxisLogScale)
 ggsave(winrateAndPresenceFullName, width = 60, height = 30, units = "cm")
 dev.off()
 
@@ -114,8 +120,8 @@ winrateAndPresenceFullName =
   paste0(plotDir,"06_Winrate-&-Presence-Detailed-Scatterplot_", MtgFormat,"_", 
          Beginning, "_", End,"_By-", Presence,".jpg")
 detailed_winrate_and_presence_graph(archetypeTiersDf, StatShare, Presence, 
-                                   Beginning, End, EventType, MtgFormat, 
-                                   PresenceAxisLogScale)
+                                    Beginning, End, EventType, MtgFormat, 
+                                    PresenceAxisLogScale)
 ggsave(winrateAndPresenceFullName, width = 60, height = 30, units = "cm")
 dev.off()
 
@@ -131,4 +137,5 @@ dev.off()
 # Write the player results
 exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
                  PlayerDataResultDir)
+
 

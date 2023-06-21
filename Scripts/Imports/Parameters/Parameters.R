@@ -24,19 +24,19 @@ MtgFormats = c("1" = "Sealed",
                "6" = "Legacy",
                "7" = "Vintage",
                "8" = "All Formats")
-MtgFormat = MtgFormats[7]
+MtgFormat = MtgFormats[4]
 
-# MtgFormat = "Modern"
+# MtgFormat = "Pioneer"
 
 # Name of the tournament result data source file for the corresponding format
 # Currently automatically updated based on the format name
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2023-03-13"
+Beginning = "2023-04-21"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2023-04-10"
+End = "2023-06-05"
 
 # Event type:
 # All sources = Everything (except MTGO Leagues - for any filter)
@@ -44,7 +44,7 @@ End = "2023-04-10"
 # Full Meta Events = Only events with the full metagame available 
 # (not MTGO Official results)
 # ManaTraders = ManaTraders Series results
-# Paper Events Full Meta = Full esults from MTG Melee
+# Paper Events Full Meta = Full results from MTG Melee
 # Paper Events Top32 = Results of the top32 from MTG Melee
 # MTGO Official Competitions = Results from the MTGO website
 # MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
@@ -55,13 +55,13 @@ EventTypes = c("1" = "All sources",
                "2" = "All Events Top32",
                "3" = "Full Meta Events",
                "4" = "ManaTraders", 
-               "5" = "Paper Events (Full Meta)",
-               "6" = "Paper Events (Top32)",
+               "5" = "Paper Events Full Meta",
+               "6" = "Paper Events Top32",
                "7" = "MTGO Official Competitions", 
                "8" = "MTGO Events Top32",
                "9" = "MTGO Preliminaries")
 
-EventType = EventTypes[8]
+EventType = EventTypes[1]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2
@@ -83,6 +83,9 @@ Presence = "Matches"
 # the 95% confidence interval on the win rate).
 SortValue = "CI95LowerBound"
 
+#The percentage used for the confidence interval. By default it can be 0.95
+CIPercent = 0.9
+
 # Draw the presence axis with a logarithmic scale if TRUE, linear if FALSE
 PresenceAxisLogScale = T
 
@@ -98,6 +101,7 @@ Diameters = "Players"
 CsvResultDir = "CSV files/"
 ArchetypeCardDataResultDir = paste0(CsvResultDir, "Archetype Card Data/")
 PlayerDataResultDir = paste0(CsvResultDir, "Player Data/")
+PeriodComparisonDir = paste0(CsvResultDir, "Period Comparison files/")
 PictureResultDir = "Picture files/"
 TextResultDir = "Text files/"
 

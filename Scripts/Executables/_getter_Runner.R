@@ -32,19 +32,58 @@ PathToLastDirs =
   createResultDirectories(ResultDir, MtgFormat, Beginning, End, EventType,
                           CsvResultDir, PictureResultDir, TextResultDir)
 
-tournamentDf = 
-  generate_df(EventType,MTGFormat,TournamentResultFile, Beginning, End)
+#Import raw data
+RawData = fromJSON(TournamentResultFile)[[1]]
+tournamentDf = generate_df(
+  RawData, EventType, MtgFormat, TournamentResultFile, Beginning, End)
 
 ################################################################################
 
-cardName = "Wrenn and Six"
-archetypeName = "Yawgmoth"
+cardName = "Leyline Binding"
+archetypeName = "Burn"
 archetypeName2 = "Murktide"
+
+addArchetypeColor = T
+if(addArchetypeColor){
+  tournamentDf$Archetype$Archetype = 
+    mapply(function(archetypeName, archetypeColor) {
+      ifelse(archetypeName %in% c("Prowess"),
+             paste(archetypeColor, archetypeName),
+             archetypeName
+      )
+    }, tournamentDf$Archetype$Archetype, tournamentDf$Archetype$Color)
+}
+splitArchetypeByCard = T
+if(splitArchetypeByCard){
+  tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]$Archetype$Archetype =
+    ifelse(sapply(tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]$Mainboard, 
+                  function(mainBoard){cardName %in% mainBoard$CardName}),
+           paste0(archetypeName," (with ",cardName,")"),
+           paste0(archetypeName," (without ",cardName,")"))
+  
+  # Get the required data to build the matchup matrix of a single archetype
+  muMatrixDataArchetypeWithCard = generate_matchup_data(tournamentDf, ChartShare, 
+                                                Presence, paste0(archetypeName," (with ",cardName,")"))
+  # Get the required data to build the matchup matrix of a single archetype
+  muMatrixDataArchetypeWithoutCard = generate_matchup_data(tournamentDf, ChartShare, 
+                                                        Presence, paste0(archetypeName," (without ",cardName,")"))
+  # Draw the corresponding matchup matrix
+  generate_matchup_matrix(muMatrixDataArchetypeWithCard, ChartShare, Presence, 
+                          Beginning, End, MtgFormat, EventType)
+  # Draw the corresponding matchup matrix
+  generate_matchup_matrix(muMatrixDataArchetypeWithoutCard, ChartShare, Presence, 
+                          Beginning, End, MtgFormat, EventType)
+}
+
+
+
+
+
 
 getConflictURL(tournamentDf)
 getConflictArchetype(tournamentDf)
 getUnknown(tournamentDf)
-getURLofCard(cardName, tournamentDf)
+# getURLofCard(cardName, tournamentDf)
 getURLofDeck(archetypeName, tournamentDf)
 getBestDeck(archetypeName, tournamentDf)
 get_matchup_data(tournamentDf, archetypeName, archetypeName2)
@@ -53,7 +92,6 @@ get_matchup_data(tournamentDf, archetypeName, archetypeName2)
 muMatrixDataArchetype = generate_matchup_data(tournamentDf, ChartShare, 
                                               Presence, archetypeName)
 # Draw the corresponding matchup matrix
-# TODO : 
 generate_matchup_matrix(muMatrixDataArchetype, ChartShare, Presence, Beginning, 
                         End, MtgFormat, EventType)
 

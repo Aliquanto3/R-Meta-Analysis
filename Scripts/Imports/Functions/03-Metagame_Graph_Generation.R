@@ -99,8 +99,8 @@ generate_metagame_graph_title =
 #' @export
 #'
 #' @examples
-metagame_pie_chart = function(df, chartShare, presence,beginning, end,eventType,
-                              mtgFormat){
+metagame_pie_chart = function(df, chartShare, presence, beginning, end,
+                              eventType, mtgFormat){
   # Get the necessary data for the graph
   metagame_df = generate_metagame_data(df,chartShare,presence)
   
@@ -117,16 +117,12 @@ metagame_pie_chart = function(df, chartShare, presence,beginning, end,eventType,
   
   ggplot(metagame_df, aes(x="", -Share, fill = Archetype))  + 
     
-    geom_label_repel(data = positions_df, 
-                     aes(y = position, label = paste0(Archetype,"\n",Share,"%"),
-                         fill = Archetype), size = 3, nudge_x = 0.9,
-                     show.legend = FALSE,
-                     max.overlaps = getOption("ggrepel.max.overlaps", 
-                                              default = nrow(metagame_df))) +
-    
     geom_bar(width = 1, linewidth = 0.2, color = "white", stat = "identity") + 
     
-    coord_polar("y", start=0) + 
+    coord_polar("y", start = 0)  +
+    
+    geom_text(aes(label = paste0(Share, "%"), x = 1.35), size=3, 
+              position = position_stack(vjust = 0.5)) + 
     
     theme(axis.line = element_blank(),
           axis.text = element_blank(),
@@ -135,8 +131,7 @@ metagame_pie_chart = function(df, chartShare, presence,beginning, end,eventType,
           plot.subtitle = element_text(hjust = 0.5,size = 16),
           panel.background = element_rect(fill = "white"),
           panel.grid.major = element_blank(), 
-          panel.grid.minor = element_blank(),
-          legend.position = "none") + 
+          panel.grid.minor = element_blank()) + 
     
     labs(x = NULL, y = NULL, fill = NULL, subtitle = "by Anaël Yahi",
          title = generate_metagame_graph_title(
@@ -272,7 +267,7 @@ winrates_graph = function(archetypeRankingDf,chartShare,presence,beginning,end,
   yLabelWinrate = "Winrates of the most popular archetypes (%)"
   
   winrateGraphTitle = paste0(
-    "95% confidence intervals on the winrates of the most present ",mtgFormat,
+    CIPercent*100,"% confidence intervals on the winrates of the most present ",mtgFormat,
     " archetypes\n",  "(at least ",chartShare,"% of the ",presence,") between ", 
     beginning, " and ", end, " in ", EventType)
   
