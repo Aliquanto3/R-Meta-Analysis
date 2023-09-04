@@ -22,6 +22,9 @@
 #' @examples
 get_player_data = function(df){
   
+  # # For development only
+  # df = tournamentDf
+  
   playerData = data.frame(Players = unique(df$Player))
   
   playerData$Wins = sapply(X = playerData$Players, 
@@ -56,10 +59,22 @@ get_player_data = function(df){
                conf.level = 0.95)$conf.int[2] * 100, digits = 2)
   }, playerData$Wins, playerData$Defeats)
   
+  playerData$Number.of.Top32 = sapply(X = playerData$Players, 
+                                     FUN = function(player, df) {
+                                       dfPlayer = df[df$Player == player,]
+                                       nrow(dfPlayer[dfPlayer$NumericResult<=32,])
+                                     }, df)
+  
   playerData$Number.of.Top8 = sapply(X = playerData$Players, 
                                      FUN = function(player, df) {
                                        dfPlayer = df[df$Player == player,]
-                                       nrow(dfPlayer[dfPlayer$NumericResult<=8])
+                                       nrow(dfPlayer[dfPlayer$NumericResult<=8,])
+                                     }, df)
+  
+  playerData$Number.of.Wins = sapply(X = playerData$Players, 
+                                     FUN = function(player, df) {
+                                       dfPlayer = df[df$Player == player,]
+                                       nrow(dfPlayer[dfPlayer$NumericResult==1,])
                                      }, df)
   
   playerData = playerData[order(playerData$Win.Rate,decreasing=TRUE),]

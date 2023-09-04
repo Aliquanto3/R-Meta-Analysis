@@ -79,6 +79,10 @@ get_archetype_presence = function(df,archetypeName,presence){
 #' @examples
 generate_metagame_data = function(df,statShare,presence){
   
+  # df = tournamentDf
+  # statShare = ChartShare
+  # presence = Presence
+  
   archetype_list=generate_archetype_list(df)
   
   #Add the presence of each archetype in the data
@@ -310,15 +314,16 @@ archetype_tiers = function(archetypeRankingDf, presence, statShare){
 generate_matchup_data = function(df, chartShare, presence, archetype = NA){
   
   df_gen = generate_metagame_data(df, chartShare, presence)
+  maxArchetype = 17
   # Can only display up to 18 rows before the matrix becomes unreadable
-  if(nrow(df_gen) > 18){
-    df_other_to_sum = df_gen[18:nrow(df_gen),]
+  if(nrow(df_gen) >= maxArchetype){
+    df_other_to_sum = df_gen[(maxArchetype-1):nrow(df_gen),]
     df_other = data.frame(Archetype = 
-                            paste0("Other (each < ",min(df_gen[1:17,]$Share),"%)"), 
+                            paste0("Other (each < ",min(df_gen[1:maxArchetype,]$Share),"%)"), 
                           Presence = sum(df_other_to_sum$Presence), 
                           Share = sum(df_other_to_sum$Share)
                           )
-    df_gen = rbind(df_gen[1:17,],df_other)
+    df_gen = rbind(df_gen[1:maxArchetype,],df_other)
   }
   
   archetypeList = df_gen$Archetype

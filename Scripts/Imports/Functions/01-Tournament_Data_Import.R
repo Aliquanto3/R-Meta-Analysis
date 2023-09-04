@@ -12,9 +12,11 @@
 # install.packages("jsonlite")
 # install.packages("readr")
 # install.packages("devtools")
+# install.packages("data.table")
 library("jsonlite")
 library("readr")
 library("devtools")
+library("data.table")
 
 #' Structure a MTGO Preliminary dataset
 #' 
@@ -149,7 +151,7 @@ generate_Tournament_Data = function(tournamentData) {
   # The number of defeats might be required in the data if it happens.
   
   conditionMUNotNull = !sapply(tournamentData$Matchups, 
-                               function(x) length(x) == 0 )
+                               function(x) {length(x) == 0 })
   
   for (i in (1:nrow(tournamentData))[conditionMUNotNull]) {
     
@@ -267,36 +269,30 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
                                       " ")
   periodData$Result[is.na(periodData$Result)] = 0
   
-  # Remove the noise from leagues in case it wasn't done by the parser
-  periodData = periodData[!grepl("League", periodData$Tournament),]
+
   
   # Make the final position easier to manipulate as a number 
   # (doesn't work for Prelims)
   periodData$NumericResult = parse_number(periodData$Result)
   
-  if(addColor){
-    periodData$Archetype$Archetype = 
-      mapply(function(archetypeName, archetypeColor) {
-        ifelse(archetypeName %in% c("Hammer Time", "Murktide", "Creativity",
-                                    "Prowess", "Footfalls", "Burn", 
-                                    "Living End", "Merfolk", "Grinding Breach",
-                                    "Mill","Hardened Scales","Asmo Food",
-                                    "Goryo Reanimator", "Breach Value", 
-                                    "Affinity"),
-               paste(archetypeColor, archetypeName),
-               archetypeName
-        )
-      }, periodData$Archetype$Archetype, periodData$Archetype$Color)
-  }
-  
   # /!\ Some events only have a top32, or don't even have one (Preliminary)
   if (eventType == EventTypes[1]) {
+    # Remove the noise from leagues in case it wasn't done by the parser
+    periodData = periodData[!grepl("League", periodData$Tournament),]
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
+    
     Top32Data = periodData[!grepl("Preliminary", periodData$Tournament),]
     PrelimData = periodData[grep("Preliminary", periodData$Tournament),]
     resultDf = rbind(generate_Tournament_Data(Top32Data),
                generate_Prelim_Data(PrelimData))
     
   } else if (eventType == EventTypes[2]) {
+    # Remove the noise from leagues in case it wasn't done by the parser
+    periodData = periodData[!grepl("League", periodData$Tournament),]
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
+    
     Top32Data = periodData[!grepl("Preliminary", periodData$Tournament),]
     # Keep only the top32
     Top32Data = Top32Data[Top32Data$NumericResult <= 32, ]
@@ -304,6 +300,8 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     # Keep only the top32 of all those events
     
   } else if (eventType == EventTypes[3]) {
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from Manatraders and MTG Melee, not the partial MTGO website
     MTData = periodData[grep("https://www.manatraders.com/webshop/personal/",
                              periodData$AnchorUri),]
@@ -319,12 +317,16 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     resultDf = generate_Tournament_Data(MTData)
     
   } else if (eventType == EventTypes[5]) {
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from MTG Melee
     PaperData = periodData[grep("https://melee.gg/Decklist/View/",
                                 periodData$AnchorUri),]
     resultDf = generate_Tournament_Data(PaperData)
     
   } else if (eventType == EventTypes[6]) {
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from MTG Melee
     PaperData = periodData[grep("https://melee.gg/Decklist/View/",
                                 periodData$AnchorUri),]
@@ -335,6 +337,8 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
   } else{
     MTGOData = periodData[grep("https://www.mtgo.com/en/mtgo/decklist/",
                                periodData$AnchorUri),]
+    # Remove the noise from leagues in case it wasn't done by the parser
+    MTGOData = MTGOData[!grepl("League", MTGOData$Tournament),]
     
     if (eventType == EventTypes[7]) {
       MTGOTop32Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
@@ -355,6 +359,25 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
       
     }
   }
+  
+  if(addColor){
+    resultDf$Archetype$Archetype = 
+      mapply(function(archetypeName, archetypeColor) {
+        ifelse(archetypeName %in% c("Hammer Time", "Murktide", "Creativity",
+                                    "Prowess", "Footfalls", "Burn", 
+                                    "Living End", "Merfolk", "Grinding Breach",
+                                    "Mill","Hardened Scales","Asmo Food",
+                                    "Goryo Reanimator", "Breach Value", 
+                                    "Affinity"),
+               paste(archetypeColor, archetypeName),
+               archetypeName
+        )
+      }, resultDf$Archetype$Archetype, resultDf$Archetype$Color)
+  }
+  
+  # resultDf$Allboards = mapply(function(Mainboard, Sideboard){
+  #   list(as.data.frame(rbindlist(list(Mainboard, Sideboard))[, lapply(.SD, sum, na.rm =T), by = CardName]))
+  # }, resultDf$Mainboard, resultDf$Sideboard)
   
   return(resultDf)
 }
@@ -483,4 +506,39 @@ get_matchup_data = function(df,arch1,arch2){
   return(c(Wins = winsArch1VS2, Losses = lossesArch1VS2))
 }
 
-
+#' #' Matchup data between two given archetypes
+#' #'
+#' #' @param df the dataframe returned by generate_df()
+#' #'
+#' #' @return the dataframe using only the constructed rounds for the PT.
+#' #' Top8 matches are included in the rounds data.
+#' #'
+#' #' @export
+#' #'
+#' #' @examples
+#' updateDfForPT = function(df){
+#'   
+#'   conditionPT = !grepl("Pro Tour", df$Tournament)
+#'   
+#'   df[conditionPT,]$Matchups = mapply(function(Matchups){
+#'     list(Matchups[-c(1,2,3,9,10,11),])
+#'   },df[conditionPT,]$Matchups)
+#' 
+#'   df[conditionPT,]$NWins = mapply(function(Matchups){
+#'     sum(Matchups$Wins > Matchups$Losses)
+#'   },df[conditionPT,]$Matchups)
+#' 
+#'   df[conditionPT,]$NDefeats = mapply(function(Matchups){
+#'     sum(Matchups$Wins < Matchups$Losses)
+#'   },df[conditionPT,]$Matchups)
+#' 
+#'   df[conditionPT,]$NDraws = mapply(function(Matchups){
+#'     sum(Matchups$Wins == Matchups$Losses)
+#'   },df[conditionPT,]$Matchups)
+#' 
+#'   df[conditionPT,]$T8Defeats = rep(NA,nrow(df[conditionPT,]))
+#'   df[conditionPT,]$T8Matches = rep(NA,nrow(df[conditionPT,]))
+#'   df[conditionPT,]$T8Points = rep(NA,nrow(df[conditionPT,]))
+#' 
+#'   df
+#' }

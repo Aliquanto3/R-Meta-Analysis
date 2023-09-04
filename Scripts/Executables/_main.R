@@ -34,9 +34,25 @@ PathToLastDirs =
 #Import raw data
 RawData = fromJSON(TournamentResultFile)[[1]]
 
-
 tournamentDf = generate_df(
   RawData, EventType, MtgFormat, TournamentResultFile, Beginning, End)
+
+# if(ChampionshipResults){
+#   tournamentDf = tournamentDf[grep("Championship", tournamentDf$Tournament),]
+# }
+
+# if(PTResults){
+#   tournamentDf = updateDfForPT(tournamentDf)
+# }
+
+# tournamentDf[tournamentDf$Archetype$Archetype == "Unknown",]$Archetype$Archetype = "Samwise Combo"
+# tournamentDf$Matchups = mapply(function(Matchups){
+#   tmpMU = Matchups
+#   tmpMU[tmpMU$OpponentArchetype == "Unknown",]$OpponentArchetype = "Samwise Combo"
+#   list(tmpMU)
+# },tournamentDf$Matchups)
+
+tournamentDf[tournamentDf$Archetype$Archetype=="Unknown",]$Archetype$Archetype = "Food"
 
 ############################   Compute analysis   ############################## 
 
@@ -89,15 +105,23 @@ ggsave(barName, width = 30, height = 20, units = "cm")
 dev.off()
 
 # Draw the win rate graph with confidence intervals
-winrateName = paste0(plotDir,"03_Winrate-Mustache-Box_", MtgFormat ,"_", 
+winrateMustacheName = paste0(plotDir,"03_Winrate-Mustache-Box_", MtgFormat ,"_", 
                      Beginning, "_", End,"_By-", Presence, ".jpg")
 winrates_graph(archetypeRankingDf, StatShare, Presence, Beginning, End,
                EventType, MtgFormat, SortValue)
-ggsave(winrateName, width = 40, height = 20, units = "cm")
+ggsave(winrateMustacheName, width = 40, height = 20, units = "cm")
+dev.off()
+
+# Draw the win rate graph with boxplots
+winrateBoxPlotName = paste0(plotDir,"04_Winrate-Box-Plot__", MtgFormat ,"_", 
+                     Beginning, "_", End,"_By-", Presence, ".jpg")
+boxplot_winrates(archetypeRankingDf, tournamentDf, StatShare, Presence, 
+                 Beginning, End,EventType, MtgFormat, SortValue)
+ggsave(winrateBoxPlotName, width = 40, height = 20, units = "cm")
 dev.off()
 
 # Draw the repartition of archetypes by tier depending on their normalized score
-normalizedSumName = paste0(plotDir,"04_Normalized-Sum-Scatterplot_", MtgFormat,
+normalizedSumName = paste0(plotDir,"05_Normalized-Sum-Scatterplot_", MtgFormat,
                            "_", Beginning, "_", End,"_By-", Presence, ".jpg")
 normalized_sum_graph(archetypeRankingDf, StatShare, Presence,Beginning, End, 
                      EventType, MtgFormat)
@@ -106,7 +130,7 @@ dev.off()
 
 # Draw the 2D map of the archetypes based on presence and win rate
 winrateAndPresenceFullName = 
-  paste0(plotDir,"05_Winrate-&-Presence-Full-Scatterplot_", MtgFormat,"_", 
+  paste0(plotDir,"06_Winrate-&-Presence-Full-Scatterplot_", MtgFormat,"_", 
          Beginning, "_", End,"_By-", Presence,".jpg")
 simple_winrate_and_presence_graph(archetypeRankingDf, 0, Presence, 
                                   Diameters, Beginning, End, EventType, 
@@ -117,7 +141,7 @@ dev.off()
 # Draw the 2D map of the most present archetypes based on presence and win rate,
 # adding the metrics as labels
 winrateAndPresenceFullName = 
-  paste0(plotDir,"06_Winrate-&-Presence-Detailed-Scatterplot_", MtgFormat,"_", 
+  paste0(plotDir,"07_Winrate-&-Presence-Detailed-Scatterplot_", MtgFormat,"_", 
          Beginning, "_", End,"_By-", Presence,".jpg")
 detailed_winrate_and_presence_graph(archetypeTiersDf, StatShare, Presence, 
                                     Beginning, End, EventType, MtgFormat, 
@@ -127,7 +151,7 @@ dev.off()
 
 # Draw the corresponding matchup matrix
 matchupMatrixName = 
-  paste0(plotDir,"07_Matchup-Matrix_", MtgFormat,"_", Beginning, "_", End,
+  paste0(plotDir,"08_Matchup-Matrix_", MtgFormat,"_", Beginning, "_", End,
          "_By-", Presence,".jpg")
 generate_matchup_matrix(muMatrixData, ChartShare, Presence, Beginning, End,
                         MtgFormat, EventType)
@@ -137,5 +161,3 @@ dev.off()
 # Write the player results
 exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
                  PlayerDataResultDir)
-
-

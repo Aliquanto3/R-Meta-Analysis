@@ -12,6 +12,7 @@
 # Mostly useful because the code keeps changing directories to write graphs
 # Maybe it can do it otherwise and more efficiently?
 library(rprojroot)
+library(knitr)
 setwd(find_rstudio_root_file())
 
 # Import the parameters, libraries and functions from other scripts
@@ -39,8 +40,8 @@ tournamentDf = generate_df(
 
 ################################################################################
 
-cardName = "Leyline Binding"
-archetypeName = "Burn"
+cardName = "Flame of Anor"
+archetypeName = "Dimir Shadow"
 archetypeName2 = "Murktide"
 
 addArchetypeColor = T
@@ -53,13 +54,35 @@ if(addArchetypeColor){
       )
     }, tournamentDf$Archetype$Archetype, tournamentDf$Archetype$Color)
 }
+
+removeArchetypeColor = T
+if(removeArchetypeColor){
+  tournamentDf[grep(pattern = "Humans", x = tournamentDf$Archetype$Archetype),]$
+    Archetype$Archetype = "Humans"
+}
+
 splitArchetypeByCard = T
 if(splitArchetypeByCard){
   tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]$Archetype$Archetype =
-    ifelse(sapply(tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]$Mainboard, 
-                  function(mainBoard){cardName %in% mainBoard$CardName}),
+    ifelse(sapply(tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]$Allboards, 
+                  function(boards){cardName %in% boards$CardName}),
            paste0(archetypeName," (with ",cardName,")"),
            paste0(archetypeName," (without ",cardName,")"))
+  
+  archetypeWithCardDF = tournamentDf[tournamentDf$Archetype$Archetype == 
+                                       paste0(archetypeName," (with ",cardName,")"),]
+  archetypeWithoutCardDF = tournamentDf[tournamentDf$Archetype$Archetype == 
+                                       paste0(archetypeName," (without ",cardName,")"),]
+  print(paste("The win rate of", archetypeName, "decks with", cardName, "is",
+              round(100*sum(archetypeWithCardDF$NWins)/
+                      (sum(archetypeWithCardDF$NWins) + 
+                         sum(archetypeWithCardDF$NDefeats)),digits = 2),"%.",
+              nrow(archetypeWithCardDF),"decks played it."))
+  print(paste("The win rate of", archetypeName, "decks without", cardName, "is",
+              round(100*sum(archetypeWithoutCardDF$NWins)/
+                      (sum(archetypeWithoutCardDF$NWins) + 
+                         sum(archetypeWithoutCardDF$NDefeats)),digits = 2),"%.",
+              nrow(archetypeWithoutCardDF),"decks played it."))
   
   # Get the required data to build the matchup matrix of a single archetype
   muMatrixDataArchetypeWithCard = generate_matchup_data(tournamentDf, ChartShare, 
@@ -76,7 +99,31 @@ if(splitArchetypeByCard){
 }
 
 
-
+mergeUWX = T
+if(mergeUWX){
+  archetypeName = "UWx Control"
+  
+  tournamentDf$Archetype$Archetype = 
+    mapply(function(archArch) {
+      ifelse(archArch %in% c("Azorius Control","Jeskai Control",
+                                  "Bant Control","Esper Control"),
+             archetypeName ,
+             archArch
+      )
+    }, tournamentDf$Archetype$Archetype)
+  
+  tournamentDf$Matchups = 
+    mapply(function(MU){
+      MU$OpponentArchetype = mapply(function(oppArch) {
+        ifelse(oppArch %in% c("Azorius Control","Jeskai Control",
+                               "Bant Control","Esper Control"),
+               archetypeName ,
+               oppArch
+        )
+      }, MU$OpponentArchetype)
+      return(MU)
+    },tournamentDf$Matchups)
+}
 
 
 
@@ -88,6 +135,11 @@ getURLofDeck(archetypeName, tournamentDf)
 getBestDeck(archetypeName, tournamentDf)
 get_matchup_data(tournamentDf, archetypeName, archetypeName2)
 
+muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)
+write.xlsx(muMatrixData,
+           paste0(Beginning,"_",End,"_",MtgFormat,"_",EventType,"_","MU Matrix",'.xlsx'), 
+           row.names = FALSE)
+
 # Get the required data to build the matchup matrix of a single archetype
 muMatrixDataArchetype = generate_matchup_data(tournamentDf, ChartShare, 
                                               Presence, archetypeName)
@@ -95,6 +147,297 @@ muMatrixDataArchetype = generate_matchup_data(tournamentDf, ChartShare,
 generate_matchup_matrix(muMatrixDataArchetype, ChartShare, Presence, Beginning, 
                         End, MtgFormat, EventType)
 
-exportAchetypeCardData(archetypeName, tournamentDf)
+getArchetypeWinRate = function(tournamentDf, archetypeName){
+  archetypeDf = tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]
+  archetypePresence = paste0(round(nrow(archetypeDf)/nrow(tournamentDf),
+                                   digits=4)*100,"%")
+  archetypeWinRateWDraws = paste0(round(sum(archetypeDf$NWins)/
+                                          sum(archetypeDf$NRounds),
+                                        digits=4)*100,"%")
+  archetypeWinRateWoDraws = paste0(round(sum(archetypeDf$NWins)/
+    (sum(archetypeDf$NWins) + sum(archetypeDf$NDefeats)),
+    digits=4)*100,"%")
+  archetypeDrawPercentage = paste0(round(sum(archetypeDf$NDraws)/
+                                           sum(archetypeDf$NRounds),
+                                         digits=4)*100,"%")
+  
+  colLabels = c("Archetype Name","Archetype Presence",
+                "Archetype Win Rate w Draws", "Archetype Win Rate w/o Draws",
+                "Archetype Draw Percentage")
+  
+  archetypeData = c(archetypeName, archetypePresence, archetypeWinRateWDraws,
+                    archetypeWinRateWoDraws, archetypeDrawPercentage)
+  archetypeDF = t(data.frame(archetypeData))
+  rownames(archetypeDF) = c()
+  colnames(archetypeDF) = colLabels
+  
+  print(kable(archetypeDF))
+}
+getArchetypeWinRate(tournamentDf, archetypeName)
+
+# exportAchetypeCardData(archetypeName, tournamentDf)
+
+getMainboardCardData = function(cardNames, tournamentDf, CIPercent, 
+                                EventType, MtgFormat, Beginning, End){
+  
+  cardsData = lapply(cardNames, function(cardName, tournamentDf, CIPercent, 
+                                         EventType, MtgFormat, Beginning, End){
+    print(cardName)
+    conditionCardPresence = sapply(tournamentDf$Mainboard, function(mainboard) {
+      cardName %in% mainboard$CardName
+    } )
+    cardNMatches = sum(cardDf$NRounds)
+    cardPresence = paste0(round(sum(conditionCardPresence)/
+                                  length(conditionCardPresence),digits=4)*100,"%")
+    cardDf = tournamentDf[conditionCardPresence,]
+    cardWinRateWoDraws = paste0(round(sum(cardDf$NWins)/
+                                        (sum(cardDf$NWins+cardDf$NDefeats)),
+                                      digits=4)*100,"%")
+    lowerBoundWinRateWoDraws = 
+      paste0(round(binom.test(sum(cardDf$NWins),
+                              sum(cardDf$NWins+cardDf$NDefeats), 
+                              p=0.5,alternative="two.sided", 
+                              conf.level=CIPercent)$conf.int[1], digits=4)*100,"%")
+    higherBoundWinRateWoDraws = 
+      paste0(round(binom.test(sum(cardDf$NWins), sum(cardDf$NWins+cardDf$NDefeats),
+                              p=0.5,alternative="two.sided", 
+                              conf.level=CIPercent)$conf.int[2], digits=4)*100,"%")
+    cardWinRateWDraws = paste0(round(sum(cardDf$NWins)/sum(cardDf$NRounds),
+                                     digits=4)*100,"%")
+    lowerBoundWinRateWDraws = 
+      paste0(round(binom.test(sum(cardDf$NWins), sum(cardDf$NRounds), 
+                              p=0.5,alternative="two.sided",
+                              conf.level=CIPercent)$conf.int[1],
+                   digits=4)*100,"%")
+    higherBoundWinRateWDraws = 
+      paste0(round(binom.test(sum(cardDf$NWins),
+                              sum(cardDf$NRounds),p=0.5,alternative="two.sided", 
+                              conf.level=CIPercent)$conf.int[2], digits=4)*100,"%")
+    cardDrawsPercentage = paste0(round(sum(cardDf$NDraws)/sum(cardDf$NRounds),
+                                       digits=4)*100,"%")
+    
+    rowData = c(cardName,EventType,MtgFormat,Beginning,End,
+                cardNMatches, cardPresence,
+                cardWinRateWoDraws,lowerBoundWinRateWoDraws, 
+                higherBoundWinRateWoDraws, cardWinRateWDraws,
+                lowerBoundWinRateWDraws, 
+                higherBoundWinRateWDraws,cardDrawsPercentage)
+    
+    return(rowData)
+  }, tournamentDf, CIPercent, EventType, MtgFormat, Beginning, End)
+  
+  rowLabels = c("Card Name","Event Type","Format","Beginning Date","End Date",
+                "Number of matches", "Card Presence","Card Win Rate Without Draws",
+                paste0("Lower Bound of the ",CIPercent*100, 
+                       "% CI w/o Draws"),
+                paste0("Upper Bound of the ",CIPercent*100, 
+                       "% CI w/o Draws"),
+                "Card Win Rate With Draws",
+                paste0("Lower Bound of the ",CIPercent*100, 
+                       "% CI w Draws"),
+                paste0("Upper Bound of the ",CIPercent*100, 
+                       "% CI w Draws"),
+                "Card Draw Percentage")
+  
+  cardsDF = data.frame(cardsData)
+  colnames(cardsDF) = c()
+  rownames(cardsDF) = rowLabels
+  
+  print(kable(cardsDF))
+  return(cardsDF)
+}
 
 
+
+getMainboardCardData(cardNames, tournamentDf, CIPercent, 
+                     EventType, MtgFormat, Beginning, End)
+
+allboardCardData = function(cardNames, tournamentDf){
+  
+  cardsData = lapply(cardNames, function(cardName, tournamentDf){
+
+    conditionCardPresenceAllboard = sapply(tournamentDf$Allboard, function(Allboard) {
+      cardName %in% Allboard$CardName
+    } )
+    cardPresence = paste0(round(sum(conditionCardPresenceAllboard)/
+                                  length(conditionCardPresenceAllboard),digits=4)*100,"%")
+    
+    conditionCardPresenceMainboard = sapply(tournamentDf$Mainboard, function(Mainboard) {
+      cardName %in% Mainboard$CardName
+    } )
+    cardPresenceMainboard = paste0(round(sum(conditionCardPresenceMainboard)/
+                                  length(conditionCardPresenceMainboard),digits=4)*100,"%")
+    
+    conditionCardPresenceSideboard = sapply(tournamentDf$Sideboard, function(Sideboard) {
+      cardName %in% Sideboard$CardName
+    } )
+    cardPresenceSideboard = paste0(round(sum(conditionCardPresenceSideboard)/
+                                  length(conditionCardPresenceSideboard),digits=4)*100,"%")
+    
+    cardDfAllboard = tournamentDf[conditionCardPresenceAllboard,]
+    cardWinRateWoDrawsAllboard = paste0(round(sum(cardDfAllboard$NWins)/
+                                        (sum(cardDfAllboard$NWins+cardDfAllboard$NDefeats)),
+                                      digits=4)*100,"%")
+    cardWinRateWDrawsAllboard = paste0(round(sum(cardDfAllboard$NWins)/sum(cardDfAllboard$NRounds),
+                                     digits=4)*100,"%")
+    cardDrawsPercentageAllboard = paste0(round(sum(cardDfAllboard$NDraws)/sum(cardDfAllboard$NRounds),
+                                       digits=4)*100,"%")
+    
+    cardDfMainboard = tournamentDf[conditionCardPresenceMainboard,]
+    cardWinRateWoDrawsMainboard = paste0(round(sum(cardDfMainboard$NWins)/
+                                                (sum(cardDfMainboard$NWins+cardDfMainboard$NDefeats)),
+                                              digits=4)*100,"%")
+    cardWinRateWDrawsMainboard = paste0(round(sum(cardDfMainboard$NWins)/sum(cardDfMainboard$NRounds),
+                                             digits=4)*100,"%")
+    cardDrawsPercentageMainboard = paste0(round(sum(cardDfMainboard$NDraws)/sum(cardDfMainboard$NRounds),
+                                               digits=4)*100,"%")
+    
+    
+    cardDfSideboard = tournamentDf[conditionCardPresenceSideboard,]
+    cardWinRateWoDrawsSideboard = paste0(round(sum(cardDfSideboard$NWins)/
+                                                 (sum(cardDfSideboard$NWins+cardDfSideboard$NDefeats)),
+                                               digits=4)*100,"%")
+    cardWinRateWDrawsSideboard = paste0(round(sum(cardDfSideboard$NWins)/sum(cardDfSideboard$NRounds),
+                                              digits=4)*100,"%")
+    cardDrawsPercentageSideboard = paste0(round(sum(cardDfSideboard$NDraws)/sum(cardDfSideboard$NRounds),
+                                                digits=4)*100,"%")
+    
+    rowData = c(cardName,cardPresence,cardPresenceMainboard,cardPresenceSideboard,
+                cardWinRateWoDrawsAllboard,cardWinRateWDrawsAllboard,cardDrawsPercentageAllboard,
+                cardWinRateWoDrawsMainboard,cardWinRateWDrawsMainboard,cardDrawsPercentageMainboard,
+                cardWinRateWoDrawsSideboard,cardWinRateWDrawsSideboard,cardDrawsPercentageSideboard
+                )
+    
+    return(rowData)
+  }, tournamentDf)
+  
+  colLabels = c("Card Name",
+                "Card Presence (All boards)", "Presence (Mainboard)", "Presence (Sideboard)", 
+                "Card Win Rate w/o Draws (All boards)", 
+                "Card Win Rate with Draws (All boards)", 
+                "Card Draw Percentage (All boards)", 
+                "Card Win Rate w/o Draws (Mainboard)", 
+                "Card Win Rate with Draws (Mainboard)", 
+                "Card Draw Percentage (Mainboard)", 
+                "Card Win Rate w/o Draws (Sideboard)", 
+                "Card Win Rate with Draws (Sideboard)", 
+                "Card Draw Percentage (Sideboard)")
+  
+  cardsDF = t(data.frame(cardsData))
+  rownames(cardsDF) = c()
+  colnames(cardsDF) = colLabels
+  
+  print(kable(cardsDF))
+  View(cardsDF)
+  return(cardsDF)
+}
+
+mainBoardCardData = function(cardNames, tournamentDf){
+  
+  cardsData = lapply(cardNames, function(cardName, tournamentDf){
+    
+    conditionCardPresenceMainboard = sapply(tournamentDf$Mainboard, function(Mainboard) {
+      cardName %in% Mainboard$CardName
+    } )
+    cardPresenceMainboard = paste0(round(sum(conditionCardPresenceMainboard)/
+                                           length(conditionCardPresenceMainboard),digits=4)*100,"%")
+    
+    cardDfMainboard = tournamentDf[conditionCardPresenceMainboard,]
+    
+    cardWinsMainboard = sum(cardDfMainboard$NWins)
+    cardDefeatsMainboard = sum(cardDfMainboard$NDefeats)
+    cardDrawsMainboard = sum(cardDfMainboard$NDraws)
+    cardRoundsMainboard = sum(cardDfMainboard$NRounds)
+    cardWinRateWoDrawsMainboard = paste0(round(cardWinsMainboard/
+                                                 (cardWinsMainboard+cardDefeatsMainboard),
+                                               digits=4)*100,"%")
+    cardWinRateWDrawsMainboard = paste0(round(cardWinsMainboard/cardRoundsMainboard,
+                                              digits=4)*100,"%")
+    cardDrawsPercentageMainboard = paste0(round(cardDrawsMainboard/cardRoundsMainboard,
+                                                digits=4)*100,"%")
+    
+    rowData = c(cardName,cardPresenceMainboard,
+                cardWinsMainboard,
+                cardDefeatsMainboard,
+                cardDrawsMainboard,
+                cardRoundsMainboard,
+                cardWinRateWoDrawsMainboard,
+                cardWinRateWDrawsMainboard,
+                cardDrawsPercentageMainboard
+    )
+    
+    return(rowData)
+  }, tournamentDf)
+  
+  colLabels = c("Card Name", "Presence (Mainboard)",
+                "Number of wins of the card (Mainboard)",
+                "Number of defeats of the card (Mainboard)",
+                "Number of draws of the card (Mainboard)",
+                "Number of matches of the card (Mainboard): Wins+Defeats+Draws",
+                "Card Win Rate w/o Draws (Mainboard): Wins/(Wins+Defeats)", 
+                "Card Win Rate with Draws (Mainboard): Wins/Matches", 
+                "Card Draw Percentage (Mainboard): Draws/Matchs")
+  
+  cardsDF = t(data.frame(cardsData))
+  rownames(cardsDF) = c()
+  colnames(cardsDF) = colLabels
+  
+  print(kable(cardsDF))
+  View(cardsDF)
+  return(cardsDF)
+}
+
+
+conditionCardPresenceAllboard = sapply(tournamentDf$Allboard, function(Allboard) {
+  cardName %in% Allboard$CardName
+} )
+
+conditionCardPresenceMainboard = sapply(tournamentDf$Mainboard, function(Mainboard) {
+  cardName %in% Mainboard$CardName
+} )
+
+conditionCardPresenceSideboard = sapply(tournamentDf$Sideboard, function(Sideboard) {
+  cardName %in% Sideboard$CardName
+} )
+
+cardDfNotMainboard = tournamentDf[(!conditionCardPresenceMainboard),]
+conditionCardPresenceSideboardNotMainboard = sapply(cardDfNotMainboard$Sideboard, function(Sideboard) {
+  cardName %in% Sideboard$CardName
+} )
+cardDfSideboardNotMainboard = cardDfNotMainboard[conditionCardPresenceSideboardNotMainboard,]
+
+cardDf = tournamentDf[conditionCardPresenceAllboard,]
+sum(cardDf$NWins)
+sum(cardDf$NDefeats)
+cardWinRateWoDraws = paste0(round(sum(cardDf$NWins)/
+                                    (sum(cardDf$NWins+cardDf$NDefeats)),
+                                  digits=4)*100,"%")
+
+cardNames = sort(c("The One Ring",
+                   "Orcish Bowmasters",
+                   "Fury",
+                   "Chalice of the Void",
+                   "Thoughtseize",
+                   "Force of Negation",
+                   "Boseiju, Who Endures",
+                   "Endurance",
+                   "Subtlety",
+                   "Ragavan, Nimble Pilferer",
+                   "Grief",
+                   "Leyline Binding",
+                   "Lightning Bolt",
+                   "Lórien Revealed"
+))
+cardNames = "The One Ring"
+allboardCardData(cardNames, tournamentDf)
+mainBoardCardData(cardNames, tournamentDf)
+
+MonoBlackDf = tournamentDf[tournamentDf$Archetype$Color == "B",]
+MonoBlackDf$Archetype
+
+conditionCardPresenceAllboard = sapply(tournamentDf$Allboard, function(Allboard) {
+  cardNames %in% Allboard$CardName
+} )
+tournamentDf[conditionCardPresenceAllboard,]$AnchorUri
+
+tournamentDf = updateDfForPT(tournamentDf)

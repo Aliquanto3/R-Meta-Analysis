@@ -23,7 +23,7 @@ MtgFormats = c("1" = "Sealed",
                "5" = "Pauper",
                "6" = "Legacy",
                "7" = "Vintage",
-               "8" = "All Formats")
+               "8" = "All_Formats")
 MtgFormat = MtgFormats[4]
 
 # MtgFormat = "Pioneer"
@@ -33,10 +33,10 @@ MtgFormat = MtgFormats[4]
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2023-04-21"
+Beginning = "2023-08-07"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2023-06-05"
+End = "2023-08-28"
 
 # Event type:
 # All sources = Everything (except MTGO Leagues - for any filter)
@@ -61,7 +61,7 @@ EventTypes = c("1" = "All sources",
                "8" = "MTGO Events Top32",
                "9" = "MTGO Preliminaries")
 
-EventType = EventTypes[1]
+EventType = EventTypes[3]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2
@@ -105,4 +105,9 @@ PeriodComparisonDir = paste0(CsvResultDir, "Period Comparison files/")
 PictureResultDir = "Picture files/"
 TextResultDir = "Text files/"
 
+# TRUE when you want to manually add colors to some archetype names
+# Still incomplete for easy use
 addColor = F
+
+# # TRUE when you run the code only on a PT event to remove the limited rounds
+# PTResults = T 

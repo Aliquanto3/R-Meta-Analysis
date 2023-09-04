@@ -311,6 +311,108 @@ winrates_graph = function(archetypeRankingDf,chartShare,presence,beginning,end,
                color="red", linetype="dashed", linewidth = 0.5)
 }
 
+#' Win rate and their boxplots for the most played archetypes
+#'
+#' @param archetypeRankingDf the dataframe returned by archetype_ranking()
+#' @param tournamentDf the dataframe returned by generate_df()
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
+#' @param presence the definition of metagame presence (aka share) to use. 
+#' It can be:
+#' - "Copies": the number of lines in the dataframe dedicated to that archetype
+#' - "Players": the number of different players piloting that archetype
+#' - "Matches": the number of matches played by the archetype
+#' @param beginning the date to be displayed in the title as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the title as the end of the dataset
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param mtgFormat the format of the events in the data
+#' @param sortValue the value used for sorting the data in the graph.
+#' It can be either "MeasuredWinrate" or "CI95LowerBound" (the lower bound of
+#' the 95% confidence interval on the win rate).
+#'
+#' @return a ggplot with a boxplot of the winrates.
+#' @export
+#'
+#' @examples
+boxplot_winrates = function(archetypeRankingDf,tournamentDf,chartShare,presence,beginning,end,
+                            eventType,mtgFormat,sortValue){
+  
+  chartShare = StatShare
+  presence = Presence
+  beginning = Beginning
+  end = End
+  eventType = EventType
+  mtgFormat = MtgFormat
+  sortValue = SortValue
+  # Keep only the most present decks
+  presence_min = chartShare/100*sum(archetypeRankingDf[presence])
+  most_present_archetypes_data = 
+    archetypeRankingDf[archetypeRankingDf[presence] >= presence_min,]
+  
+  # Reorder archetypes by ascending average winrate
+  most_present_archetypes_data$Archetype = 
+    reorder(most_present_archetypes$Archetype, unlist(most_present_archetypes[sortValue]))
+  
+  most_present_archetypes = most_present_archetypes_data$Archetype
+  
+  most_present_archetypes_df = tournamentDf[tournamentDf$Archetype$Archetype %in% 
+                                              most_present_archetypes,] %>% 
+    select(c('Archetype','NWins','NDefeats'))
+  
+  most_present_archetypes_df$Archetype = most_present_archetypes_df$Archetype$Archetype
+  
+  most_present_archetypes_df$Winrate = 100 * most_present_archetypes_df$NWins / 
+    (most_present_archetypes_df$NWins + most_present_archetypes_df$NDefeats)
+  most_present_archetypes_df$WinrateLabel = paste0(round(most_present_archetypes_df$Winrate,digits=1),"%")
+  
+  # Plot the average winrate and the confidence intervals
+  yLabelWinrate = "Winrates of the most popular archetypes (%)"
+  
+  winrateGraphTitle = paste0(
+  "Winrate repartition of the most present ",mtgFormat,
+    " archetypes\n",  "(at least ",chartShare,"% of the ",presence,") between ", 
+    beginning, " and ", end, " in ", EventType)
+  
+  winrateGraphSubtitle = 
+    paste("Blue points for the average of the measured winrate", 
+          "by Anaël Yahi", sep = "\n")
+  
+  p <- ggplot(most_present_archetypes_df, aes(x=reorder(Archetype,Winrate), y=Winrate)) + 
+    geom_boxplot() + 
+    labs(x = NULL, y = yLabelWinrate, title = winrateGraphTitle,
+         subtitle = winrateGraphSubtitle)  +
+    stat_summary(fun=mean, geom="point", shape=20, size=4, color="blue", fill="blue") +  # Add points to plot
+    stat_summary(fun = mean, geom = "text", col = "black", size = 4,     # Add text to plot
+                 vjust = 1.5, hjust = 0.5, aes(label = paste0(round(..y.., digits = 1),"%"))) +
+    theme(axis.text.x = element_text(size = 10, vjust = 0.5, 
+                                     angle = -90+nrow(archetypeRankingDf)),
+          axis.title.y = 
+            element_text(margin = margin(t = 0, r = 20, b = 0, l = 0), 
+                         size=14, face = "bold"),
+          panel.background = element_blank(),
+          axis.line.x = element_line(color="black"),
+          axis.line.y = element_line(color="black"),
+          axis.ticks.y = element_blank(),
+          plot.title = element_text(hjust = 0.5, color = "#111111", size = 16),
+          plot.subtitle = element_text(hjust = 0.5, size = 14),
+          text = element_text(size = 16)) 
+  
+  p
+
+}
+
 #' Graph of the archetype tier list based on normalized sum of metrics
 #'
 #' @param archetypeRankingDf the dataframe returned by archetype_ranking()

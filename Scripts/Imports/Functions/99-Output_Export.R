@@ -172,6 +172,15 @@ exportAchetypeCardData = function(archetype, df){
 exportPlayerData = 
   function(df,pathToLastDirs,beginning,end,mtgFormat,eventType,
            playerDataResultDir){
+    # # For development only
+    # df = tournamentDf
+    # pathToLastDirs = PathToLastDirs
+    # beginning = Beginning
+    # end = End
+    # mtgFormat = MtgFormat
+    # eventType = EventType
+    # playerDataResultDir = PlayerDataResultDir
+    
   PlayerData = get_player_data(df)
   PlayerDataDirPath = paste0(pathToLastDirs, playerDataResultDir)
   PlayerDataFileName = paste0(beginning,'_', end, ' - Player Data in ', 
