@@ -277,6 +277,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
   
   # /!\ Some events only have a top32, or don't even have one (Preliminary)
   if (eventType == EventTypes[1]) {
+    # "1" = "All sources"
     # Remove the noise from leagues in case it wasn't done by the parser
     periodData = periodData[!grepl("League", periodData$Tournament),]
     # Remove the Team Trio events providing unusable data
@@ -288,6 +289,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
                generate_Prelim_Data(PrelimData))
     
   } else if (eventType == EventTypes[2]) {
+    # "2" = "All Events Top32"
     # Remove the noise from leagues in case it wasn't done by the parser
     periodData = periodData[!grepl("League", periodData$Tournament),]
     # Remove the Team Trio events providing unusable data
@@ -300,6 +302,55 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     # Keep only the top32 of all those events
     
   } else if (eventType == EventTypes[3]) {
+    # "3" = "All Events Top8"
+    # Remove the noise from leagues in case it wasn't done by the parser
+    periodData = periodData[!grepl("League", periodData$Tournament),]
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
+    
+    Top8Data = periodData[!grepl("Preliminary", periodData$Tournament),]
+    # Keep only the top8
+    Top8Data = Top8Data[Top8Data$NumericResult <= 8, ]
+    resultDf = generate_Tournament_Data(Top8Data)
+    
+  } else if (eventType == EventTypes[4]) {
+    # "4" = "All Events Top1"
+    # Remove the noise from leagues in case it wasn't done by the parser
+    periodData = periodData[!grepl("League", periodData$Tournament),]
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
+    
+    Top1Data = periodData[!grepl("Preliminary", periodData$Tournament),]
+    # Keep only the top1
+    Top1Data = Top1Data[Top1Data$NumericResult == 1, ]
+    resultDf = generate_Tournament_Data(Top1Data)
+    
+  } else if (eventType == EventTypes[5]) {
+    # "5" = "All Events X-2 or better"
+    # Remove the noise from leagues in case it wasn't done by the parser
+    periodData = periodData[!grepl("League", periodData$Tournament),]
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
+    
+    X2Data = periodData[!grepl("Preliminary", periodData$Tournament),]
+    # Keep only the X-2 and better
+    X2Data = X2Data[X2Data$NDefeats <= 2, ]
+    resultDf = generate_Tournament_Data(X2Data)
+    
+  } else if (eventType == EventTypes[6]) {
+    # "6" = "All Events X-1 or better"
+    # Remove the noise from leagues in case it wasn't done by the parser
+    periodData = periodData[!grepl("League", periodData$Tournament),]
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
+    
+    X1Data = periodData[!grepl("Preliminary", periodData$Tournament),]
+    # Keep only the X-1 and better
+    X1Data = X1Data[X1Data$NDefeats <= 1, ]
+    resultDf = generate_Tournament_Data(X1Data)
+    
+  } else if (eventType == EventTypes[7]) {
+    # "7" = "Full Meta Events"
     # Remove the Team Trio events providing unusable data
     periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from Manatraders and MTG Melee, not the partial MTGO website
@@ -310,13 +361,15 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     resultDf = rbind(generate_Tournament_Data(MTData),
                generate_Tournament_Data(PaperData))
     
-  } else if (eventType == EventTypes[4]) {
+  } else if (eventType == EventTypes[8]) {
+    #"8" = "ManaTraders"
     # Use data from Manatraders
     MTData = periodData[grep("https://www.manatraders.com/webshop/personal/",
                              periodData$AnchorUri),]
     resultDf = generate_Tournament_Data(MTData)
     
-  } else if (eventType == EventTypes[5]) {
+  } else if (eventType == EventTypes[9]) {
+    # "9" = "Paper Events Full Meta"
     # Remove the Team Trio events providing unusable data
     periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from MTG Melee
@@ -324,7 +377,8 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
                                 periodData$AnchorUri),]
     resultDf = generate_Tournament_Data(PaperData)
     
-  } else if (eventType == EventTypes[6]) {
+  } else if (eventType == EventTypes[10]) {
+    # "10" = "Paper Events Top32"
     # Remove the Team Trio events providing unusable data
     periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from MTG Melee
@@ -334,25 +388,108 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     PaperData = PaperData[PaperData$NumericResult <= 32, ]
     resultDf = generate_Tournament_Data(PaperData)
     
+  } else if (eventType == EventTypes[11]) {
+    # "11" = "Paper Events Top8"
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
+    # Use data from MTG Melee
+    PaperData = periodData[grep("https://melee.gg/Decklist/View/",
+                                periodData$AnchorUri),]
+    # Keep only the top8
+    PaperData = PaperData[PaperData$NumericResult <= 8, ]
+    resultDf = generate_Tournament_Data(PaperData)
+    
+  } else if (eventType == EventTypes[12]) {
+    # "12" = "Paper Events Top1"
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
+    # Use data from MTG Melee
+    PaperData = periodData[grep("https://melee.gg/Decklist/View/",
+                                periodData$AnchorUri),]
+    # Keep only the top1
+    PaperData = PaperData[PaperData$NumericResult <= 1, ]
+    resultDf = generate_Tournament_Data(PaperData)
+    
+  } else if (eventType == EventTypes[13]) {
+    # "13" = "Paper Events X-2 or better"
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
+    # Use data from MTG Melee
+    PaperData = periodData[grep("https://melee.gg/Decklist/View/",
+                                periodData$AnchorUri),]
+    # Keep only the top1
+    PaperData = PaperData[PaperData$NDefeats <= 2, ]
+    resultDf = generate_Tournament_Data(PaperData)
+    
+  } else if (eventType == EventTypes[14]) {
+    # "14" = "Paper Events X-1 or better"
+    # Remove the Team Trio events providing unusable data
+    periodData = periodData[!grepl("Team", periodData$Tournament),]
+    # Use data from MTG Melee
+    PaperData = periodData[grep("https://melee.gg/Decklist/View/",
+                                periodData$AnchorUri),]
+    # Keep only the top1
+    PaperData = PaperData[PaperData$NDefeats <= 1, ]
+    resultDf = generate_Tournament_Data(PaperData)
+    
   } else{
     MTGOData = periodData[grep("https://www.mtgo.com/en/mtgo/decklist/",
                                periodData$AnchorUri),]
     # Remove the noise from leagues in case it wasn't done by the parser
     MTGOData = MTGOData[!grepl("League", MTGOData$Tournament),]
     
-    if (eventType == EventTypes[7]) {
+    if (eventType == EventTypes[15]) {
+      # "15" = "MTGO Official Competitions"
       MTGOTop32Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
       PrelimData = MTGOData[grep("Preliminary", MTGOData$Tournament),]
       resultDf = rbind(generate_Tournament_Data(MTGOTop32Data),
                  generate_Prelim_Data(PrelimData))
       
-    } else if (eventType == EventTypes[8]) {
+    } else if (eventType == EventTypes[16]) {
+      # "16" = "MTGO Events Top32"
       # MTGO tournaments with a top32, so not Preliminaries (nor Leagues,
       # already filtered)
       MTGOTop32Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
       resultDf = generate_Tournament_Data(MTGOTop32Data)
       
-    } else if (eventType == EventTypes[9]) {
+    } else if (eventType == EventTypes[17]) {
+      # "17" = "MTGO Events Top8"
+      # MTGO tournaments with a top32, so not Preliminaries (nor Leagues,
+      # already filtered)
+      MTGOTop8Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
+      # Keep only the top8
+      MTGOTop8Data = MTGOTop8Data[MTGOTop8Data$NumericResult <= 8, ]
+      resultDf = generate_Tournament_Data(MTGOTop8Data)
+      
+    } else if (eventType == EventTypes[18]) {
+      # "18" = "MTGO Events Top1"
+      # MTGO tournaments with a top32, so not Preliminaries (nor Leagues,
+      # already filtered)
+      MTGOTop1Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
+      # Keep only the top8
+      MTGOTop1Data = MTGOTop1Data[MTGOTop1Data$NumericResult <= 1, ]
+      resultDf = generate_Tournament_Data(MTGOTop1Data)
+      
+    } else if (eventType == EventTypes[19]) {
+      # "19" = "MTGO Events X-2 or better"
+      # MTGO tournaments with a top32, so not Preliminaries (nor Leagues,
+      # already filtered)
+      MTGOX2Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
+      # Keep only the top8
+      MTGOX2Data = MTGOX2Data[MTGOX2Data$NDefeats <= 2, ]
+      resultDf = generate_Tournament_Data(MTGOX2Data)
+      
+    } else if (eventType == EventTypes[20]) {
+      # "20" = "MTGO Events X-1 or better"
+      # MTGO tournaments with a top32, so not Preliminaries (nor Leagues,
+      # already filtered)
+      MTGOX1Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
+      # Keep only the top1
+      MTGOX1Data = MTGOX1Data[MTGOX1Data$NDefeats <= 1, ]
+      resultDf = generate_Tournament_Data(MTGOX1Data)
+      
+    } else if (eventType == EventTypes[21]) {
+      # "21" = "MTGO Preliminaries"
       # Preliminaries only
       PrelimData = MTGOData[grep("Preliminary", MTGOData$Tournament),]
       resultDf = generate_Prelim_Data(PrelimData)

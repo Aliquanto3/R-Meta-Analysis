@@ -52,7 +52,7 @@ tournamentDf = generate_df(
 #   list(tmpMU)
 # },tournamentDf$Matchups)
 
-tournamentDf[tournamentDf$Archetype$Archetype=="Unknown",]$Archetype$Archetype = "Food"
+# tournamentDf[tournamentDf$Archetype$Archetype=="Unknown",]$Archetype$Archetype = "Food"
 
 ############################   Compute analysis   ############################## 
 

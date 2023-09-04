@@ -363,7 +363,7 @@ boxplot_winrates = function(archetypeRankingDf,tournamentDf,chartShare,presence,
   
   # Reorder archetypes by ascending average winrate
   most_present_archetypes_data$Archetype = 
-    reorder(most_present_archetypes$Archetype, unlist(most_present_archetypes[sortValue]))
+    reorder(most_present_archetypes_data$Archetype, unlist(most_present_archetypes_data[sortValue]))
   
   most_present_archetypes = most_present_archetypes_data$Archetype
   
