@@ -38,10 +38,40 @@ RawData = fromJSON(TournamentResultFile)[[1]]
 tournamentDf = generate_df(
   RawData, EventType, MtgFormat, TournamentResultFile, Beginning, End)
 
-################################################################################
+############################   Compute analysis   ############################## 
+
+# Get the following columns: 
+# Archetype Copies Players Matches MeasuredWinrate CI95LowerBound CI95UpperBound
+archetypeMetricsDf = archetype_metrics(tournamentDf)
+
+# Update the cut value based on the data. If too small, set at 1% for graph
+# readability.
+if(Share.autoupdate){
+  StatShare = 
+    round(mean(unlist(archetypeMetricsDf[Presence])) / 
+            sum(unlist(archetypeMetricsDf[Presence])) * 100, digits = 2)
+  ChartShare = max(StatShare, 1)
+}else {
+  StatShare = ChartShare
+}
+
+# Add the following columns:
+# NormalizedPresence NormalizedMeasuredWinrate NormalizedSum Rank
+archetypeRankingDf = archetype_ranking(archetypeMetricsDf, Presence)
+# Keep only the most played decks and add some columns:
+# Presence Tiers
+archetypeTiersDf = archetype_tiers(archetypeRankingDf, Presence, StatShare)
+# Get the required data to build the matchup matrix of the most present
+# archetypes
+muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)
+
+exportTextAnalysis(tournamentDf, PathToLastDirs, Beginning, End, MtgFormat, 
+                   EventType, ChartShare,TextResultDir)
+
+############################################################ 
 
 cardName = "Flame of Anor"
-archetypeName = "Dimir Shadow"
+archetypeName = "Jeskai Ephemerate"
 archetypeName2 = "Murktide"
 
 addArchetypeColor = T
@@ -441,3 +471,56 @@ conditionCardPresenceAllboard = sapply(tournamentDf$Allboard, function(Allboard)
 tournamentDf[conditionCardPresenceAllboard,]$AnchorUri
 
 tournamentDf = updateDfForPT(tournamentDf)
+
+# Normal Winrate
+hist(archetypeRankingDf$MeasuredWinrate,breaks = 20)
+shapiro.test(archetypeRankingDf$MeasuredWinrate)
+ks.test(archetypeRankingDf$MeasuredWinrate, "pnorm")
+library(fitdistrplus)
+summary(fitdist(archetypeRankingDf[archetypeRankingDf$MeasuredWinrate>0,]$MeasuredWinrate/100, 
+                distr = "beta", method = "mle"))
+library(goft)
+lnorm_test(archetypeRankingDf[archetypeRankingDf$MeasuredWinrate>0,]$MeasuredWinrate)
+gamma_test(archetypeRankingDf[archetypeRankingDf$MeasuredWinrate>0,]$MeasuredWinrate)
+weibull_test(archetypeRankingDf[archetypeRankingDf$MeasuredWinrate>0,]$MeasuredWinrate)
+normal_test(archetypeRankingDf[archetypeRankingDf$MeasuredWinrate>0,]$MeasuredWinrate)
+# Exponential presence
+hist(archetypeRankingDf$Matches,breaks = 20)
+ks.test(archetypeRankingDf$Matches, "pexp")
+# Winrate and presence correlation
+cor.test(archetypeRankingDf$MeasuredWinrate, 
+         archetypeRankingDf$Matches/max(archetypeRankingDf$Matches),
+         method = "pearson")
+regWRPres = lm(MeasuredWinrate ~ Matches, data = archetypeRankingDf)
+summary(regWRPres)
+nrow(archetypeRankingDf)
+# Normal normalized sum
+hist(archetypeRankingDf$NormalizedSum,breaks = 20)
+shapiro.test(archetypeRankingDf$NormalizedSum)
+ks.test(archetypeRankingDf$NormalizedSum, "pnorm")
+normal_test(archetypeRankingDf[archetypeRankingDf$NormalizedSum>0,]$NormalizedSum)
+
+
+archetypeRankingDfAboveMean = 
+  archetypeRankingDf[archetypeRankingDf$Matches 
+                     >= mean(archetypeRankingDf$Matches),]
+
+# Normal Winrate
+hist(archetypeRankingDfAboveMean$MeasuredWinrate)
+shapiro.test(archetypeRankingDfAboveMean$MeasuredWinrate)
+ks.test(archetypeRankingDfAboveMean$MeasuredWinrate, "pnorm")
+# Exponential presence
+hist(archetypeRankingDfAboveMean$Matches,breaks = 15)
+ks.test(archetypeRankingDfAboveMean$Matches, "pexp")
+# Winrate and presence correlation
+cor.test(archetypeRankingDfAboveMean$MeasuredWinrate, 
+         archetypeRankingDfAboveMean$Matches/max(archetypeRankingDfAboveMean$Matches),
+         method = "pearson")
+regWRPres = lm(MeasuredWinrate ~ Matches, data = archetypeRankingDfAboveMean)
+summary(regWRPres)
+nrow(archetypeRankingDfAboveMean)
+# Normal normalized sum
+hist(archetypeRankingDfAboveMean$NormalizedSum)
+shapiro.test(archetypeRankingDfAboveMean$NormalizedSum)
+ks.test(archetypeRankingDfAboveMean$NormalizedSum, "pnorm")
+normal_test(archetypeRankingDfAboveMean[archetypeRankingDfAboveMean$NormalizedSum>0,]$NormalizedSum)

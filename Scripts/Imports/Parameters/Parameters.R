@@ -36,7 +36,7 @@ TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 Beginning = "2023-08-07"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2023-09-04"
+End = "2023-09-11"
 
 # Event type:
 # All sources = Everything (except MTGO Leagues - for any filter)
@@ -73,7 +73,7 @@ EventTypes = c("1" = "All sources",
                "20" = "MTGO Events X-1 or better",
                "21" = "MTGO Preliminaries")
 
-EventType = EventTypes[21]
+EventType = EventTypes[7]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2
