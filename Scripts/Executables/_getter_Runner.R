@@ -70,15 +70,15 @@ exportTextAnalysis(tournamentDf, PathToLastDirs, Beginning, End, MtgFormat,
 
 ############################################################ 
 
-cardName = "Flame of Anor"
-archetypeName = "Jeskai Ephemerate"
+cardName = "Leyline Binding"
+archetypeName = "Hammer Time"
 archetypeName2 = "Murktide"
 
 addArchetypeColor = T
 if(addArchetypeColor){
   tournamentDf$Archetype$Archetype = 
     mapply(function(archetypeName, archetypeColor) {
-      ifelse(archetypeName %in% c("Prowess"),
+      ifelse(archetypeName %in% c("Footfalls"),
              paste(archetypeColor, archetypeName),
              archetypeName
       )

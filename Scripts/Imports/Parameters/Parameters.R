@@ -36,7 +36,7 @@ TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 Beginning = "2023-08-07"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2023-09-11"
+End = "2023-10-09"
 
 # Event type:
 # All sources = Everything (except MTGO Leagues - for any filter)
