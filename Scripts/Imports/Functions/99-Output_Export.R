@@ -171,7 +171,7 @@ exportAchetypeCardData = function(archetype, df){
 
 exportPlayerData = 
   function(df,pathToLastDirs,beginning,end,mtgFormat,eventType,
-           playerDataResultDir){
+           playerDataResultDir,writeCSV,writeXLSX){
     # # For development only
     # df = tournamentDf
     # pathToLastDirs = PathToLastDirs
@@ -186,8 +186,40 @@ exportPlayerData =
   PlayerDataFileName = paste0(beginning,'_', end, ' - Player Data in ', 
                               mtgFormat, ' ', eventType)
   dir.create(file.path(PlayerDataDirPath))
-  write.csv(PlayerData, paste0(PlayerDataDirPath, PlayerDataFileName,'.csv'), 
-            row.names = FALSE)
-  write.xlsx(PlayerData, paste0(PlayerDataDirPath, PlayerDataFileName,'.xlsx'), 
-             row.names = FALSE)
+  if(writeCSV){
+    write.csv(PlayerData, paste0(PlayerDataDirPath, PlayerDataFileName,'.csv'), 
+              row.names = FALSE)
+  }
+  if(writeXLSX){
+    write.xlsx(PlayerData, paste0(PlayerDataDirPath, PlayerDataFileName,'.xlsx'), 
+               row.names = FALSE)
+  }
 }
+
+exportArchetypeCardData = 
+  function(archetypeName,df,pathToLastDirs,beginning,end,mtgFormat,eventType,
+           archetypeCardDataResultDir,writeCSV,writeXLSX){
+    # # For development only
+    # archetypeName = "Rakdos Scam"
+    # df = tournamentDf
+    # pathToLastDirs = PathToLastDirs
+    # beginning = Beginning
+    # end = End
+    # mtgFormat = MtgFormat
+    # eventType = EventType
+    # archetypeCardDataResultDir = ArchetypeCardDataResultDir
+    
+    ArchetypeCardData = get_archetype_card_data(archetypeName, "All", df)
+    ArchetypeCardDataDirPath = paste0(pathToLastDirs, archetypeCardDataResultDir)
+    ArchetypeCardDataFileName = paste0(beginning,'_', end, ' - ', archetypeName,
+                                       ' Card Data in ', mtgFormat, ' ', eventType)
+    dir.create(file.path(ArchetypeCardDataDirPath))
+    if(writeCSV){
+      write.csv(as.matrix(ArchetypeCardData), paste0(ArchetypeCardDataDirPath, ArchetypeCardDataFileName,'.csv'), 
+                row.names = FALSE)
+    }
+    if(writeXLSX){
+      write.xlsx(ArchetypeCardData, paste0(ArchetypeCardDataDirPath, ArchetypeCardDataFileName,'.xlsx'), 
+                 row.names = FALSE)
+    }
+  }

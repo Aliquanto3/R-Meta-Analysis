@@ -22,7 +22,7 @@ functionScriptDir = paste0(importableScriptDir,"Functions/")
 source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
 source(file.path(paste0(functionScriptDir,"02-Metagame_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"03-Metagame_Graph_Generation.R")))
-# source(file.path(paste0(functionScriptDir,"04-Decklist_Analysis.R")))
+source(file.path(paste0(functionScriptDir,"04-Decklist_Analysis.R")))
 source(file.path(paste0(functionScriptDir,"05-Player_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"99-Output_Export.R")))
 
@@ -160,4 +160,14 @@ dev.off()
 
 # Write the player results
 exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
-                 PlayerDataResultDir)
+                 PlayerDataResultDir,writeCSV,writeXLSX)
+
+# Write the archetype card results
+for (archetypeName in archetypeTiersDf$Archetype){
+  # archetypeName = "Rakdos Scam"
+  exportArchetypeCardData(archetypeName, tournamentDf,PathToLastDirs,Beginning,
+                          End,MtgFormat,EventType,ArchetypeCardDataResultDir,
+                          writeCSV,writeXLSX)
+  print(archetypeName)
+}
+

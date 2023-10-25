@@ -35,6 +35,7 @@ round2 = function(x, digits) {
 #'
 #' @param deckName a string with the name of the archetype to find
 #' @param color a string with the color of the archetype to keep. Ex: "WUBRG"
+#' If "All", doesn't filter by color.
 #' @param df the dataframe returned by generate_df()
 #'
 #' @return the list of cards played in the archetype in a dataframe, with data
@@ -44,9 +45,16 @@ round2 = function(x, digits) {
 #' @examples
 get_archetype_card_data = function(deckName, color, df){
   
+  # # For development only
+  # deckName = "Hammer Time"
+  # color = "W"
+  # df = tournamentDf
+  
   # Filter to keep the data of a given archetype in a chosen color
   archetypeDf = df[df$Archetype$Archetype == deckName,]
-  archetypeDf = archetypeDf[archetypeDf$Archetype$Color == color,]
+  if(color!="All"){
+    archetypeDf = archetypeDf[archetypeDf$Archetype$Color == color,]
+  }
   
   # Get the card list of each deck: card name and the corresponding number of 
   # copies, both for mainboard (MD = maindeck) and sideboard (SB)
@@ -203,6 +211,8 @@ get_archetype_card_data = function(deckName, color, df){
   
   archetypeCardData[is.na(archetypeCardData)] = 0
   
+  archetypeCardData = archetypeCardData %>%
+    select(c("Card.Name","Share.Of.MD","Share.Of.SB","WR.In.MD","WR.In.SB"), everything())
   
   return(archetypeCardData)
 }

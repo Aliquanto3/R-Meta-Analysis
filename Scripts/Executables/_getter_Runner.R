@@ -27,6 +27,8 @@ functionScriptDir = paste0(importableScriptDir,"Functions/")
 source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
 source(file.path(paste0(functionScriptDir,"02-Metagame_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"03-Metagame_Graph_Generation.R")))
+source(file.path(paste0(functionScriptDir,"04-Decklist_Analysis.R")))
+source(file.path(paste0(functionScriptDir,"05-Player_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"99-Output_Export.R")))
 
 PathToLastDirs = 
@@ -205,7 +207,7 @@ getArchetypeWinRate = function(tournamentDf, archetypeName){
 }
 getArchetypeWinRate(tournamentDf, archetypeName)
 
-# exportAchetypeCardData(archetypeName, tournamentDf)
+get_archetype_card_data(archetypeName, "W", tournamentDf)
 
 getMainboardCardData = function(cardNames, tournamentDf, CIPercent, 
                                 EventType, MtgFormat, Beginning, End){

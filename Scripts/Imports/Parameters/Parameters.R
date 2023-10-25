@@ -33,10 +33,10 @@ MtgFormat = MtgFormats[4]
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2023-08-07"
+Beginning = "2023-09-08"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2023-10-09"
+End = "2023-10-24"
 
 # Event type:
 # All sources = Everything (except MTGO Leagues - for any filter)
@@ -113,9 +113,12 @@ Diameters = "Players"
 CsvResultDir = "CSV files/"
 ArchetypeCardDataResultDir = paste0(CsvResultDir, "Archetype Card Data/")
 PlayerDataResultDir = paste0(CsvResultDir, "Player Data/")
+ArchetypeCarDataResultDir = paste0(CsvResultDir, "Archetype Card Data/")
 PeriodComparisonDir = paste0(CsvResultDir, "Period Comparison files/")
 PictureResultDir = "Picture files/"
 TextResultDir = "Text files/"
+writeCSV = F
+writeXLSX = T
 
 # TRUE when you want to manually add colors to some archetype names
 # Still incomplete for easy use
