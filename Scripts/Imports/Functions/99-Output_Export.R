@@ -222,4 +222,5 @@ exportArchetypeCardData =
       write.xlsx(ArchetypeCardData, paste0(ArchetypeCardDataDirPath, ArchetypeCardDataFileName,'.xlsx'), 
                  row.names = FALSE)
     }
+    return(ArchetypeCardData)
   }

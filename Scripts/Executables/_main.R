@@ -163,11 +163,18 @@ exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
                  PlayerDataResultDir,writeCSV,writeXLSX)
 
 # Write the archetype card results
+archetypeDataList = list()
 for (archetypeName in archetypeTiersDf$Archetype){
   # archetypeName = "Rakdos Scam"
-  exportArchetypeCardData(archetypeName, tournamentDf,PathToLastDirs,Beginning,
-                          End,MtgFormat,EventType,ArchetypeCardDataResultDir,
-                          writeCSV,writeXLSX)
+  archetypeCardData = 
+    exportArchetypeCardData(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+                            End,MtgFormat,EventType,ArchetypeCardDataResultDir,
+                                               writeCSV,writeXLSX)
+  archetypeCardData = archetypeCardData[order(archetypeCardData$Share.Of.SB,decreasing=TRUE),]
+  archetypeDataList = append(archetypeDataList, list(archetypeCardData$Card.Name[1:10]))
   print(archetypeName)
 }
 
+# names(archetypeDataList) = archetypeTiersDf$Archetype
+# 
+# archetypeDataArray = array(data = archetypeDataList, dim = c(length(archetypeDataList)/3+1, 3))

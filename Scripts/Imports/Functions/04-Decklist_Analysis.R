@@ -31,7 +31,7 @@ round2 = function(x, digits) {
   z*posneg
 }
 
-#' Get all the unique cards played in a given archetype
+#' Get all the unique cards played in a given archetype and their data
 #'
 #' @param deckName a string with the name of the archetype to find
 #' @param color a string with the color of the archetype to keep. Ex: "WUBRG"
@@ -217,6 +217,204 @@ get_archetype_card_data = function(deckName, color, df){
   return(archetypeCardData)
 }
 
+#' Get the data of all the unique cards based on their number of copies
+#'
+#' @param deckName a string with the name of the archetype to find
+#' @param color a string with the color of the archetype to keep. Ex: "WUBRG"
+#' If "All", doesn't filter by color.
+#' @param df the dataframe returned by generate_df()
+#'
+#' @return the list of cards played in the archetype in a dataframe, depending
+#' on the number of copues, with data #' on their presence and win rate, split
+#' between MD and SB
+#' 
+#' @export
+#'
+#' @examples
+get_archetype_card_data_by_count = function(deckName, color, df){
+  
+  # # For development only
+  # deckName = "Hammer Time"
+  # color = "W"
+  # df = tournamentDf
+  # color = optimizedColor
+  
+  # Filter to keep the data of a given archetype in a chosen color
+  archetypeDf = df[df$Archetype$Archetype == deckName,]
+  if(color!="All"){
+    archetypeDf = archetypeDf[archetypeDf$Archetype$Color == color,]
+  }
+  
+  # Get the card list of each deck: card name and the corresponding number of 
+  # copies, both for mainboard (MD = maindeck) and sideboard (SB)
+  cardNamesMD = unlist(lapply(archetypeDf$Mainboard, 
+                              function(archetypeBoardVector) 
+                              {archetypeBoardVector$CardName}))
+  cardCountsMD = unlist(lapply(archetypeDf$Mainboard,  
+                               function(archetypeBoardVector) 
+                               {archetypeBoardVector$Count}))
+  cardCountsAndNamesMD = paste(cardCountsMD, cardNamesMD)
+  
+  winCountsMD = c(unlist(mapply(function(MDCards, numberWins)
+  {rep(numberWins,length(MDCards$CardName))}, 
+  archetypeDf$Mainboard, archetypeDf$NWins)))
+  
+  lossCountsMD = c(unlist(mapply(function(MDCards, numberLosses)
+  {rep(numberLosses,length(MDCards$CardName))}, 
+  archetypeDf$Mainboard, archetypeDf$NDefeats)))
+  
+  
+  
+  cardNamesSB = unlist(lapply(archetypeDf$Sideboard, 
+                              function(archetypeBoardVector) 
+                              {archetypeBoardVector$CardName}))
+  cardCountsSB = unlist(lapply(archetypeDf$Sideboard,  
+                               function(archetypeBoardVector) 
+                               {archetypeBoardVector$Count}))
+  
+  cardCountsAndNamesSB = paste(cardCountsSB, cardNamesSB)
+  
+  winCountsSB = c(unlist(mapply(function(SBCards, numberWins)
+  {rep(numberWins,length(SBCards$CardName))}, 
+  archetypeDf$Sideboard, archetypeDf$NWins)))
+  
+  lossCountsSB = c(unlist(mapply(function(SBCards, numberLosses)
+  {rep(numberLosses,length(SBCards$CardName))}, 
+  archetypeDf$Sideboard, archetypeDf$NDefeats)))
+  
+  # Regroup the data in dataframes
+  MDCards = data.frame(Count.and.Name = cardCountsAndNamesMD,
+                       Wins.In.MD = winCountsMD,
+                       Losses.In.MD = lossCountsMD)
+  SBCards = data.frame(Count.and.Name = cardCountsAndNamesSB,
+                       Wins.In.SB = winCountsSB,
+                       Losses.In.SB = lossCountsSB)
+  
+  # Keep only one row by different card, summing their copies, wins and defeats
+  MDCardsAggregate = aggregate(. ~ Count.and.Name, data = MDCards, sum)
+  SBCardsAggregate = aggregate(. ~ Count.and.Name, data = SBCards, sum)
+  
+  # Create a dataframe listing all the different cards in the archetype, 
+  # including the number of copies that are ran of each
+  archetypeCardData = 
+    merge(MDCardsAggregate, SBCardsAggregate, by = "Count.and.Name", all = TRUE)
+  archetypeCardData[is.na(archetypeCardData)] = 0
+  archetypeCardData$Wins.In.Decks = 
+    archetypeCardData$Wins.In.MD + 
+    archetypeCardData$Wins.In.SB
+  archetypeCardData$Losses.In.Decks = 
+    archetypeCardData$Losses.In.MD + 
+    archetypeCardData$Losses.In.SB
+  
+  archetypeCardData$WR.In.MD = 
+    round(archetypeCardData$Wins.In.MD /
+            (archetypeCardData$Wins.In.MD + 
+               archetypeCardData$Losses.In.MD) * 100, digits = 2)
+  archetypeCardData$Lower.95.CI.WR.In.MD = 
+    mapply(function(NWins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+                                       p=0.5,alternative = "two.sided", 
+                                       conf.level=0.95)$conf.int[1] * 100, digits = 2),0)},
+    archetypeCardData$Wins.In.MD,
+    archetypeCardData$Losses.In.MD)
+  archetypeCardData$Upper.95.CI.WR.In.MD =  
+    mapply(function(NWins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+                                       p=0.5,alternative="two.sided", 
+                                       conf.level=0.95)$conf.int[2] * 100, digits = 2),0)},
+    archetypeCardData$Wins.In.MD,
+    archetypeCardData$Losses.In.MD)
+  
+  archetypeCardData$WR.In.SB = 
+    round(archetypeCardData$Wins.In.SB /
+            (archetypeCardData$Wins.In.SB + 
+               archetypeCardData$Losses.In.SB) * 100, digits = 2)
+  archetypeCardData$Lower.95.CI.WR.In.SB = 
+    mapply(function(NWins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+                                       p=0.5,alternative="two.sided", 
+                                       conf.level=0.95)$conf.int[1] * 100, digits = 2),0)},
+    archetypeCardData$Wins.In.SB,
+    archetypeCardData$Losses.In.SB)
+  archetypeCardData$Upper.95.CI.WR.In.SB =  
+    mapply(function(NWins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+                                       p=0.5,alternative="two.sided", 
+                                       conf.level=0.95)$conf.int[2] * 100, digits = 2),0)},
+    archetypeCardData$Wins.In.SB,
+    archetypeCardData$Losses.In.SB)
+  
+  archetypeCardData$WR.In.Decks = 
+    round(archetypeCardData$Wins.In.Decks /
+            (archetypeCardData$Wins.In.Decks + 
+               archetypeCardData$Losses.In.Decks) * 100, digits = 2)
+  archetypeCardData$Lower.95.CI.WR.In.Decks = 
+    mapply(function(NWins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+                                       p=0.5,alternative="two.sided", 
+                                       conf.level=0.95)$conf.int[1] * 100, digits = 2),0)},
+    archetypeCardData$Wins.In.Decks,
+    archetypeCardData$Losses.In.Decks)
+  archetypeCardData$Upper.95.CI.WR.In.Decks =  
+    mapply(function(NWins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+                                       p=0.5,alternative="two.sided", 
+                                       conf.level=0.95)$conf.int[2] * 100, digits = 2),0)},
+    archetypeCardData$Wins.In.Decks,
+    archetypeCardData$Losses.In.Decks)
+  
+  archetypeCardData$Number.Of.MD = 
+    sapply(archetypeCardData$Count.and.Name, 
+           function(currentCard) 
+           {nrow(MDCards[MDCards$Count.and.Name == currentCard,])})
+  archetypeCardData$Number.Of.SB  = 
+    sapply(archetypeCardData$Count.and.Name, 
+           function(currentCard) 
+           {nrow(SBCards[SBCards$Count.and.Name == currentCard,])})
+  
+  archetypeCardData$Share.Of.MD = 
+    round(archetypeCardData$Number.Of.MD / nrow(archetypeDf) * 100, 
+          digits = 2)
+  archetypeCardData$Share.Of.SB  = 
+    round(archetypeCardData$Number.Of.SB / nrow(archetypeDf) * 100, 
+          digits = 2)
+  
+  archetypeCardData$Average.MD.Count.If.Present =
+    round(sapply(archetypeCardData$Count.and.Name,
+                 function(currentCard) 
+                 {mean(MDCards[MDCards$Count.and.Name == currentCard,]$Copies.In.MD)}), 
+          digits = 2)
+  archetypeCardData$Average.SB.Count.If.Present =
+    round(sapply(archetypeCardData$Count.and.Name,
+                 function(currentCard)
+                 {mean(SBCards[SBCards$Count.and.Name == currentCard,]$Copies.In.SB)}), 
+          digits = 2)
+  
+  archetypeCardData$Most.Common.MD.Count = 
+    lapply(archetypeCardData$Count.and.Name, function(cardName) 
+    {mostPresentCountsMD = as.numeric(names(which.max(
+      table(MDCards[MDCards$Count.and.Name == cardName,]$Copies.In.MD))));
+    ifelse(length(mostPresentCountsMD)>0, min(mostPresentCountsMD),0)})
+  
+  archetypeCardData$Most.Common.SB.Count = 
+    lapply(archetypeCardData$Count.and.Name, function(cardName) 
+    {mostPresentCountsSB = as.numeric(names(which.max(
+      table(SBCards[SBCards$Count.and.Name == cardName,]$Copies.In.SB))));
+    ifelse(length(mostPresentCountsSB)>0,min(mostPresentCountsSB),0)})
+  
+  archetypeCardData$Card.Count = 
+    as.numeric(str_extract(archetypeCardData$Count.and.Name, "^[0-9]+"))
+  archetypeCardData$Card.Name = 
+    str_trim(str_replace(archetypeCardData$Count.and.Name, "^[0-9]+", ""))
+  
+  archetypeCardData[is.na(archetypeCardData)] = 0
+  
+  archetypeCardData = archetypeCardData %>%
+    select(c("Count.and.Name","Share.Of.MD","Share.Of.SB","WR.In.MD","WR.In.SB"), everything())
+  
+  return(archetypeCardData)
+}
+
 #' Get the most played color combination for a given deck
 #'
 #' @param deckName a string with the name of the archetype to find
@@ -256,7 +454,7 @@ get_archetype_colors = function(deckName, df){
 #' @param color a string with the color of the archetype to keep. Ex: "WUBRG"
 #' @param df the dataframe returned by generate_df()
 #'
-#' @return a dataframe with the card names and their count in the 
+#' @return a dataframe with the card names and their count in the archetype
 #' @export
 #'
 #' @examples
@@ -266,7 +464,8 @@ get_average_decklist = function(deckName, color, df){
   archetypeDf = df[df$Archetype$Archetype == deckName,]
   archetypeDf = archetypeDf[archetypeDf$Archetype$Color == color,]
   
-  # Filter to keep the data of a given archetype
+  # Get the list of unique cards played in that archetype and the associated
+  # performance data
   archetypeCardData = 
     get_archetype_card_data(deckName, color, df)
   
@@ -354,4 +553,186 @@ get_average_decklist = function(deckName, color, df){
   return(averageMaindeck)
 }
 
+#' Get the presence and winrate of the archetype depending on the color 
+#' combination
+#'
+#' @param deckName a string with the name of the archetype to find
+#' @param df the dataframe returned by generate_df()
+#'
+#' @return a data frame with the color, presence and winrate
+#' @export
+#'
+#' @examples
+get_archetype_data_by_color = function(deckName, df){
+  archetypeColors = get_archetype_colors(deckName, df)
+  colorResults = data.frame(archetypeColors)
+  names(colorResults) = c("Colors","Presence")
+  
+  colorResults$Wins = mapply(function(color){
+    archetypeDf = df[df$Archetype$Archetype == deckName,]
+    archetypeDf = archetypeDf[archetypeDf$Archetype$Color == color,]
+    
+    sum(archetypeDf$NWins)
+  },colorResults$Colors)
+  
+  colorResults$Defeats = mapply(function(color){
+    archetypeDf = df[df$Archetype$Archetype == deckName,]
+    archetypeDf = archetypeDf[archetypeDf$Archetype$Color == color,]
+    
+    sum(archetypeDf$NDefeats)
+  },colorResults$Colors)
+  
+  colorResults$Winrate = mapply(function(wins, defeats){
+    round(100*wins/(wins+defeats), digits = 2)
+  },colorResults$Wins,colorResults$Defeats)
+  
+  colorResults$WRCI95LowerBound = mapply(FUN = function(wins, defeats){
+    round(binom.test(wins, wins + defeats, p = 0.5, alternative = "two.sided", 
+               conf.level = CIPercent)$conf.int[1] * 100, digits = 2)
+  }, colorResults$Wins, colorResults$Defeats)
+  
+  # Return the most reliable winrate (best lower bound of the confidence interval)
+  colorResults[order(colorResults$WRCI95LowerBound,decreasing=TRUE),]
+}
 
+#' Get the decklist optimized by lowest bound on the winrate for an archetype 
+#' for the optimized color combination
+#'
+#' @param deckName a string with the name of the archetype to find
+#' @param df the dataframe returned by generate_df()
+#'
+#' @return a dataframe with the card names and their count in the archetype
+#' @export
+#'
+#' @examples
+get_winrate_optimized_decklist = function(deckName, optimizedColor, df){
+  df = tournamentDf
+  deckName = archetypeName
+  # Filter to keep the data of a given archetype in an optimized color based
+  # on the lowest bound of confidence interval on the winrate
+  archetypeDf = df[df$Archetype$Archetype == deckName,]
+  # optimizedColor = get_archetype_data_by_color(deckName)$Colors[1]
+  archetypeDf = archetypeDf[archetypeDf$Archetype$Color == optimizedColor,]
+  
+  # Optimize the number of cards in MD based on the lowest bound of confidence
+  # interval on the winrate
+  Total.Cards = unlist(
+    lapply(archetypeDf$Mainboard, 
+           function(archetypeBoardVector){
+             sum(archetypeBoardVector$Count)
+           }
+    ))
+  Total.Wins = archetypeDf$NWins
+  Total.Defeats = archetypeDf$NDefeats
+  
+  deckCardCountData = data.frame(Total.Cards,Total.Wins,Total.Defeats)
+  
+  deckCardCountData = aggregate(. ~ Total.Cards, data=deckCardCountData, FUN=sum)
+  
+  deckCardCountData$Deck.Measured.Winrate = mapply(function(wins, defeats){
+    round(100*wins/(wins+defeats), digits = 2)
+  },deckCardCountData$Total.Wins,deckCardCountData$Total.Defeats)
+  
+  deckCardCountData$Deck.Lower.Bound.Winrate = mapply(FUN = function(wins, defeats){
+    round(binom.test(wins, wins + defeats, p = 0.5, alternative = "two.sided", 
+                     conf.level = CIPercent)$conf.int[1] * 100, digits = 2)
+  }, deckCardCountData$Total.Wins,deckCardCountData$Total.Defeats)
+  
+  # # Used without the aggregate
+  # linearRegression = lm(Deck.Measured.Winrate ~ Total.Cards, data = deckCardCountData)
+  # summary(linearRegression)
+  # # No correlation found for Cascade Beans on 2023/11/17 
+  
+  optimizedCardTotalMD = 
+    deckCardCountData[order(deckCardCountData$Deck.Lower.Bound.Winrate,
+                            decreasing=TRUE),]$Total.Cards[1]
+  
+  # Get the list of unique cards played in that archetype and the associated
+  # performance data
+  archetypeCardDataMB = 
+    get_archetype_card_data_by_count(deckName, optimizedColor, df)
+  
+  archetypeCardDataSB = archetypeCardDataMB
+    
+  # Prepare the output structure
+  optimizedMaindeck = data.frame(Card.Names.MD = character(),
+                               Card.Count.MD = numeric(),
+                               Lower.95.CI.WR.In.MD = numeric(),
+                               Share.Of.MD = numeric())
+  # i = 0
+  
+  while(sum(as.numeric(optimizedMaindeck$Card.Count.MD)) < optimizedCardTotalMD){
+    # i = i+1
+    # print(i)
+    bestLBCI = max(archetypeCardDataMB$Lower.95.CI.WR.In.MD)
+    bestLBCICard = 
+      archetypeCardDataMB[archetypeCardDataMB$Lower.95.CI.WR.In.MD == bestLBCI,][1,]
+    archetypeCardDataMB = archetypeCardDataMB[
+      archetypeCardDataMB$Count.and.Name != bestLBCICard$Count.and.Name,]
+    
+    if(bestLBCICard$Card.Count + sum(as.numeric(optimizedMaindeck$Card.Count.MD)) <= 
+       optimizedCardTotalMD){
+      optimizedMaindeck[nrow(optimizedMaindeck) + 1,] = 
+        c(bestLBCICard[1,]$Card.Name, 
+          as.numeric(bestLBCICard[1,]$Card.Count), 
+          bestLBCICard[1,]$Lower.95.CI.WR.In.MD,
+          bestLBCICard[1,]$Share.Of.MD)
+    }else{
+      # Show after the comma how many copies there would be without the total 
+      # limit of cards on the MD
+      optimizedMaindeck[nrow(optimizedMaindeck) + 1,] = 
+        c(bestLBCICard[1,]$Card.Name, 
+          optimizedCardTotalMD - sum(as.numeric(optimizedMaindeck$Card.Count.MD))
+          + 1/10*bestLBCICard[1,]$Card.Count,
+          bestLBCICard[1,]$Lower.95.CI.WR.In.MD,
+          bestLBCICard[1,]$Share.Of.MD)
+    }
+  }
+  # # For development
+  # sum(optimizedMaindeck$CardCountMD)
+  
+  optimizedCardTotalSB = 15
+  
+  optimizedSideboard = data.frame(Card.Names.SB = character(),
+                                  Card.Count.SB = numeric(),
+                                  Lower.95.CI.WR.In.SB = numeric(),
+                                  Share.Of.SB = numeric())
+  
+  while(sum(as.numeric(optimizedSideboard$Card.Count.SB)) < optimizedCardTotalSB){
+    bestLBCI = max(archetypeCardDataSB$Lower.95.CI.WR.In.SB)
+    bestLBCICard = 
+      archetypeCardDataSB[archetypeCardDataSB$Lower.95.CI.WR.In.SB == bestLBCI,][1,]
+    archetypeCardDataSB = archetypeCardDataSB[
+      archetypeCardDataSB$Count.and.Name != bestLBCICard$Count.and.Name,]
+    
+    if(bestLBCICard$Card.Count + sum(as.numeric(optimizedSideboard$Card.Count.SB)) <= 
+       optimizedCardTotalSB){
+      optimizedSideboard[nrow(optimizedSideboard) + 1,] = 
+        c(bestLBCICard[1,]$Card.Name, 
+          as.numeric(bestLBCICard[1,]$Card.Count), 
+          bestLBCICard[1,]$Lower.95.CI.WR.In.SB,
+          bestLBCICard[1,]$Share.Of.SB)
+    }else{
+      # Show after the comma how many copies there would be without the total 
+      # limit of cards on the SB
+      optimizedSideboard[nrow(optimizedSideboard) + 1,] = 
+        c(bestLBCICard[1,]$Card.Name, 
+          optimizedCardTotalSB - sum(as.numeric(optimizedSideboard$Card.Count.SB)) 
+          + 1/10*bestLBCICard[1,]$Card.Count,
+          bestLBCICard[1,]$Lower.95.CI.WR.In.SB,
+          bestLBCICard[1,]$Share.Of.SB)
+    }
+  }
+  
+  optimizedMaindeck$Card.Count.and.Name.MD = 
+    paste(optimizedMaindeck$Card.Count.MD, optimizedMaindeck$Card.Names.MD)
+  optimizedSideboard$Card.Count.and.Name.SB = 
+    paste(optimizedSideboard$Card.Count.SB, optimizedSideboard$Card.Names.SB)
+  
+  optimizedMaindeckText = paste(optimizedMaindeck$Card.Count.and.Name.MD, collapse = "\n")
+  optimizedSideboardText = paste(optimizedSideboard$Card.Count.and.Name.SB, collapse = "\n")
+  optimizedDeckText = paste0(optimizedMaindeckText,"\n\n",optimizedSideboardText, "\n\n")
+  cat(optimizedDeckText)
+  
+  return(list(Maindeck = optimizedMaindeck, Sideboard = optimizedSideboard))
+}

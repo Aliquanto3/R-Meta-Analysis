@@ -73,8 +73,8 @@ exportTextAnalysis(tournamentDf, PathToLastDirs, Beginning, End, MtgFormat,
 ############################################################ 
 
 cardName = "Leyline Binding"
-archetypeName = "Hammer Time"
-archetypeName2 = "Murktide"
+archetypeName = "Grinding Breach"
+archetypeName2 = "Hammer Time"
 
 addArchetypeColor = T
 if(addArchetypeColor){
@@ -157,7 +157,11 @@ if(mergeUWX){
     },tournamentDf$Matchups)
 }
 
-
+optimizedColorData = get_archetype_data_by_color(archetypeName,tournamentDf)
+optimizedColorData
+optimizedColor = optimizedColorData$Colors[1]
+optimizedColor = "URG"
+get_winrate_optimized_decklist(archetypeName,optimizedColor,tournamentDf)
 
 getConflictURL(tournamentDf)
 getConflictArchetype(tournamentDf)
