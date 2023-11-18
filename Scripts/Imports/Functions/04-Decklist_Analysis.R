@@ -606,8 +606,8 @@ get_archetype_data_by_color = function(deckName, df){
 #'
 #' @examples
 get_winrate_optimized_decklist = function(deckName, optimizedColor, df){
-  df = tournamentDf
-  deckName = archetypeName
+  # df = tournamentDf
+  # deckName = archetypeName
   # Filter to keep the data of a given archetype in an optimized color based
   # on the lowest bound of confidence interval on the winrate
   archetypeDf = df[df$Archetype$Archetype == deckName,]
@@ -670,22 +670,24 @@ get_winrate_optimized_decklist = function(deckName, optimizedColor, df){
     archetypeCardDataMB = archetypeCardDataMB[
       archetypeCardDataMB$Count.and.Name != bestLBCICard$Count.and.Name,]
     
-    if(bestLBCICard$Card.Count + sum(as.numeric(optimizedMaindeck$Card.Count.MD)) <= 
-       optimizedCardTotalMD){
-      optimizedMaindeck[nrow(optimizedMaindeck) + 1,] = 
-        c(bestLBCICard[1,]$Card.Name, 
-          as.numeric(bestLBCICard[1,]$Card.Count), 
-          bestLBCICard[1,]$Lower.95.CI.WR.In.MD,
-          bestLBCICard[1,]$Share.Of.MD)
-    }else{
-      # Show after the comma how many copies there would be without the total 
-      # limit of cards on the MD
-      optimizedMaindeck[nrow(optimizedMaindeck) + 1,] = 
-        c(bestLBCICard[1,]$Card.Name, 
-          optimizedCardTotalMD - sum(as.numeric(optimizedMaindeck$Card.Count.MD))
-          + 1/10*bestLBCICard[1,]$Card.Count,
-          bestLBCICard[1,]$Lower.95.CI.WR.In.MD,
-          bestLBCICard[1,]$Share.Of.MD)
+    if(!(bestLBCICard[1,]$Card.Name %in% optimizedMaindeck$Card.Names.MD)){
+      if(bestLBCICard$Card.Count + sum(as.numeric(optimizedMaindeck$Card.Count.MD)) <= 
+         optimizedCardTotalMD){
+        optimizedMaindeck[nrow(optimizedMaindeck) + 1,] = 
+          c(bestLBCICard[1,]$Card.Name, 
+            as.numeric(bestLBCICard[1,]$Card.Count), 
+            bestLBCICard[1,]$Lower.95.CI.WR.In.MD,
+            bestLBCICard[1,]$Share.Of.MD)
+      }else{
+        # Show after the comma how many copies there would be without the total 
+        # limit of cards on the MD
+        optimizedMaindeck[nrow(optimizedMaindeck) + 1,] = 
+          c(bestLBCICard[1,]$Card.Name, 
+            optimizedCardTotalMD - sum(as.numeric(optimizedMaindeck$Card.Count.MD))
+            + 1/10*bestLBCICard[1,]$Card.Count,
+            bestLBCICard[1,]$Lower.95.CI.WR.In.MD,
+            bestLBCICard[1,]$Share.Of.MD)
+      }
     }
   }
   # # For development
@@ -705,22 +707,24 @@ get_winrate_optimized_decklist = function(deckName, optimizedColor, df){
     archetypeCardDataSB = archetypeCardDataSB[
       archetypeCardDataSB$Count.and.Name != bestLBCICard$Count.and.Name,]
     
-    if(bestLBCICard$Card.Count + sum(as.numeric(optimizedSideboard$Card.Count.SB)) <= 
-       optimizedCardTotalSB){
-      optimizedSideboard[nrow(optimizedSideboard) + 1,] = 
-        c(bestLBCICard[1,]$Card.Name, 
-          as.numeric(bestLBCICard[1,]$Card.Count), 
-          bestLBCICard[1,]$Lower.95.CI.WR.In.SB,
-          bestLBCICard[1,]$Share.Of.SB)
-    }else{
-      # Show after the comma how many copies there would be without the total 
-      # limit of cards on the SB
-      optimizedSideboard[nrow(optimizedSideboard) + 1,] = 
-        c(bestLBCICard[1,]$Card.Name, 
-          optimizedCardTotalSB - sum(as.numeric(optimizedSideboard$Card.Count.SB)) 
-          + 1/10*bestLBCICard[1,]$Card.Count,
-          bestLBCICard[1,]$Lower.95.CI.WR.In.SB,
-          bestLBCICard[1,]$Share.Of.SB)
+    if(!(bestLBCICard[1,]$Card.Name %in% optimizedMaindeck$Card.Names.SB)){
+      if(bestLBCICard$Card.Count + sum(as.numeric(optimizedSideboard$Card.Count.SB)) <= 
+         optimizedCardTotalSB){
+        optimizedSideboard[nrow(optimizedSideboard) + 1,] = 
+          c(bestLBCICard[1,]$Card.Name, 
+            as.numeric(bestLBCICard[1,]$Card.Count), 
+            bestLBCICard[1,]$Lower.95.CI.WR.In.SB,
+            bestLBCICard[1,]$Share.Of.SB)
+      }else{
+        # Show after the comma how many copies there would be without the total 
+        # limit of cards on the SB
+        optimizedSideboard[nrow(optimizedSideboard) + 1,] = 
+          c(bestLBCICard[1,]$Card.Name, 
+            optimizedCardTotalSB - sum(as.numeric(optimizedSideboard$Card.Count.SB)) 
+            + 1/10*bestLBCICard[1,]$Card.Count,
+            bestLBCICard[1,]$Lower.95.CI.WR.In.SB,
+            bestLBCICard[1,]$Share.Of.SB)
+      }
     }
   }
   
