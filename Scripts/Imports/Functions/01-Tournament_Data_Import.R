@@ -32,12 +32,12 @@ library("data.table")
 #' 
 #' - NRounds: the number of rounds, based on the score in the Result column
 #' 
-#' - NWins: the number of victories, dividing the number of points by 3
+#' - Wins: the number of victories, dividing the number of points by 3
 #' 
-#' - NDefeats: the number of losses, by subtracting the number of victories to
+#' - Losses: the number of losses, by subtracting the number of victories to
 #' the number of matches played
 #' 
-#' - NDraws: the number of draws, automatically 0 (added for compatibility
+#' - Draws: the number of draws, automatically 0 (added for compatibility
 #' with other datasets during the analysis and binding)
 #' 
 #' - T8Points: automatically 0 (added for compatibility with other datasets 
@@ -50,21 +50,18 @@ library("data.table")
 #'
 #' @examples
 generate_Prelim_Data = function(prelimData) {
+  # # For development only
+  # prelimData = PrelimData
   # Compute the number of rounds in each event for the preliminaries
-  if (nrow(prelimData) >= 1) {
-    prelimData$NRounds = rep(0,nrow(prelimData))
-    conditionOldPrelims = prelimData$Result == "5-0" |
-      prelimData$Result == "4-1" |
-      prelimData$Result == "3-2"
-    
-    prelimData$NRounds = ifelse(conditionOldPrelims,5,4)
+  prelimData$NRounds = rep(NA, nrow(prelimData))
+  prelimEventList = unique(prelimData$TournamentFile)
+  for (prelimEvent in prelimEventList){
+    prelimEventData = prelimData[prelimData$TournamentFile == prelimEvent,]
+    # No draws in Preliminaries, always 4 or 5 rounds, no matter the players
+    prelimEventRoundNumber = prelimEventData$Wins[1] + prelimEventData$Losses[1]
+    prelimData[prelimData$TournamentFile == prelimEvent,]$NRounds = 
+      rep(prelimEventRoundNumber,nrow(prelimEventData))
   }
-  
-  # Compute the number of defeats of each deck in Preliminaries -
-  # number of rounds minus the number of points/3 (3 pts earned by win)
-  prelimData$NWins = prelimData$Points / 3
-  prelimData$NDraws = rep(0, nrow(prelimData)) # for merge with Full Meta Events
-  prelimData$NDefeats = prelimData$NRounds - prelimData$Points / 3
   
   # Add top8 columns for merge with swiss round events
   prelimData$T8Points = rep(0, nrow(prelimData))
@@ -89,17 +86,17 @@ generate_Prelim_Data = function(prelimData) {
 #' - NRounds: the number of rounds, based on an extrapolation of the points in 
 #' the standings, or the sum of matches played if available in the matchup data
 #' 
-#' - NWins: the number of victories, by dividing the points by 3 in the 
+#' - Wins: the number of victories, by dividing the points by 3 in the 
 #' standings, or by summing match victories if available in the matchup data
 #' (a match victory is identified if there are strictly more game victories than
 #' game losses)
 #' 
-#' - NDefeats: the number of losses, by subtracting the number of victories to
+#' - Losses: the number of losses, by subtracting the number of victories to
 #' the number of matches played, or summing match losses if available in the
 #' matchup data (a match loss is identified if there are strictly more game
 #' losses than game victories)
 #' 
-#' - NDraws: the number of draws, based on the rest of the euclidean division
+#' - Draws: the number of draws, based on the rest of the euclidean division
 #' by 3 of the score (but it doesn't work well for 3 draws, unless compared
 #' with the total number of rounds - the function doesn't do it yet 
 #' since for the tournaments without match up data, there shouldn't be draws,
@@ -117,65 +114,32 @@ generate_Prelim_Data = function(prelimData) {
 #' @examples
 generate_Tournament_Data = function(tournamentData) {
   
-  # Compute the number of rounds in each event .
-  # Divide the maximum number of points in swiss to get the result.
-  # If more than 1 player has the maximum of points, then it is likely that
-  # there is not any player at x-0, so you add 1 to the result
+  # # For development only
+  # tournamentData = MTGONonPrelimData
+  # tournamentData = PaperData
+  # tournamentData = periodData
   
+  tournamentData = tournamentData[!is.na(tournamentData$Points),]
+  
+  # Compute the number of rounds based on the MTR
   listEvents = unique(tournamentData$TournamentName)
   nRoundsVec = c()
-  if (length(listEvents) >= 1) {
-    for (event in listEvents) {
-      eventData = subset(tournamentData, TournamentName == event)
-      maxPoints = max(eventData$Points, na.rm = TRUE)
-      nPlayMaxPts = length(which(eventData$Points == maxPoints))
-      nRounds = ifelse(nPlayMaxPts == 1,
-                       maxPoints %/% 3,
-                       1 + maxPoints %/% 3)
-      nRoundsEvent = rep(nRounds, nrow(eventData))
-      nRoundsVec = c(nRoundsVec, nRoundsEvent)
-    }
+  for (event in listEvents) {
+    eventData = subset(tournamentData, TournamentName == event)
+    playerNumber = nrow(eventData)
+    nRounds = case_when(
+      playerNumber >= 410 ~ 10,
+      playerNumber >= 227 ~ 9,
+      playerNumber >= 129 ~ 8,
+      playerNumber >= 65 ~ 7,
+      playerNumber >= 33 ~ 6,
+      playerNumber >= 17 ~ 5,
+      .default = 4
+    )
+    nRoundsEvent = rep(nRounds, nrow(eventData))
+    nRoundsVec = c(nRoundsVec, nRoundsEvent)
   }
   tournamentData$NRounds = nRoundsVec
-  
-  # Compute the record of each deck in tournaments -
-  # number of rounds minus the number of points/3 (3 pts earned by win)
-  tournamentData$Points[is.na(tournamentData$Points)] = 0
-  tournamentData$NWins = tournamentData$Points %/% 3
-  tournamentData$NDraws = tournamentData$Points %% 3
-  tournamentData$NDefeats = tournamentData$NRounds - 
-    tournamentData$NWins - tournamentData$NDraws
-  # Doesn't take draws in account if they are a multiple of 3
-  # TODO : fix this drawback if tournaments without matchup data but a 
-  # possibility of draws in the results arise. None currently.
-  # The number of defeats might be required in the data if it happens.
-  
-  conditionMUNotNull = !sapply(tournamentData$Matchups, 
-                               function(x) {length(x) == 0 })
-  
-  for (i in (1:nrow(tournamentData))[conditionMUNotNull]) {
-    
-    tournamentDataI = tournamentData[i,]
-    WinsI = tournamentDataI$Matchups[[1]]$Wins 
-    DefeatsI = tournamentDataI$Matchups[[1]]$Losses 
-    
-    tournamentDataI$NWins = sum(WinsI > DefeatsI)
-    
-    tournamentDataI$NDefeats = sum(WinsI < DefeatsI)
-    
-    tournamentDataI$NDraws = sum(WinsI == DefeatsI)
-    
-    tournamentData[i,] = tournamentDataI
-  }
-  
-  # Review the relevance of the computation of the number of rounds
-  conditionRoundsDifferentFromScore = tournamentData$NRounds !=
-    tournamentData$NWins + tournamentData$NDraws + tournamentData$NDefeats
-  
-  tournamentData[conditionRoundsDifferentFromScore,]$NRounds =
-    tournamentData[conditionRoundsDifferentFromScore,]$NWins + 
-    tournamentData[conditionRoundsDifferentFromScore,]$NDraws + 
-    tournamentData[conditionRoundsDifferentFromScore,]$NDefeats
   
   #Add top8 points: 3*3 to 1st, 3*2 to 2nd, 3*1 to 3rd and 4th, none to others
   
@@ -188,7 +152,7 @@ generate_Tournament_Data = function(tournamentData) {
                                    ifelse(ConditionTop2,6,
                                           ifelse(ConditionTop4,3,0)))
   
-  #Add top8 defeats: 0 for the winner, 1 for the others
+  #Add top8 defeats
   tournamentData$T8Defeats = rep(0, nrow(tournamentData))
   
   #Add the number of matches played in top8: 3 in final, 2 in semi final, 1 in
@@ -196,6 +160,8 @@ generate_Tournament_Data = function(tournamentData) {
   if (length(listEvents) >= 1) {
     conditionTop8Not1 = tournamentData$NumericResult >= 2 &
       tournamentData$NumericResult <= 8
+    #0 for the winner and players who didn't reach top8
+    # 1 for the others who reach top8
     tournamentData$T8Defeats = ifelse(conditionTop8Not1,
                                       tournamentData$T8Defeats+1,
                                       tournamentData$T8Defeats)
@@ -248,11 +214,13 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
   # beginning = Beginning
   # end = End
 
-  if (!mtgFormat == "All_Formats") {
-    # probably filtered before with right use of the parser and import of a
-    # correctly named file
-    rawData = rawData[grep(pattern = mtgFormat, x = rawData$Tournament), ]
-  }
+  # if (!mtgFormat == "All_Formats") {
+  #   # probably filtered before with right use of the parser and import of a
+  #   # correctly named file
+  #   # We might lose tournaments such as Grand Open Qualifiers otherwise,
+  #   # especially with the automation of MTG Melee
+  #   rawData = rawData[grep(pattern = mtgFormat, x = rawData$Tournament), ]
+  # }
   rawData$Date = as.Date(rawData$Date)
   
   #Select data for a specific period
@@ -269,15 +237,21 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
                                       " ")
   periodData$Result[is.na(periodData$Result)] = 0
   
-
+  # Remove decks without associated results
+  periodData = periodData[!periodData$Result=="",]
   
   # Make the final position easier to manipulate as a number 
   # (doesn't work for Prelims)
   periodData$NumericResult = parse_number(periodData$Result)
   
+  # Turn results into numeric values
+  periodData$Wins = as.numeric(periodData$Wins)
+  periodData$Losses = as.numeric(periodData$Losses)
+  periodData$Draws = as.numeric(periodData$Draws)
+  
   # /!\ Some events only have a top32, or don't even have one (Preliminary)
   if (eventType == EventTypes[1]) {
-    # "1" = "All sources"
+    # "1" = "All sources (except from Leagues and Team events)"
     # Remove the noise from leagues in case it wasn't done by the parser
     periodData = periodData[!grepl("League", periodData$Tournament),]
     # Remove the Team Trio events providing unusable data
@@ -334,7 +308,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     
     X2Data = periodData[!grepl("Preliminary", periodData$Tournament),]
     # Keep only the X-2 and better
-    X2Data = X2Data[X2Data$NDefeats <= 2, ]
+    X2Data = X2Data[X2Data$Losses <= 2, ]
     resultDf = generate_Tournament_Data(X2Data)
     
   } else if (eventType == EventTypes[6]) {
@@ -346,7 +320,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     
     X1Data = periodData[!grepl("Preliminary", periodData$Tournament),]
     # Keep only the X-1 and better
-    X1Data = X1Data[X1Data$NDefeats <= 1, ]
+    X1Data = X1Data[X1Data$Losses <= 1, ]
     resultDf = generate_Tournament_Data(X1Data)
     
   } else if (eventType == EventTypes[7]) {
@@ -354,9 +328,9 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     # Remove the Team Trio events providing unusable data
     periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from Manatraders and MTG Melee, not the partial MTGO website
-    MTData = periodData[grep("https://www.manatraders.com/webshop/personal/",
+    MTData = periodData[grep(Manatraders_URL,
                              periodData$AnchorUri),]
-    PaperData = periodData[grep("https://melee.gg/Decklist/View/",
+    PaperData = periodData[grep(MTGMelee_URL,
                                 periodData$AnchorUri),]
     resultDf = rbind(generate_Tournament_Data(MTData),
                generate_Tournament_Data(PaperData))
@@ -364,7 +338,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
   } else if (eventType == EventTypes[8]) {
     #"8" = "ManaTraders"
     # Use data from Manatraders
-    MTData = periodData[grep("https://www.manatraders.com/webshop/personal/",
+    MTData = periodData[grep(Manatraders_URL,
                              periodData$AnchorUri),]
     resultDf = generate_Tournament_Data(MTData)
     
@@ -373,7 +347,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     # Remove the Team Trio events providing unusable data
     periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from MTG Melee
-    PaperData = periodData[grep("https://melee.gg/Decklist/View/",
+    PaperData = periodData[grep(MTGMelee_URL,
                                 periodData$AnchorUri),]
     resultDf = generate_Tournament_Data(PaperData)
     
@@ -382,7 +356,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     # Remove the Team Trio events providing unusable data
     periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from MTG Melee
-    PaperData = periodData[grep("https://melee.gg/Decklist/View/",
+    PaperData = periodData[grep(MTGMelee_URL,
                                 periodData$AnchorUri),]
     # Keep only the top32
     PaperData = PaperData[PaperData$NumericResult <= 32, ]
@@ -393,7 +367,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     # Remove the Team Trio events providing unusable data
     periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from MTG Melee
-    PaperData = periodData[grep("https://melee.gg/Decklist/View/",
+    PaperData = periodData[grep(MTGMelee_URL,
                                 periodData$AnchorUri),]
     # Keep only the top8
     PaperData = PaperData[PaperData$NumericResult <= 8, ]
@@ -404,7 +378,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     # Remove the Team Trio events providing unusable data
     periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from MTG Melee
-    PaperData = periodData[grep("https://melee.gg/Decklist/View/",
+    PaperData = periodData[grep(MTGMelee_URL,
                                 periodData$AnchorUri),]
     # Keep only the top1
     PaperData = PaperData[PaperData$NumericResult <= 1, ]
@@ -415,10 +389,10 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     # Remove the Team Trio events providing unusable data
     periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from MTG Melee
-    PaperData = periodData[grep("https://melee.gg/Decklist/View/",
+    PaperData = periodData[grep(MTGMelee_URL,
                                 periodData$AnchorUri),]
     # Keep only the top1
-    PaperData = PaperData[PaperData$NDefeats <= 2, ]
+    PaperData = PaperData[PaperData$Losses <= 2, ]
     resultDf = generate_Tournament_Data(PaperData)
     
   } else if (eventType == EventTypes[14]) {
@@ -426,31 +400,31 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     # Remove the Team Trio events providing unusable data
     periodData = periodData[!grepl("Team", periodData$Tournament),]
     # Use data from MTG Melee
-    PaperData = periodData[grep("https://melee.gg/Decklist/View/",
+    PaperData = periodData[grep(MTGMelee_URL,
                                 periodData$AnchorUri),]
     # Keep only the top1
-    PaperData = PaperData[PaperData$NDefeats <= 1, ]
+    PaperData = PaperData[PaperData$Losses <= 1, ]
     resultDf = generate_Tournament_Data(PaperData)
     
   } else{
-    MTGOData = periodData[grep("https://www.mtgo.com/en/mtgo/decklist/",
+    MTGOData = periodData[grep(MTGO_URL,
                                periodData$AnchorUri),]
     # Remove the noise from leagues in case it wasn't done by the parser
     MTGOData = MTGOData[!grepl("League", MTGOData$Tournament),]
     
     if (eventType == EventTypes[15]) {
       # "15" = "MTGO Official Competitions"
-      MTGOTop32Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
+      MTGONonPrelimData = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
       PrelimData = MTGOData[grep("Preliminary", MTGOData$Tournament),]
-      resultDf = rbind(generate_Tournament_Data(MTGOTop32Data),
+      resultDf = rbind(generate_Tournament_Data(MTGONonPrelimData),
                  generate_Prelim_Data(PrelimData))
       
     } else if (eventType == EventTypes[16]) {
-      # "16" = "MTGO Events Top32"
+      # "16" = "MTGO Official Competitions with top8"
       # MTGO tournaments with a top32, so not Preliminaries (nor Leagues,
       # already filtered)
-      MTGOTop32Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
-      resultDf = generate_Tournament_Data(MTGOTop32Data)
+      MTGONonPrelimData = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
+      resultDf = generate_Tournament_Data(MTGONonPrelimData)
       
     } else if (eventType == EventTypes[17]) {
       # "17" = "MTGO Events Top8"
@@ -476,7 +450,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
       # already filtered)
       MTGOX2Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
       # Keep only the top8
-      MTGOX2Data = MTGOX2Data[MTGOX2Data$NDefeats <= 2, ]
+      MTGOX2Data = MTGOX2Data[MTGOX2Data$Losses <= 2, ]
       resultDf = generate_Tournament_Data(MTGOX2Data)
       
     } else if (eventType == EventTypes[20]) {
@@ -485,7 +459,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
       # already filtered)
       MTGOX1Data = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
       # Keep only the top1
-      MTGOX1Data = MTGOX1Data[MTGOX1Data$NDefeats <= 1, ]
+      MTGOX1Data = MTGOX1Data[MTGOX1Data$Losses <= 1, ]
       resultDf = generate_Tournament_Data(MTGOX1Data)
       
     } else if (eventType == EventTypes[21]) {
@@ -493,6 +467,21 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
       # Preliminaries only
       PrelimData = MTGOData[grep("Preliminary", MTGOData$Tournament),]
       resultDf = generate_Prelim_Data(PrelimData)
+      
+    } else if (eventType == EventTypes[22]) {
+      # "22" = "MTGO Preliminaries and Full Meta Events"
+      # Preliminaries and tournaments with the full results available
+      # Remove the Team Trio events providing unusable data
+      periodData = periodData[!grepl("Team", periodData$Tournament),]
+      # Use data from Manatraders and MTG Melee, not the partial MTGO website
+      MTData = periodData[grep(Manatraders_URL,
+                               periodData$AnchorUri),]
+      PaperData = periodData[grep(MTGMelee_URL,
+                                  periodData$AnchorUri),]
+      PrelimData = MTGOData[grep("Preliminary", MTGOData$Tournament),]
+      resultDf = rbind(generate_Tournament_Data(MTData),
+                       generate_Tournament_Data(PaperData),
+                       generate_Prelim_Data(PrelimData))
       
     }
   }
@@ -605,14 +594,13 @@ getURLofDeck = function(deckName,df){
 #' @examples
 getBestDeck = function(deckName,df){
   df2=df[df$Archetype$Archetype==deckName,]
-  df2$WinLossScore = df2$NWins + df2$T8Points/3 -
-    df2$NDefeats - df2$T8Defeats
+  df2$WinLossScore = df2$Wins + df2$T8Points/3 -
+    df2$Losses - df2$T8Defeats
   if(nrow(df2)>0){
     df2=df2[df2$WinLossScore==max(df2$WinLossScore),]
   }
   return(df2$AnchorUri)
 }
-
 
 #' Matchup data between two given archetypes
 #'
@@ -661,15 +649,15 @@ get_matchup_data = function(df,arch1,arch2){
 #'     list(Matchups[-c(1,2,3,9,10,11),])
 #'   },df[conditionPT,]$Matchups)
 #' 
-#'   df[conditionPT,]$NWins = mapply(function(Matchups){
+#'   df[conditionPT,]$Wins = mapply(function(Matchups){
 #'     sum(Matchups$Wins > Matchups$Losses)
 #'   },df[conditionPT,]$Matchups)
 #' 
-#'   df[conditionPT,]$NDefeats = mapply(function(Matchups){
+#'   df[conditionPT,]$Losses = mapply(function(Matchups){
 #'     sum(Matchups$Wins < Matchups$Losses)
 #'   },df[conditionPT,]$Matchups)
 #' 
-#'   df[conditionPT,]$NDraws = mapply(function(Matchups){
+#'   df[conditionPT,]$Draws = mapply(function(Matchups){
 #'     sum(Matchups$Wins == Matchups$Losses)
 #'   },df[conditionPT,]$Matchups)
 #' 

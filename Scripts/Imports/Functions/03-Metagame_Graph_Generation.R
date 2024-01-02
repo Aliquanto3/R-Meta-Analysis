@@ -369,12 +369,12 @@ boxplot_winrates = function(archetypeRankingDf,tournamentDf,chartShare,presence,
   
   most_present_archetypes_df = tournamentDf[tournamentDf$Archetype$Archetype %in% 
                                               most_present_archetypes,] %>% 
-    select(c('Archetype','NWins','NDefeats'))
+    select(c('Archetype','Wins','Losses'))
   
   most_present_archetypes_df$Archetype = most_present_archetypes_df$Archetype$Archetype
   
-  most_present_archetypes_df$Winrate = 100 * most_present_archetypes_df$NWins / 
-    (most_present_archetypes_df$NWins + most_present_archetypes_df$NDefeats)
+  most_present_archetypes_df$Winrate = 100 * most_present_archetypes_df$Wins / 
+    (most_present_archetypes_df$Wins + most_present_archetypes_df$Losses)
   most_present_archetypes_df$WinrateLabel = paste0(round(most_present_archetypes_df$Winrate,digits=1),"%")
   
   # Plot the average winrate and the confidence intervals

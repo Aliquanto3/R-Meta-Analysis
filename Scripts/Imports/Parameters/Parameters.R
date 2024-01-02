@@ -33,13 +33,13 @@ MtgFormat = MtgFormats[4]
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2023-09-08"
+Beginning = "2023-12-05"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2023-11-17"
+End = "2024-01-02"
 
 # Event type:
-# All sources = Everything (except MTGO Leagues - for any filter)
+# All sources = Everything (except from MTGO Leagues and Team events - for any filter)
 # All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
 # Full Meta Events = Only events with the full metagame available 
 # (not MTGO Official results)
@@ -51,7 +51,7 @@ End = "2023-11-17"
 # MTGO Preliminaries = As per name
 
 # Leave this vector untouched if used, to avoid typing mistakes
-EventTypes = c("1" = "All sources",
+EventTypes = c("1" = "All sources (except from Leagues and Team events)",
                "2" = "All Events Top32",
                "3" = "All Events Top8",
                "4" = "All Events Top1",
@@ -66,14 +66,15 @@ EventTypes = c("1" = "All sources",
                "13" = "Paper Events X-2 or better",
                "14" = "Paper Events X-1 or better",
                "15" = "MTGO Official Competitions", 
-               "16" = "MTGO Events Top32", 
+               "16" = "MTGO Official Competitions with top8", 
                "17" = "MTGO Events Top8", 
                "18" = "MTGO Events Top1",
                "19" = "MTGO Events X-2 or better",
                "20" = "MTGO Events X-1 or better",
-               "21" = "MTGO Preliminaries")
+               "21" = "MTGO Preliminaries",
+               "22" = "MTGO Preliminaries and Full Meta Events")
 
-EventType = EventTypes[7]
+EventType = EventTypes[1]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2
@@ -126,3 +127,7 @@ addColor = F
 
 # # TRUE when you run the code only on a PT event to remove the limited rounds
 # PTResults = T 
+
+MTGO_URL = "https://www.mtgo.com/"
+Manatraders_URL = "https://www.manatraders.com/webshop/personal/"
+MTGMelee_URL = "https://melee.gg/Decklist/View/"

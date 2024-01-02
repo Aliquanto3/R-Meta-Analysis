@@ -66,10 +66,10 @@ get_archetype_card_data = function(deckName, color, df){
                                {archetypeBoardVector$Count}))
   winCountsMD = unlist(mapply(function(MDCards, numberWins)
     {rep(numberWins,length(MDCards$CardName))}, 
-                              archetypeDf$Mainboard, archetypeDf$NWins))
+                              archetypeDf$Mainboard, archetypeDf$Wins))
   lossCountsMD = unlist(mapply(function(MDCards, numberLosses)
   {rep(numberLosses,length(MDCards$CardName))}, 
-  archetypeDf$Mainboard, archetypeDf$NDefeats))
+  archetypeDf$Mainboard, archetypeDf$Losses))
   
   cardNamesSB = unlist(lapply(archetypeDf$Sideboard, 
                               function(archetypeBoardVector) 
@@ -79,10 +79,10 @@ get_archetype_card_data = function(deckName, color, df){
                                {archetypeBoardVector$Count}))
   winCountsSB = unlist(mapply(function(SBCards, numberWins)
   {rep(numberWins,length(SBCards$CardName))}, 
-  archetypeDf$Sideboard, archetypeDf$NWins))
+  archetypeDf$Sideboard, archetypeDf$Wins))
   lossCountsSB = unlist(mapply(function(SBCards, numberLosses)
   {rep(numberLosses,length(SBCards$CardName))}, 
-  archetypeDf$Sideboard, archetypeDf$NDefeats))
+  archetypeDf$Sideboard, archetypeDf$Losses))
   
   # Regroup the data in dataframes
   MDCards = data.frame(Card.Name = cardNamesMD, 
@@ -117,15 +117,15 @@ get_archetype_card_data = function(deckName, color, df){
             (archetypeCardData$Wins.In.MD + 
                archetypeCardData$Losses.In.MD) * 100, digits = 2)
   archetypeCardData$Lower.95.CI.WR.In.MD = 
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                       p=0.5,alternative = "two.sided", 
                       conf.level=0.95)$conf.int[1] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.MD,
     archetypeCardData$Losses.In.MD)
   archetypeCardData$Upper.95.CI.WR.In.MD =  
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                       p=0.5,alternative="two.sided", 
                       conf.level=0.95)$conf.int[2] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.MD,
@@ -136,15 +136,15 @@ get_archetype_card_data = function(deckName, color, df){
             (archetypeCardData$Wins.In.SB + 
                archetypeCardData$Losses.In.SB) * 100, digits = 2)
   archetypeCardData$Lower.95.CI.WR.In.SB = 
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                       p=0.5,alternative="two.sided", 
                       conf.level=0.95)$conf.int[1] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.SB,
     archetypeCardData$Losses.In.SB)
   archetypeCardData$Upper.95.CI.WR.In.SB =  
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                       p=0.5,alternative="two.sided", 
                       conf.level=0.95)$conf.int[2] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.SB,
@@ -155,15 +155,15 @@ get_archetype_card_data = function(deckName, color, df){
             (archetypeCardData$Wins.In.Decks + 
                archetypeCardData$Losses.In.Decks) * 100, digits = 2)
   archetypeCardData$Lower.95.CI.WR.In.Decks = 
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                       p=0.5,alternative="two.sided", 
                       conf.level=0.95)$conf.int[1] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.Decks,
     archetypeCardData$Losses.In.Decks)
   archetypeCardData$Upper.95.CI.WR.In.Decks =  
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                       p=0.5,alternative="two.sided", 
                       conf.level=0.95)$conf.int[2] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.Decks,
@@ -257,11 +257,11 @@ get_archetype_card_data_by_count = function(deckName, color, df){
   
   winCountsMD = c(unlist(mapply(function(MDCards, numberWins)
   {rep(numberWins,length(MDCards$CardName))}, 
-  archetypeDf$Mainboard, archetypeDf$NWins)))
+  archetypeDf$Mainboard, archetypeDf$Wins)))
   
   lossCountsMD = c(unlist(mapply(function(MDCards, numberLosses)
   {rep(numberLosses,length(MDCards$CardName))}, 
-  archetypeDf$Mainboard, archetypeDf$NDefeats)))
+  archetypeDf$Mainboard, archetypeDf$Losses)))
   
   
   
@@ -276,11 +276,11 @@ get_archetype_card_data_by_count = function(deckName, color, df){
   
   winCountsSB = c(unlist(mapply(function(SBCards, numberWins)
   {rep(numberWins,length(SBCards$CardName))}, 
-  archetypeDf$Sideboard, archetypeDf$NWins)))
+  archetypeDf$Sideboard, archetypeDf$Wins)))
   
   lossCountsSB = c(unlist(mapply(function(SBCards, numberLosses)
   {rep(numberLosses,length(SBCards$CardName))}, 
-  archetypeDf$Sideboard, archetypeDf$NDefeats)))
+  archetypeDf$Sideboard, archetypeDf$Losses)))
   
   # Regroup the data in dataframes
   MDCards = data.frame(Count.and.Name = cardCountsAndNamesMD,
@@ -311,15 +311,15 @@ get_archetype_card_data_by_count = function(deckName, color, df){
             (archetypeCardData$Wins.In.MD + 
                archetypeCardData$Losses.In.MD) * 100, digits = 2)
   archetypeCardData$Lower.95.CI.WR.In.MD = 
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative = "two.sided", 
                                        conf.level=0.95)$conf.int[1] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.MD,
     archetypeCardData$Losses.In.MD)
   archetypeCardData$Upper.95.CI.WR.In.MD =  
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative="two.sided", 
                                        conf.level=0.95)$conf.int[2] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.MD,
@@ -330,15 +330,15 @@ get_archetype_card_data_by_count = function(deckName, color, df){
             (archetypeCardData$Wins.In.SB + 
                archetypeCardData$Losses.In.SB) * 100, digits = 2)
   archetypeCardData$Lower.95.CI.WR.In.SB = 
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative="two.sided", 
                                        conf.level=0.95)$conf.int[1] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.SB,
     archetypeCardData$Losses.In.SB)
   archetypeCardData$Upper.95.CI.WR.In.SB =  
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative="two.sided", 
                                        conf.level=0.95)$conf.int[2] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.SB,
@@ -349,15 +349,15 @@ get_archetype_card_data_by_count = function(deckName, color, df){
             (archetypeCardData$Wins.In.Decks + 
                archetypeCardData$Losses.In.Decks) * 100, digits = 2)
   archetypeCardData$Lower.95.CI.WR.In.Decks = 
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative="two.sided", 
                                        conf.level=0.95)$conf.int[1] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.Decks,
     archetypeCardData$Losses.In.Decks)
   archetypeCardData$Upper.95.CI.WR.In.Decks =  
-    mapply(function(NWins,NLosses)
-    {ifelse(NLosses>0,round(binom.test(NWins, NWins + NLosses, 
+    mapply(function(Wins,NLosses)
+    {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative="two.sided", 
                                        conf.level=0.95)$conf.int[2] * 100, digits = 2),0)},
     archetypeCardData$Wins.In.Decks,
@@ -572,14 +572,14 @@ get_archetype_data_by_color = function(deckName, df){
     archetypeDf = df[df$Archetype$Archetype == deckName,]
     archetypeDf = archetypeDf[archetypeDf$Archetype$Color == color,]
     
-    sum(archetypeDf$NWins)
+    sum(archetypeDf$Wins)
   },colorResults$Colors)
   
   colorResults$Defeats = mapply(function(color){
     archetypeDf = df[df$Archetype$Archetype == deckName,]
     archetypeDf = archetypeDf[archetypeDf$Archetype$Color == color,]
     
-    sum(archetypeDf$NDefeats)
+    sum(archetypeDf$Losses)
   },colorResults$Colors)
   
   colorResults$Winrate = mapply(function(wins, defeats){
@@ -622,8 +622,8 @@ get_winrate_optimized_decklist = function(deckName, optimizedColor, df){
              sum(archetypeBoardVector$Count)
            }
     ))
-  Total.Wins = archetypeDf$NWins
-  Total.Defeats = archetypeDf$NDefeats
+  Total.Wins = archetypeDf$Wins
+  Total.Defeats = archetypeDf$Losses
   
   deckCardCountData = data.frame(Total.Cards,Total.Wins,Total.Defeats)
   

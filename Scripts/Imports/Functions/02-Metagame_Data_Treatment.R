@@ -156,19 +156,22 @@ archetype_metrics = function(df){
   metric_df$Wins = sapply(X = metric_df$Archetype, 
                            FUN = function(archetype, df) {
                              sum(df[df$Archetype$Archetype == 
-                                      archetype,]$NWins)
+                                      archetype,]$Wins)
                            }, df)
   metric_df$Defeats = sapply(X = metric_df$Archetype, 
                               FUN = function(archetype, df) {
                                 sum(df[df$Archetype$Archetype == 
-                                         archetype,]$NDefeats)
+                                         archetype,]$Losses)
                               }, df)
   metric_df$Draws = sapply(X = metric_df$Archetype, 
                             FUN = function(archetype, df) {
                               sum(df[df$Archetype$Archetype == 
-                                       archetype,]$NDraws)
+                                       archetype,]$Draws)
                             }, df)
   metric_df$Matches = metric_df$Wins + metric_df$Draws + metric_df$Defeats
+  
+  # Remove archetypes that appear in the JSON but don't have any recorded match
+  metric_df = metric_df[metric_df$Wins + metric_df$Defeats >0,]
   
   metric_df$MeasuredWinrate = metric_df$Wins * 100 / 
     (metric_df$Wins + metric_df$Defeats)

@@ -29,20 +29,23 @@ get_player_data = function(df){
   
   playerData$Wins = sapply(X = playerData$Players, 
                               FUN = function(player, df) {
-                                sum(df[df$Player == player,]$NWins)
+                                sum(df[df$Player == player,]$Wins)
                               }, df)
   
   playerData$Defeats = sapply(X = playerData$Players, 
                               FUN = function(player, df) {
-                                sum(df[df$Player == player,]$NDefeats)
+                                sum(df[df$Player == player,]$Losses)
                               }, df)
   
   playerData$Draws = sapply(X = playerData$Players, 
                               FUN = function(player, df) {
-                                sum(df[df$Player == player,]$NDraws)
+                                sum(df[df$Player == player,]$Draws)
                               }, df)
   
   playerData$Matches = playerData$Wins + playerData$Defeats + playerData$Draws
+  
+  # Remove players that appear in the JSON but don't have any recorded match
+  playerData = playerData[playerData$Wins + playerData$Defeats >0,]
   
   playerData$Win.Rate = round(100 * playerData$Wins / 
                                 (playerData$Wins + playerData$Defeats), 
