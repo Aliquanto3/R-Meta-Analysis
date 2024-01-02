@@ -10,5 +10,6 @@ Then you can run them entirely.
 Or you can follow the instructions written inside and run only part by part.
 You can also update the parameters in /Scripts/Imports/Parameters.
 
-
+Get the required JSON data from this app by Phelps-san:
+https://github.com/Badaro/MTGOArchetypeParser
 
