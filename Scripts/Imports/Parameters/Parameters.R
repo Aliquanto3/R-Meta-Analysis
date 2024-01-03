@@ -33,7 +33,7 @@ MtgFormat = MtgFormats[4]
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2023-12-05"
+Beginning = "2023-12-04"
 
 #Latest date - if NA, goes up to the end of the data
 End = "2024-01-02"
@@ -51,12 +51,12 @@ End = "2024-01-02"
 # MTGO Preliminaries = As per name
 
 # Leave this vector untouched if used, to avoid typing mistakes
-EventTypes = c("1" = "All sources (except from Leagues and Team events)",
-               "2" = "All Events Top32",
-               "3" = "All Events Top8",
-               "4" = "All Events Top1",
-               "5" = "All Events X-2 or better",
-               "6" = "All Events X-1 or better",
+EventTypes = c("1" = "Paper, MTGO and Manatraders events",
+               "2" = "Paper, MTGO and Manatraders events Top32",
+               "3" = "Paper, MTGO and Manatraders events Top8",
+               "4" = "Paper, MTGO and Manatraders events Top1",
+               "5" = "Paper, MTGO and Manatraders events X-2 or better",
+               "6" = "Paper, MTGO and Manatraders events X-1 or better",
                "7" = "Full Meta Events",
                "8" = "ManaTraders", 
                "9" = "Paper Events Full Meta",
@@ -113,6 +113,7 @@ Diameters = "Players"
 
 CsvResultDir = "CSV files/"
 ArchetypeCardDataResultDir = paste0(CsvResultDir, "Archetype Card Data/")
+ArchetypeWeeklyShareResultDir = paste0(CsvResultDir, "Archetype Weekly Share/")
 PlayerDataResultDir = paste0(CsvResultDir, "Player Data/")
 ArchetypeCarDataResultDir = paste0(CsvResultDir, "Archetype Card Data/")
 PeriodComparisonDir = paste0(CsvResultDir, "Period Comparison files/")

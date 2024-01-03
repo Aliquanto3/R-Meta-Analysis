@@ -263,7 +263,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
                generate_Prelim_Data(PrelimData))
     
   } else if (eventType == EventTypes[2]) {
-    # "2" = "All Events Top32"
+    # "2" = "Paper, MTGO and Manatraders events Top32"
     # Remove the noise from leagues in case it wasn't done by the parser
     periodData = periodData[!grepl("League", periodData$Tournament),]
     # Remove the Team Trio events providing unusable data
@@ -276,7 +276,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     # Keep only the top32 of all those events
     
   } else if (eventType == EventTypes[3]) {
-    # "3" = "All Events Top8"
+    # "3" = "Paper, MTGO and Manatraders events Top8"
     # Remove the noise from leagues in case it wasn't done by the parser
     periodData = periodData[!grepl("League", periodData$Tournament),]
     # Remove the Team Trio events providing unusable data
@@ -288,7 +288,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     resultDf = generate_Tournament_Data(Top8Data)
     
   } else if (eventType == EventTypes[4]) {
-    # "4" = "All Events Top1"
+    # "4" = "Paper, MTGO and Manatraders events Top1"
     # Remove the noise from leagues in case it wasn't done by the parser
     periodData = periodData[!grepl("League", periodData$Tournament),]
     # Remove the Team Trio events providing unusable data
@@ -300,7 +300,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     resultDf = generate_Tournament_Data(Top1Data)
     
   } else if (eventType == EventTypes[5]) {
-    # "5" = "All Events X-2 or better"
+    # "5" = "Paper, MTGO and Manatraders events X-2 or better"
     # Remove the noise from leagues in case it wasn't done by the parser
     periodData = periodData[!grepl("League", periodData$Tournament),]
     # Remove the Team Trio events providing unusable data
@@ -312,7 +312,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
     resultDf = generate_Tournament_Data(X2Data)
     
   } else if (eventType == EventTypes[6]) {
-    # "6" = "All Events X-1 or better"
+    # "6" = "Paper, MTGO and Manatraders events X-1 or better"
     # Remove the noise from leagues in case it wasn't done by the parser
     periodData = periodData[!grepl("League", periodData$Tournament),]
     # Remove the Team Trio events providing unusable data
