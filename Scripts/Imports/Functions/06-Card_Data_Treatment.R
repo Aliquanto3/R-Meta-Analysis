@@ -25,18 +25,16 @@ get_card_data = function(df){
   # # For development only
   # df = tournamentDf
   
-  Mainboards = lapply(df$Mainboard, function(MD){
-    MD$CardName
-  })
+  Mainboards = lapply(df$Mainboard, function(MD){ MD$CardName })
   
-  Sideboards = sapply(df$Sideboard, function(SB){
-    SB$CardName
-  })
+  Sideboards = sapply(df$Sideboard, function(SB){ SB$CardName })
   
   MainboardCards = unique(unlist(Mainboards))
   SideboardCards = unique(unlist(Sideboards))
   
   CardData = data.frame(CardNames = unique(c(MainboardCards,SideboardCards)))
+  
+  print("1/7 - Identify in which decklist each card is")
   
   CardDecklistsPresence = lapply(CardData$CardNames, function(CardName){
     MDPresence = sapply(Mainboards, function(MD, name) {name %in% MD}, CardName)
@@ -46,6 +44,7 @@ get_card_data = function(df){
   })
   names(CardDecklistsPresence) = CardData$CardNames
   
+  print("2/7 - Count the number of decklists where each card is")
   CardData$Decklist.Count = 
     sapply(CardDecklistsPresence, function(presenceInDecklists){n
       sum(presenceInDecklists)
@@ -53,19 +52,23 @@ get_card_data = function(df){
   CardData$Decklist.Share = round(100 * CardData$Decklist.Count / nrow(df), 
                                  digits = 2)
   
+  print("3/7 - Get the win count of each card")
+  
   CardData$Wins = sapply(CardDecklistsPresence, function(cardPresenceInDecklist, df){
     dfCard = df[cardPresenceInDecklist,]
     return(sum(dfCard$Wins))
   },df)
+  print("4/7 - Get the loss count of each card")
   CardData$Losses = sapply(CardDecklistsPresence, function(cardPresenceInDecklist, df){
     dfCard = df[cardPresenceInDecklist,]
     return(sum(dfCard$Losses))
   },df)
+  print("5/7 - Get the draws count of each card")
   CardData$Draws = sapply(CardDecklistsPresence, function(cardPresenceInDecklist, df){
     dfCard = df[cardPresenceInDecklist,]
     return(sum(dfCard$Draws))
   },df)
-  
+  print("6/7 - Add derived values (ex: CI)")
   CardData = CardData[CardData$Wins + CardData$Losses > 0,]
   CardData$Matches = CardData$Wins + CardData$Losses + CardData$Draws
   CardData$Win.Rate.Without.Draws = round(100 * CardData$Wins / 
@@ -87,6 +90,6 @@ get_card_data = function(df){
   }, CardData$Wins, CardData$Losses)
   
   CardData = CardData[order(CardData$Win.Rate.Without.Draws, decreasing = TRUE),]
-  
+  print("7/7 - About to export the card data table")
   CardData
 }
