@@ -36,7 +36,7 @@ get_card_data = function(df){
   MainboardCards = unique(unlist(Mainboards))
   SideboardCards = unique(unlist(Sideboards))
   
-  CardData = data.frame(CardNames = c(MainboardCards,SideboardCards))
+  CardData = data.frame(CardNames = unique(c(MainboardCards,SideboardCards)))
   
   CardDecklistsPresence = lapply(CardData$CardNames, function(CardName){
     MDPresence = sapply(Mainboards, function(MD, name) {name %in% MD}, CardName)
