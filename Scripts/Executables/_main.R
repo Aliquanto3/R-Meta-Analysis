@@ -24,6 +24,7 @@ source(file.path(paste0(functionScriptDir,"02-Metagame_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"03-Metagame_Graph_Generation.R")))
 source(file.path(paste0(functionScriptDir,"04-Decklist_Analysis.R")))
 source(file.path(paste0(functionScriptDir,"05-Player_Data_Treatment.R")))
+source(file.path(paste0(functionScriptDir,"06-Card_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"99-Output_Export.R")))
 
 # Create all the directories where results will be written
@@ -161,6 +162,10 @@ dev.off()
 # Write the player results
 exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
                  PlayerDataResultDir,writeCSV,writeXLSX)
+
+# Write the card results
+exportCardData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
+                 CardDataResultDir,writeCSV,writeXLSX)
 
 # Write the archetype card results
 archetypeDataList = list()

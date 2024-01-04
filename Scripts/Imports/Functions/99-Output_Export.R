@@ -154,21 +154,6 @@ exportTextAnalysis =
               append=TRUE, row.names = FALSE, col.names = FALSE, sep = " - ")
   }
 
-exportAchetypeCardData = function(archetype, df){
-  archetypeCardData = get_archetype_card_data(archetype, df)
-  archetypeCardDataDirPath = paste0(PathToLastDirs, ArchetypeCardDataResultDir)
-  archetypeCardDataFileName = paste0(Beginning,'_', End, ' - Card Data of ',
-                                     archetype, " in ", MtgFormat, " ", 
-                                     EventType)
-  dir.create(file.path(archetypeCardDataDirPath))
-  write.csv(archetypeCardData,
-            paste0(archetypeCardDataDirPath, archetypeCardDataFileName,'.csv'), 
-            row.names = FALSE)
-  write.xlsx(archetypeCardData,
-             paste0(archetypeCardDataDirPath, archetypeCardDataFileName,'.xlsx'), 
-             row.names = FALSE)
-}
-
 exportPlayerData = 
   function(df,pathToLastDirs,beginning,end,mtgFormat,eventType,
            playerDataResultDir,writeCSV,writeXLSX){
@@ -194,7 +179,34 @@ exportPlayerData =
     write.xlsx(PlayerData, paste0(PlayerDataDirPath, PlayerDataFileName,'.xlsx'), 
                row.names = FALSE)
   }
-}
+  }
+
+exportCardData = 
+  function(df,pathToLastDirs,beginning,end,mtgFormat,eventType,
+           cardDataResultDir,writeCSV,writeXLSX){
+    # # For development only
+    # df = tournamentDf
+    # pathToLastDirs = PathToLastDirs
+    # beginning = Beginning
+    # end = End
+    # mtgFormat = MtgFormat
+    # eventType = EventType
+    # cardDataResultDir = cardDataResultDir
+    
+    cardData = get_card_data(df)
+    cardDataDirPath = paste0(pathToLastDirs, cardDataResultDir)
+    cardDataFileName = paste0(beginning,'_', end, ' - Card Data in ', 
+                                mtgFormat, ' ', eventType)
+    dir.create(file.path(cardDataDirPath))
+    if(writeCSV){
+      write.csv(cardData, paste0(cardDataDirPath, cardDataFileName,'.csv'), 
+                row.names = FALSE)
+    }
+    if(writeXLSX){
+      write.xlsx(cardData, paste0(cardDataDirPath, cardDataFileName,'.xlsx'), 
+                 row.names = FALSE)
+    }
+  }
 
 exportArchetypeCardData = 
   function(archetypeName,df,pathToLastDirs,beginning,end,mtgFormat,eventType,

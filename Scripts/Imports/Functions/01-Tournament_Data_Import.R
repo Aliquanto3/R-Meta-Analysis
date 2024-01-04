@@ -602,6 +602,28 @@ getBestDeck = function(deckName,df){
   return(df2$AnchorUri)
 }
 
+#' Get the decklist of the deck with the best win/loss ratio for a given archetype
+#'
+#' @param deckName a string with the name of the archetype to find
+#' @param df the dataframe returned by generate_df()
+#'
+#' @return the URL of the most successful deck of a given archetype.
+#' The most successful is defined as having the highest difference between its
+#' wins and defeats. A 7-0 is equivalent to a 10-3. Idea by Frank Karsten.
+#' Empty if nothing fits (wrong name or not in the data).
+#' @export
+#'
+#' @examples
+getBestDeckList = function(deckName,df){
+  df2=df[df$Archetype$Archetype==deckName,]
+  df2$WinLossScore = df2$Wins + df2$T8Points/3 -
+    df2$Losses - df2$T8Defeats
+  if(nrow(df2)>0){
+    df2=df2[df2$WinLossScore==max(df2$WinLossScore),]
+  }
+  return(list(df2$Mainboard, df2$Sideboard))
+}
+
 #' Matchup data between two given archetypes
 #'
 #' @param df the dataframe returned by generate_df()

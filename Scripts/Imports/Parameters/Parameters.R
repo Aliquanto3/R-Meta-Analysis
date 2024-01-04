@@ -33,7 +33,7 @@ MtgFormat = MtgFormats[4]
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2023-12-04"
+Beginning = "2023-12-05"
 
 #Latest date - if NA, goes up to the end of the data
 End = "2024-01-02"
@@ -115,7 +115,7 @@ CsvResultDir = "CSV files/"
 ArchetypeCardDataResultDir = paste0(CsvResultDir, "Archetype Card Data/")
 ArchetypeWeeklyShareResultDir = paste0(CsvResultDir, "Archetype Weekly Share/")
 PlayerDataResultDir = paste0(CsvResultDir, "Player Data/")
-ArchetypeCarDataResultDir = paste0(CsvResultDir, "Archetype Card Data/")
+CardDataResultDir = paste0(CsvResultDir, "Card Data/")
 PeriodComparisonDir = paste0(CsvResultDir, "Period Comparison files/")
 PictureResultDir = "Picture files/"
 TextResultDir = "Text files/"

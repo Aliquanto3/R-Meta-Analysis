@@ -216,6 +216,16 @@ getArchetypeWinRate = function(tournamentDf, archetypeName){
 }
 getArchetypeWinRate(tournamentDf, archetypeName)
 
+getArchetypeWR = function(tournamentDf, archetypeName){
+  archetypeDf = tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]
+  paste("The win rate (w/o draws) of",archetypeName,"is:",
+        round(100 * sum(archetypeDf$Wins)/(sum(archetypeDf$Wins) + sum(archetypeDf$Losses)),digits = 2),"%.")
+}
+archetypeName = "Bant Spirits"
+getArchetypeWR(tournamentDf, archetypeName)
+archetypeName = "Azorius Spirits"
+getArchetypeWR(tournamentDf, archetypeName)
+
 get_archetype_card_data(archetypeName, "W", tournamentDf)
 
 getMainboardCardData = function(cardNames, tournamentDf, CIPercent, 
