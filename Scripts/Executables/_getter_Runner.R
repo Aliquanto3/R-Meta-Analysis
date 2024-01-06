@@ -23,12 +23,13 @@ importableScriptDir = paste0(ScriptDir,"Imports/")
 parameterScriptDir = paste0(importableScriptDir,"Parameters/")
 source(file.path(paste0(parameterScriptDir,"Parameters.R")))
 
-functionScriptDir = paste0(importableScriptDir,"Functions/")
 source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
-source(file.path(paste0(functionScriptDir,"02-Metagame_Data_Treatment.R")))
-source(file.path(paste0(functionScriptDir,"03-Metagame_Graph_Generation.R")))
-source(file.path(paste0(functionScriptDir,"04-Decklist_Analysis.R")))
-source(file.path(paste0(functionScriptDir,"05-Player_Data_Treatment.R")))
+source(file.path(paste0(functionScriptDir,"02-Simple_Getters.R")))
+source(file.path(paste0(functionScriptDir,"03-Metagame_Data_Treatment.R")))
+source(file.path(paste0(functionScriptDir,"04-Metagame_Graph_Generation.R")))
+source(file.path(paste0(functionScriptDir,"05-Decklist_Analysis.R")))
+source(file.path(paste0(functionScriptDir,"06-Player_Data_Treatment.R")))
+source(file.path(paste0(functionScriptDir,"07-Card_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"99-Output_Export.R")))
 
 PathToLastDirs = 
@@ -43,7 +44,7 @@ tournamentDf = generate_df(
 ############################   Compute analysis   ############################## 
 
 # Get the following columns: 
-# Archetype Copies Players Matches MeasuredWinrate CI95LowerBound CI95UpperBound
+# Archetype Copies Players Matches MeasuredWinrate CILowerBound CIUpperBound
 archetypeMetricsDf = archetype_metrics(tournamentDf)
 
 # Update the cut value based on the data. If too small, set at 1% for graph

@@ -24,7 +24,7 @@ MtgFormats = c("1" = "Sealed",
                "6" = "Legacy",
                "7" = "Vintage",
                "8" = "All_Formats")
-MtgFormat = MtgFormats[3]
+MtgFormat = MtgFormats[4]
 
 # MtgFormat = "Pioneer"
 
@@ -91,9 +91,9 @@ Share.autoupdate = T
 Presence = "Matches"
 
 # The value used for sorting the data in the win rate graph.
-# It can be either "MeasuredWinrate" or "CI95LowerBound" (the lower bound of
-# the 95% confidence interval on the win rate).
-SortValue = "CI95LowerBound"
+# It can be either "MeasuredWinrate" or "CILowerBound" (the lower bound of
+# the confidence interval on the win rate).
+SortValue = "CILowerBound"
 
 #The percentage used for the confidence interval. By default it can be 0.95
 CIPercent = 0.9

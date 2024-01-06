@@ -20,11 +20,12 @@ source(file.path(paste0(parameterScriptDir,"Parameters.R")))
 
 functionScriptDir = paste0(importableScriptDir,"Functions/")
 source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
-source(file.path(paste0(functionScriptDir,"02-Metagame_Data_Treatment.R")))
-source(file.path(paste0(functionScriptDir,"03-Metagame_Graph_Generation.R")))
-source(file.path(paste0(functionScriptDir,"04-Decklist_Analysis.R")))
-source(file.path(paste0(functionScriptDir,"05-Player_Data_Treatment.R")))
-source(file.path(paste0(functionScriptDir,"06-Card_Data_Treatment.R")))
+source(file.path(paste0(functionScriptDir,"02-Simple_Getters.R")))
+source(file.path(paste0(functionScriptDir,"03-Metagame_Data_Treatment.R")))
+source(file.path(paste0(functionScriptDir,"04-Metagame_Graph_Generation.R")))
+source(file.path(paste0(functionScriptDir,"05-Decklist_Analysis.R")))
+source(file.path(paste0(functionScriptDir,"06-Player_Data_Treatment.R")))
+source(file.path(paste0(functionScriptDir,"07-Card_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"99-Output_Export.R")))
 
 # Create all the directories where results will be written
@@ -38,54 +39,38 @@ RawData = fromJSON(TournamentResultFile)[[1]]
 tournamentDf = generate_df(
   RawData, EventType, MtgFormat, TournamentResultFile, Beginning, End)
 
-# if(ChampionshipResults){
-#   tournamentDf = tournamentDf[grep("Championship", tournamentDf$Tournament),]
-# }
-
-# if(PTResults){
-#   tournamentDf = updateDfForPT(tournamentDf)
-# }
-
-# tournamentDf[tournamentDf$Archetype$Archetype == "Unknown",]$Archetype$Archetype = "Samwise Combo"
-# tournamentDf$Matchups = mapply(function(Matchups){
-#   tmpMU = Matchups
-#   tmpMU[tmpMU$OpponentArchetype == "Unknown",]$OpponentArchetype = "Samwise Combo"
-#   list(tmpMU)
-# },tournamentDf$Matchups)
-
-# tournamentDf[tournamentDf$Archetype$Archetype=="Unknown",]$Archetype$Archetype = "Food"
-
+################################################################################
 ############################   Compute analysis   ############################## 
+################################################################################
 
 # Get the following columns: 
-# Archetype Copies Players Matches MeasuredWinrate CI95LowerBound CI95UpperBound
-archetypeMetricsDf = archetype_metrics(tournamentDf)
+# Archetype, Copies, Players, Matches, MeasuredWinrate, CILowerBound,
+# CIUpperBound, NormalizedPresence, NormalizedMeasuredWinrate, NormalizedSum, 
+# Rank
+archetypeMetricsDf = archetype_metrics(tournamentDf, Presence)
 
-# Update the cut value based on the data. If too small, set at 1% for graph
-# readability.
-if(Share.autoupdate){
-  StatShare = 
-    round(mean(unlist(archetypeMetricsDf[Presence])) / 
-            sum(unlist(archetypeMetricsDf[Presence])) * 100, digits = 2)
-  ChartShare = max(StatShare, 1)
-}else {
-  StatShare = ChartShare
-}
+# Get the minimum presence to appear
+StatShare = updateStatShare(archetypeMetricsDf, ChartShare)
 
-# Add the following columns:
-# NormalizedPresence NormalizedMeasuredWinrate NormalizedSum Rank
-archetypeRankingDf = archetype_ranking(archetypeMetricsDf, Presence)
-# Keep only the most played decks and add some columns:
-# Presence Tiers
-archetypeTiersDf = archetype_tiers(archetypeRankingDf, Presence, StatShare)
+# Keep only the most present decks and add the following columns:
+# NormalizedPresence, NormalizedMeasuredWinrate, NormalizedSum, Rank, Tiers
+archetypeNormalizedSumDf = archetype_normalized_sum(archetypeMetricsDf, StatShare)
+
+
 # Get the required data to build the matchup matrix of the most present
 # archetypes
 muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)
 
+################################################################################
+########################   Write the text synthesis   ########################## 
+################################################################################
+
 exportTextAnalysis(tournamentDf, PathToLastDirs, Beginning, End, MtgFormat, 
                    EventType, ChartShare,TextResultDir)
 
+################################################################################
 #############################   Draw the plots   ############################### 
+################################################################################
 
 plotDir = paste0(PathToLastDirs,PictureResultDir)
 
@@ -108,7 +93,7 @@ dev.off()
 # Draw the win rate graph with confidence intervals
 winrateMustacheName = paste0(plotDir,"03_Winrate-Mustache-Box_", MtgFormat ,"_", 
                      Beginning, "_", End,"_By-", Presence, ".jpg")
-winrates_graph(archetypeRankingDf, StatShare, Presence, Beginning, End,
+winrates_graph(archetypeNormalizedSumDf, StatShare, Presence, Beginning, End,
                EventType, MtgFormat, SortValue)
 ggsave(winrateMustacheName, width = 40, height = 20, units = "cm")
 dev.off()
@@ -116,7 +101,7 @@ dev.off()
 # Draw the win rate graph with boxplots
 winrateBoxPlotName = paste0(plotDir,"04_Winrate-Box-Plot__", MtgFormat ,"_", 
                      Beginning, "_", End,"_By-", Presence, ".jpg")
-boxplot_winrates(archetypeRankingDf, tournamentDf, StatShare, Presence, 
+boxplot_winrates(archetypeNormalizedSumDf, tournamentDf, StatShare, Presence, 
                  Beginning, End,EventType, MtgFormat, SortValue)
 ggsave(winrateBoxPlotName, width = 40, height = 20, units = "cm")
 dev.off()
@@ -124,7 +109,7 @@ dev.off()
 # Draw the repartition of archetypes by tier depending on their normalized score
 normalizedSumName = paste0(plotDir,"05_Normalized-Sum-Scatterplot_", MtgFormat,
                            "_", Beginning, "_", End,"_By-", Presence, ".jpg")
-normalized_sum_graph(archetypeRankingDf, StatShare, Presence,Beginning, End, 
+normalized_sum_graph(archetypeNormalizedSumDf, StatShare, Presence,Beginning, End, 
                      EventType, MtgFormat)
 ggsave(normalizedSumName, width = 80, height = 40, units = "cm")
 dev.off()
@@ -133,7 +118,7 @@ dev.off()
 winrateAndPresenceFullName = 
   paste0(plotDir,"06_Winrate-&-Presence-Full-Scatterplot_", MtgFormat,"_", 
          Beginning, "_", End,"_By-", Presence,".jpg")
-simple_winrate_and_presence_graph(archetypeRankingDf, 0, Presence, 
+simple_winrate_and_presence_graph(archetypeNormalizedSumDf, 0, Presence, 
                                   Diameters, Beginning, End, EventType, 
                                   MtgFormat, PresenceAxisLogScale)
 ggsave(winrateAndPresenceFullName, width = 60, height = 30, units = "cm")
@@ -144,7 +129,7 @@ dev.off()
 winrateAndPresenceFullName = 
   paste0(plotDir,"07_Winrate-&-Presence-Detailed-Scatterplot_", MtgFormat,"_", 
          Beginning, "_", End,"_By-", Presence,".jpg")
-detailed_winrate_and_presence_graph(archetypeTiersDf, StatShare, Presence, 
+detailed_winrate_and_presence_graph(archetypeNormalizedSumDf, StatShare, Presence, 
                                     Beginning, End, EventType, MtgFormat, 
                                     PresenceAxisLogScale)
 ggsave(winrateAndPresenceFullName, width = 60, height = 30, units = "cm")
@@ -159,6 +144,10 @@ generate_matchup_matrix(muMatrixData, ChartShare, Presence, Beginning, End,
 ggsave(matchupMatrixName, width = 60, height = 30, units = "cm")
 dev.off()
 
+################################################################################
+#############################   Write the CSVs   ############################### 
+################################################################################
+
 # Write the player results
 exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
                  PlayerDataResultDir,writeCSV,writeXLSX)
@@ -168,18 +157,10 @@ exportCardData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
                  CardDataResultDir,writeCSV,writeXLSX)
 
 # Write the archetype card results
-archetypeDataList = list()
-for (archetypeName in archetypeTiersDf$Archetype){
-  # archetypeName = "Rakdos Scam"
-  archetypeCardData = 
-    exportArchetypeCardData(archetypeName,tournamentDf,PathToLastDirs,Beginning,
-                            End,MtgFormat,EventType,ArchetypeCardDataResultDir,
-                                               writeCSV,writeXLSX)
-  archetypeCardData = archetypeCardData[order(archetypeCardData$Share.Of.SB,decreasing=TRUE),]
-  archetypeDataList = append(archetypeDataList, list(archetypeCardData$Card.Name[1:10]))
+archetypeCardData = lapply(archetypeNormalizedSumDf$Archetype, function(archetypeName){
   print(archetypeName)
-}
+  exportArchetypeCardData(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+                          End,MtgFormat,EventType,ArchetypeCardDataResultDir,
+                          writeCSV,writeXLSX)
+})
 
-# names(archetypeDataList) = archetypeTiersDf$Archetype
-# 
-# archetypeDataArray = array(data = archetypeDataList, dim = c(length(archetypeDataList)/3+1, 3))
