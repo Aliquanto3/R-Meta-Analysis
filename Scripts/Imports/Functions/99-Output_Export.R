@@ -98,13 +98,13 @@ exportTextAnalysis =
   nDiffPlayers = length(unique(df$Player))
   # nDiffCards = length(unique(c(MDStats$CardNames, SBStats$CardNames)))
   nArchetypes = length(unique(df$Archetype$Archetype))
-  totNRounds = sum(df$NRounds) + sum(df$T8Matches)
+  totMatches = sum(df$Matches)
   # avgNbRoundsWTop8 = as.numeric(format(round(
-  #   (sum(df$NRounds)+sum(df$T8Matches))/length(df$AnchorUri),2), nsmall = 2))
-  avgNRounds = as.numeric(format(round(sum(df$NRounds) / 
+  #   sum(df$Matches)/length(df$AnchorUri),2), nsmall = 2))
+  avgMatches = as.numeric(format(round(sum(df$Matches) / 
                                           length(df$AnchorUri),2),nsmall=2))
-  minNRounds = min(df$NRounds)
-  maxNRounds = max(df$NRounds)
+  minMatches = min(df$Matches)
+  maxMatches = max(df$Matches)
   nEvents = length(unique(df$TournamentName))
   
   eventInfo=paste("QUICK ANALYSIS OF THE DATA", 
@@ -118,15 +118,15 @@ exportTextAnalysis =
                   # "\nNumber of different cards in the data: ", nDiffCards,
                   "\nNumber of exact archetypes in the data: ", nArchetypes,
                   "\nNumber of rounds played in the data (with top8): ",
-                  totNRounds,
+                  totMatches,
                   # "\nAverage number of rounds in the data (with top8):",
                   # avgNbRoundsWTop8,
                   "\nAverage number of rounds in the data (w/o top8): ",
-                  avgNRounds,
+                  avgMatches,
                   "\nMinimum number of rounds in the data (w/o top8): ",
-                  minNRounds,
+                  minMatches,
                   "\nMaximum number of rounds in the data (w/o top8): ",
-                  maxNRounds,
+                  maxMatches,
                   "\nNumber of events in the data: ", nEvents,sep="")
   
   analysisName = paste0(beginning,'-',end,"_",mtgFormat,"-",eventType,

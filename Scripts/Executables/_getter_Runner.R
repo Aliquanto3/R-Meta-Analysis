@@ -161,7 +161,7 @@ if(mergeUWX){
     },tournamentDf$Matchups)
 }
 
-archetypeName = "Rakdos Scam"
+archetypeName = "WURG Control"
 optimizedColorData = get_archetype_data_by_color(archetypeName,tournamentDf)
 optimizedColorData
 optimizedColor = optimizedColorData$Colors[1]
@@ -193,13 +193,13 @@ getArchetypeWinRate = function(tournamentDf, archetypeName){
   archetypePresence = paste0(round(nrow(archetypeDf)/nrow(tournamentDf),
                                    digits=4)*100,"%")
   archetypeWinRateWDraws = paste0(round(sum(archetypeDf$NWins)/
-                                          sum(archetypeDf$NRounds),
+                                          sum(archetypeDf$Matches),
                                         digits=4)*100,"%")
   archetypeWinRateWoDraws = paste0(round(sum(archetypeDf$NWins)/
     (sum(archetypeDf$NWins) + sum(archetypeDf$Losses)),
     digits=4)*100,"%")
   archetypeDrawPercentage = paste0(round(sum(archetypeDf$Draws)/
-                                           sum(archetypeDf$NRounds),
+                                           sum(archetypeDf$Matches),
                                          digits=4)*100,"%")
   
   colLabels = c("Archetype Name","Archetype Presence",
@@ -237,7 +237,7 @@ getMainboardCardData = function(cardNames, tournamentDf, CIPercent,
     conditionCardPresence = sapply(tournamentDf$Mainboard, function(mainboard) {
       cardName %in% mainboard$CardName
     } )
-    cardNMatches = sum(cardDf$NRounds)
+    cardNMatches = sum(cardDf$Matches)
     cardPresence = paste0(round(sum(conditionCardPresence)/
                                   length(conditionCardPresence),digits=4)*100,"%")
     cardDf = tournamentDf[conditionCardPresence,]
@@ -253,18 +253,18 @@ getMainboardCardData = function(cardNames, tournamentDf, CIPercent,
       paste0(round(binom.test(sum(cardDf$NWins), sum(cardDf$NWins+cardDf$Losses),
                               p=0.5,alternative="two.sided", 
                               conf.level=CIPercent)$conf.int[2], digits=4)*100,"%")
-    cardWinRateWDraws = paste0(round(sum(cardDf$NWins)/sum(cardDf$NRounds),
+    cardWinRateWDraws = paste0(round(sum(cardDf$NWins)/sum(cardDf$Matches),
                                      digits=4)*100,"%")
     lowerBoundWinRateWDraws = 
-      paste0(round(binom.test(sum(cardDf$NWins), sum(cardDf$NRounds), 
+      paste0(round(binom.test(sum(cardDf$NWins), sum(cardDf$Matches), 
                               p=0.5,alternative="two.sided",
                               conf.level=CIPercent)$conf.int[1],
                    digits=4)*100,"%")
     higherBoundWinRateWDraws = 
       paste0(round(binom.test(sum(cardDf$NWins),
-                              sum(cardDf$NRounds),p=0.5,alternative="two.sided", 
+                              sum(cardDf$Matches),p=0.5,alternative="two.sided", 
                               conf.level=CIPercent)$conf.int[2], digits=4)*100,"%")
-    cardDrawsPercentage = paste0(round(sum(cardDf$Draws)/sum(cardDf$NRounds),
+    cardDrawsPercentage = paste0(round(sum(cardDf$Draws)/sum(cardDf$Matches),
                                        digits=4)*100,"%")
     
     rowData = c(cardName,EventType,MtgFormat,Beginning,End,
@@ -329,18 +329,18 @@ allboardCardData = function(cardNames, tournamentDf){
     cardWinRateWoDrawsAllboard = paste0(round(sum(cardDfAllboard$NWins)/
                                         (sum(cardDfAllboard$NWins+cardDfAllboard$Losses)),
                                       digits=4)*100,"%")
-    cardWinRateWDrawsAllboard = paste0(round(sum(cardDfAllboard$NWins)/sum(cardDfAllboard$NRounds),
+    cardWinRateWDrawsAllboard = paste0(round(sum(cardDfAllboard$NWins)/sum(cardDfAllboard$Matches),
                                      digits=4)*100,"%")
-    cardDrawsPercentageAllboard = paste0(round(sum(cardDfAllboard$Draws)/sum(cardDfAllboard$NRounds),
+    cardDrawsPercentageAllboard = paste0(round(sum(cardDfAllboard$Draws)/sum(cardDfAllboard$Matches),
                                        digits=4)*100,"%")
     
     cardDfMainboard = tournamentDf[conditionCardPresenceMainboard,]
     cardWinRateWoDrawsMainboard = paste0(round(sum(cardDfMainboard$NWins)/
                                                 (sum(cardDfMainboard$NWins+cardDfMainboard$Losses)),
                                               digits=4)*100,"%")
-    cardWinRateWDrawsMainboard = paste0(round(sum(cardDfMainboard$NWins)/sum(cardDfMainboard$NRounds),
+    cardWinRateWDrawsMainboard = paste0(round(sum(cardDfMainboard$NWins)/sum(cardDfMainboard$Matches),
                                              digits=4)*100,"%")
-    cardDrawsPercentageMainboard = paste0(round(sum(cardDfMainboard$Draws)/sum(cardDfMainboard$NRounds),
+    cardDrawsPercentageMainboard = paste0(round(sum(cardDfMainboard$Draws)/sum(cardDfMainboard$Matches),
                                                digits=4)*100,"%")
     
     
@@ -348,9 +348,9 @@ allboardCardData = function(cardNames, tournamentDf){
     cardWinRateWoDrawsSideboard = paste0(round(sum(cardDfSideboard$NWins)/
                                                  (sum(cardDfSideboard$NWins+cardDfSideboard$Losses)),
                                                digits=4)*100,"%")
-    cardWinRateWDrawsSideboard = paste0(round(sum(cardDfSideboard$NWins)/sum(cardDfSideboard$NRounds),
+    cardWinRateWDrawsSideboard = paste0(round(sum(cardDfSideboard$NWins)/sum(cardDfSideboard$Matches),
                                               digits=4)*100,"%")
-    cardDrawsPercentageSideboard = paste0(round(sum(cardDfSideboard$Draws)/sum(cardDfSideboard$NRounds),
+    cardDrawsPercentageSideboard = paste0(round(sum(cardDfSideboard$Draws)/sum(cardDfSideboard$Matches),
                                                 digits=4)*100,"%")
     
     rowData = c(cardName,cardPresence,cardPresenceMainboard,cardPresenceSideboard,
@@ -398,7 +398,7 @@ mainBoardCardData = function(cardNames, tournamentDf){
     cardWinsMainboard = sum(cardDfMainboard$NWins)
     cardDefeatsMainboard = sum(cardDfMainboard$Losses)
     cardDrawsMainboard = sum(cardDfMainboard$Draws)
-    cardRoundsMainboard = sum(cardDfMainboard$NRounds)
+    cardRoundsMainboard = sum(cardDfMainboard$Matches)
     cardWinRateWoDrawsMainboard = paste0(round(cardWinsMainboard/
                                                  (cardWinsMainboard+cardDefeatsMainboard),
                                                digits=4)*100,"%")
@@ -545,3 +545,15 @@ hist(archetypeRankingDfAboveMean$NormalizedSum)
 shapiro.test(archetypeRankingDfAboveMean$NormalizedSum)
 ks.test(archetypeRankingDfAboveMean$NormalizedSum, "pnorm")
 normal_test(archetypeRankingDfAboveMean[archetypeRankingDfAboveMean$NormalizedSum>0,]$NormalizedSum)
+
+# Murktide WR distribution
+MurktideDf = tournamentDf[tournamentDf$Archetype$Archetype== "Murktide",]
+nrow(MurktideDf)
+hist(MurktideDf$Wins)
+hist(MurktideDf$Wins/(MurktideDf$Wins+MurktideDf$Losses), breaks = 20)
+plot(density(MurktideDf$Wins/(MurktideDf$Wins+MurktideDf$Losses)))
+MurktideDfZeros = MurktideDf[MurktideDf$Wins==0,]
+View(MurktideDfZeros[c("TournamentFile","Result","Wins","Losses","Draws")])
+# install.packages("psych")              
+library("psych")   
+harmonic.mean(MurktideDf$Wins/(MurktideDf$Wins+MurktideDf$Losses))

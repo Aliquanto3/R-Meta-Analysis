@@ -24,7 +24,7 @@ MtgFormats = c("1" = "Sealed",
                "6" = "Legacy",
                "7" = "Vintage",
                "8" = "All_Formats")
-MtgFormat = MtgFormats[4]
+MtgFormat = MtgFormats[3]
 
 # MtgFormat = "Pioneer"
 
@@ -36,7 +36,7 @@ TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 Beginning = "2023-12-05"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2024-01-02"
+End = "2024-01-06"
 
 # Event type:
 # All sources = Everything (except from MTGO Leagues and Team events - for any filter)
@@ -51,30 +51,29 @@ End = "2024-01-02"
 # MTGO Preliminaries = As per name
 
 # Leave this vector untouched if used, to avoid typing mistakes
-EventTypes = c("1" = "Paper, MTGO and Manatraders events",
-               "2" = "Paper, MTGO and Manatraders events Top32",
-               "3" = "Paper, MTGO and Manatraders events Top8",
-               "4" = "Paper, MTGO and Manatraders events Top1",
-               "5" = "Paper, MTGO and Manatraders events X-2 or better",
-               "6" = "Paper, MTGO and Manatraders events X-1 or better",
-               "7" = "Full Meta Events",
+EventTypes = c("1" = "All events",
+               "2" = "All events Top32",
+               "3" = "All events Top8",
+               "4" = "All events Top1",
+               "5" = "All events X-2 or better",
+               "6" = "All events X-1 or better",
+               "7" = "Events with MU Data",
                "8" = "ManaTraders", 
-               "9" = "Paper Events Full Meta",
+               "9" = "Paper Events",
                "10" = "Paper Events Top32",
                "11" = "Paper Events Top8",
                "12" = "Paper Events Top1",
                "13" = "Paper Events X-2 or better",
                "14" = "Paper Events X-1 or better",
-               "15" = "MTGO Official Competitions", 
-               "16" = "MTGO Official Competitions with top8", 
+               "15" = "MTGO Events", 
+               "16" = "MTGO Events with top8", 
                "17" = "MTGO Events Top8", 
                "18" = "MTGO Events Top1",
                "19" = "MTGO Events X-2 or better",
                "20" = "MTGO Events X-1 or better",
-               "21" = "MTGO Preliminaries",
-               "22" = "MTGO Preliminaries and Full Meta Events")
+               "21" = "MTGO Preliminaries")
 
-EventType = EventTypes[1]
+EventType = EventTypes[7]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2

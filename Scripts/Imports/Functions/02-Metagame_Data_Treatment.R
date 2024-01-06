@@ -58,7 +58,7 @@ get_archetype_presence = function(df,archetypeName,presence){
                                  ifelse(presence=="Players",
                                         length(unique(df2$Player)),
                                         ifelse(presence=="Matches",
-                                               sum(df2$NRounds,df2$T8Matches),
+                                               sum(df2$Matches),
                                                NA))))
 }
 
