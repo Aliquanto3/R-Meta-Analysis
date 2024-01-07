@@ -167,6 +167,7 @@ exportPlayerData =
     # playerDataResultDir = PlayerDataResultDir
     
   PlayerData = get_player_data(df)
+  names(PlayerData) = gsub("\\.", "-", names(PlayerData))
   PlayerDataDirPath = paste0(pathToLastDirs, playerDataResultDir)
   PlayerDataFileName = paste0(beginning,'_', end, ' - Player Data in ', 
                               mtgFormat, ' ', eventType)
@@ -194,6 +195,8 @@ exportCardData =
     # cardDataResultDir = cardDataResultDir
     
     cardData = get_card_data(df)
+    names(cardData) = gsub("\\.", "-", names(cardData))
+    
     cardDataDirPath = paste0(pathToLastDirs, cardDataResultDir)
     cardDataFileName = paste0(beginning,'_', end, ' - Card Data in ', 
                                 mtgFormat, ' ', eventType)
@@ -222,6 +225,7 @@ exportArchetypeCardData =
     # archetypeCardDataResultDir = ArchetypeCardDataResultDir
     
     ArchetypeCardData = get_archetype_card_data(archetypeName, "All", df)
+    names(ArchetypeCardData) = gsub("\\.", "-", names(ArchetypeCardData))
     ArchetypeCardDataDirPath = paste0(pathToLastDirs, archetypeCardDataResultDir)
     ArchetypeCardDataFileName = paste0(beginning,'_', end, ' - ', archetypeName,
                                        ' Card Data in ', mtgFormat, ' ', eventType)

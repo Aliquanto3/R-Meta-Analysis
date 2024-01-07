@@ -64,14 +64,13 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
   # Names and date don't allow the identification of an event on  their own, but
   # the combination of both can, hence the addition of another column for this
   # identification, with a more readable name than the file name column
-  periodData$TournamentName = rep(NA, nrow(periodData))
   periodData$TournamentName = paste(periodData$Tournament,
                                     as.character(periodData$Date), sep =
                                       " ")
   periodData$Result[is.na(periodData$Result)] = 0
   
   # Remove decks without associated results
-  periodData = periodData[!periodData$Result=="",]
+  periodData = periodData[!periodData$Result == "",]
   
   # Make the final position easier to manipulate as a number 
   # (doesn't work for Prelims)
@@ -81,6 +80,10 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
   periodData$Wins = as.numeric(periodData$Wins)
   periodData$Losses = as.numeric(periodData$Losses)
   periodData$Draws = as.numeric(periodData$Draws)
+  # Remove decks without scores
+  periodData = periodData[!is.na(periodData$Wins),]
+  periodData = periodData[!is.na(periodData$Losses),]
+  
   periodData$Matches = periodData$Wins + periodData$Losses + periodData$Draws
   
   # Remove the noise from leagues in case it wasn't done by the parser

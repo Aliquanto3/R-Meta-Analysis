@@ -29,7 +29,6 @@ library(paletteer)
 # presenceAxisLogScale = T
 # archetypeMetricsDf = archetype_metrics(df)
 # archetypeRankingDf = archetype_ranking(archetypeMetricsDf,presence)
-# archetypeTiersDf = archetype_tiers(archetypeRankingDf, presence, chartShare)
 
 #' Title of metagame share graphs
 #'
@@ -41,18 +40,7 @@ library(paletteer)
 #' @param beginning the date to be displayed in the title as the beginning of 
 #' the dataset
 #' @param end the date to be displayed in the title as the end of the dataset
-#' @param eventType the category of events to keep in the data. It can be:
-#' Event type:
-#' All sources = Everything (except MTGO Leagues - for any filter)
-#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
-#' Full Meta Events = Only events with the full metagame available
-#' (not MTGO Official results)
-#' ManaTraders = ManaTraders Series results
-#' Paper Events Full Meta = Full esults from MTG Melee
-#' Paper Events Top32 = Results of the top32 from MTG Melee
-#' MTGO Official Competitions = Results from the MTGO website
-#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
-#' MTGO Preliminaries = As per name 
+#' @param eventType the category of events to keep in the data. See Parameters.R.
 #' @param mtgFormat the format of the events in the data
 #'
 #' @return
@@ -79,18 +67,7 @@ generate_metagame_graph_title =
 #' @param beginning the date to be displayed in the title as the beginning of 
 #' the dataset
 #' @param end the date to be displayed in the title as the end of the dataset
-#' @param eventType the category of events to keep in the data. It can be:
-#' Event type:
-#' All sources = Everything (except MTGO Leagues - for any filter)
-#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
-#' Full Meta Events = Only events with the full metagame available
-#' (not MTGO Official results)
-#' ManaTraders = ManaTraders Series results
-#' Paper Events Full Meta = Full esults from MTG Melee
-#' Paper Events Top32 = Results of the top32 from MTG Melee
-#' MTGO Official Competitions = Results from the MTGO website
-#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
-#' MTGO Preliminaries = As per name
+#' @param eventType the category of events to keep in the data. See Parameters.R.
 #' @param mtgFormat the format of the events in the data
 #'
 #' @return a ggplot of a pie chart representing the most played archetypes,
@@ -153,18 +130,7 @@ metagame_pie_chart = function(df, chartShare, presence, beginning, end,
 #' @param beginning the date to be displayed in the title as the beginning of 
 #' the dataset
 #' @param end the date to be displayed in the title as the end of the dataset
-#' @param eventType the category of events to keep in the data. It can be:
-#' Event type:
-#' All sources = Everything (except MTGO Leagues - for any filter)
-#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
-#' Full Meta Events = Only events with the full metagame available
-#' (not MTGO Official results)
-#' ManaTraders = ManaTraders Series results
-#' Paper Events Full Meta = Full esults from MTG Melee
-#' Paper Events Top32 = Results of the top32 from MTG Melee
-#' MTGO Official Competitions = Results from the MTGO website
-#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
-#' MTGO Preliminaries = As per name
+#' @param eventType the category of events to keep in the data. See Parameters.R.
 #' @param mtgFormat the format of the events in the data
 #'
 #' @return a ggplot of a bar chart representing the most played archetypes.
@@ -230,21 +196,10 @@ metagame_bar_chart =
 #' @param beginning the date to be displayed in the title as the beginning of 
 #' the dataset
 #' @param end the date to be displayed in the title as the end of the dataset
-#' @param eventType the category of events to keep in the data. It can be:
-#' Event type:
-#' All sources = Everything (except MTGO Leagues - for any filter)
-#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
-#' Full Meta Events = Only events with the full metagame available
-#' (not MTGO Official results)
-#' ManaTraders = ManaTraders Series results
-#' Paper Events Full Meta = Full esults from MTG Melee
-#' Paper Events Top32 = Results of the top32 from MTG Melee
-#' MTGO Official Competitions = Results from the MTGO website
-#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
-#' MTGO Preliminaries = As per name
+#' @param eventType the category of events to keep in the data. See Parameters.R.
 #' @param mtgFormat the format of the events in the data
 #' @param sortValue the value used for sorting the data in the graph.
-#' It can be either "MeasuredWinrate" or "CILowerBound" (the lower bound of
+#' It can be either "Measured.Win.Rate" or "Lower.Bound.of.CI.on.WR" (the lower bound of
 #' the confidence interval on the win rate).
 #'
 #' @return a ggplot with the win rate and the confidence intervals.
@@ -276,11 +231,11 @@ winrates_graph = function(archetypeRankingDf,chartShare,presence,beginning,end,
         "Green line for the average of the measured winrate", 
         "by Anaël Yahi", sep = "\n")
   
-  ggplot(most_present_archetypes, aes(x = Archetype, y = MeasuredWinrate)) + 
+  ggplot(most_present_archetypes, aes(x = Archetype, y = Measured.Win.Rate)) + 
     
     geom_point(size = 2, color = "blue") +  
     
-    geom_text_repel(aes(label = format(round(MeasuredWinrate, 1), nsmall = 1)), 
+    geom_text_repel(aes(label = format(round(Measured.Win.Rate, 1), nsmall = 1)), 
       hjust = -0.3, vjust = -0.3, point.padding = NA) + 
     
     labs(x = NULL, y = yLabelWinrate, title = winrateGraphTitle,
@@ -299,15 +254,15 @@ winrates_graph = function(archetypeRankingDf,chartShare,presence,beginning,end,
           plot.subtitle = element_text(hjust = 0.5, size = 14),
           text = element_text(size = 16)) + 
     
-    geom_errorbar(aes(ymax = CIUpperBound, ymin = CILowerBound)) + 
+    geom_errorbar(aes(ymax = Upper.Bound.of.CI.on.WR, ymin = Lower.Bound.of.CI.on.WR)) + 
     
-    geom_hline(yintercept = mean(most_present_archetypes$MeasuredWinrate), 
+    geom_hline(yintercept = mean(most_present_archetypes$Measured.Win.Rate), 
                color="green", linetype="dashed", linewidth = 1)+ 
     
-    geom_hline(yintercept = mean(most_present_archetypes$CILowerBound), 
+    geom_hline(yintercept = mean(most_present_archetypes$Lower.Bound.of.CI.on.WR), 
                color="red", linetype="dashed", linewidth = 0.5)+ 
     
-    geom_hline(yintercept = mean(most_present_archetypes$CIUpperBound), 
+    geom_hline(yintercept = mean(most_present_archetypes$Upper.Bound.of.CI.on.WR), 
                color="red", linetype="dashed", linewidth = 0.5)
 }
 
@@ -325,21 +280,10 @@ winrates_graph = function(archetypeRankingDf,chartShare,presence,beginning,end,
 #' @param beginning the date to be displayed in the title as the beginning of 
 #' the dataset
 #' @param end the date to be displayed in the title as the end of the dataset
-#' @param eventType the category of events to keep in the data. It can be:
-#' Event type:
-#' All sources = Everything (except MTGO Leagues - for any filter)
-#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
-#' Full Meta Events = Only events with the full metagame available
-#' (not MTGO Official results)
-#' ManaTraders = ManaTraders Series results
-#' Paper Events Full Meta = Full esults from MTG Melee
-#' Paper Events Top32 = Results of the top32 from MTG Melee
-#' MTGO Official Competitions = Results from the MTGO website
-#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
-#' MTGO Preliminaries = As per name
+#' @param eventType the category of events to keep in the data. See Parameters.R.
 #' @param mtgFormat the format of the events in the data
 #' @param sortValue the value used for sorting the data in the graph.
-#' It can be either "MeasuredWinrate" or "CILowerBound" (the lower bound of
+#' It can be either "Measured.Win.Rate" or "Lower.Bound.of.CI.on.WR" (the lower bound of
 #' the confidence interval on the win rate).
 #'
 #' @return a ggplot with a boxplot of the winrates.
@@ -413,7 +357,7 @@ boxplot_winrates = function(archetypeRankingDf,tournamentDf,chartShare,presence,
 
 }
 
-#' Graph of the archetype tier list based on normalized sum of metrics
+#' Graph of the archetype tier list based on metric passed as input
 #'
 #' @param archetypeRankingDf the dataframe returned by archetype_ranking()
 #' @param chartShare the value of the cut to be set in "Others" for an archetype.
@@ -426,43 +370,45 @@ boxplot_winrates = function(archetypeRankingDf,tournamentDf,chartShare,presence,
 #' @param beginning the date to be displayed in the title as the beginning of 
 #' the dataset
 #' @param end the date to be displayed in the title as the end of the dataset
-#' @param eventType the category of events to keep in the data. It can be:
-#' Event type:
-#' All sources = Everything (except MTGO Leagues - for any filter)
-#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
-#' Full Meta Events = Only events with the full metagame available
-#' (not MTGO Official results)
-#' ManaTraders = ManaTraders Series results
-#' Paper Events Full Meta = Full esults from MTG Melee
-#' Paper Events Top32 = Results of the top32 from MTG Melee
-#' MTGO Official Competitions = Results from the MTGO website
-#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
-#' MTGO Preliminaries = As per name
+#' @param eventType the category of events to keep in the data. See Parameters.R.
 #' @param mtgFormat the format of the events in the data
+#' @param tier the type of metric to use for the tier list
 #'
 #' @return a ggplot showing all the scores of the normalized sum of metrics, and
 #' the tier list generated accordingly.
 #' @export
 #'
 #' @examples
-normalized_sum_graph = function(archetypeRankingDf,chartShare,presence,
-                                beginning,end,eventType,mtgFormat){
+tier_list_graph = function(archetypeTiersDf, chartShare, presence,
+                                beginning, end, eventType, mtgFormat, tier){
+  
+  # # For development only
+  # archetypeTiersDf = archetypeWithTiersDf
+  # chartShare = StatShare
+  # presence = Presence
+  # beginning = Beginning
+  # end = End
+  # eventType = EventType
+  # mtgFormat = MtgFormat
+  # tier = Tiers[1]
   
   # Keep only the most present decks
-  presence_min = chartShare/100*sum(archetypeRankingDf[presence])
+  presence_min = chartShare/100*sum(archetypeTiersDf[presence])
   most_present_archetypes = 
-    archetypeRankingDf[archetypeRankingDf[presence] >= presence_min,]
+    archetypeTiersDf[archetypeTiersDf[presence] >= presence_min,]
   
-  meanData = mean(most_present_archetypes$NormalizedSum)
-  sdData = sd(most_present_archetypes$NormalizedSum)
+  most_present_archetypes$TiersMetric = unlist(most_present_archetypes[tier])
+  
+  meanData = mean(most_present_archetypes$TiersMetric)
+  sdData = sd(most_present_archetypes$TiersMetric)
   meanPlusSd = meanData + sdData
   meanMinusSd = meanData - sdData
   
   most_present_archetypes$Archetype=reorder(most_present_archetypes$Archetype,
-                                     most_present_archetypes$NormalizedSum)
+                                     most_present_archetypes$TiersMetric)
   
   normalizedSumGraphTitle = paste0(
-    "Sum of the normalized metrics of the most present ",mtgFormat,
+    gsub("\\.", " ", tier), " for the most present ",mtgFormat,
     " archetypes\n",  "(at least ",chartShare,"% of the ",presence,") between ", 
     beginning, " and ", end, " in ", EventType)
   
@@ -474,11 +420,11 @@ normalized_sum_graph = function(archetypeRankingDf,chartShare,presence,
   sizeTierNameText = 8
   sizeTierExplanationText = 6
   
-  ggplot(most_present_archetypes, aes(x = Archetype, y = NormalizedSum)) +
+  ggplot(most_present_archetypes, aes(x = Archetype, y = TiersMetric)) +
     
     geom_point(size=4,color="blue") +  
     
-    geom_text_repel(aes(label=format(round(NormalizedSum,2), nsmall = 2)), 
+    geom_text_repel(aes(label=format(round(TiersMetric,2), nsmall = 2)), 
                     hjust = -0.3, vjust = -0.2, point.padding = NA, size = 6,
                     min.segment.length = Inf) + 
     
@@ -595,28 +541,41 @@ normalized_sum_graph = function(archetypeRankingDf,chartShare,presence,
 #'
 #' @examples
 detailed_winrate_and_presence_graph = 
-  function (archetypeTiersDf,chartShare,presence, beginning,end,eventType,
-            mtgFormat,presenceAxisLogScale){
+  function (archetypeTiersDf, chartShare, presence, beginning, end, eventType,
+            mtgFormat, presenceAxisLogScale, tier){
+    
+    # # For development only
+    # archetypeTiersDf = archetypeWithTiersDf
+    # mtgFormat = MtgFormat
+    # chartShare = StatShare
+    # presence = Presence
+    # beginning = Beginning
+    # end = End
+    # eventType = EventType
+    # presenceAxisLogScale = PresenceAxisLogScale
+    # tier = TierNames[1]
+    
   # Keep only the most present decks and compute their tiers
-  
-    archetypeTiersDf$Label = paste0(archetypeTiersDf$Archetype,
+  archetypeTiersDf$Label = paste0(archetypeTiersDf$Archetype,
                                   "\nPresence: ",
                                   round(archetypeTiersDf$Presence, 
                                         digits = 1)
                                   ,"%\nWin rate: ",
-                                  round(archetypeTiersDf$MeasuredWinrate,
+                                  round(archetypeTiersDf$Measured.Win.Rate,
                                         digits = 1),"%")
   
   x_label = "Presence (%)"
   y_label = "Win rate (%)"
-  graph_title=paste0("Win rates depending on presence of the most present ",
+  graph_title = paste0("Win rates depending on presence of the most present ",
                      mtgFormat, " archetypes\n(at least ",chartShare,
                      "% of the ", presence,") between ", beginning, " and ",
                      end, " in ", eventType)
-  graph_subtitle=paste("by Anaël Yahi")
+  graph_subtitle = paste(gsub("\\.", " ", tier),"by Anaël Yahi")
+  
+  archetypeTiersDf$Tiers = unlist(archetypeTiersDf[tier])
   
   winrate_and_presence_plot_focused =
-    ggplot(archetypeTiersDf, aes(x = Presence, y = MeasuredWinrate, 
+    ggplot(archetypeTiersDf, aes(x = Presence, y = Measured.Win.Rate, 
                                color = Tiers, label = Label)) +
     
     # scale_color_gradient(low="blue", high="red") +
@@ -655,7 +614,7 @@ detailed_winrate_and_presence_graph =
 
 #' Detailed 2D view of the win rate and presence of the most present decks
 #'
-#' @param archetypeRankingDf the dataframe returned by archetype_ranking()
+#' @param archetypeTiersDf the dataframe returned by archetype_add_tiers()
 #' @param chartShare the value of the cut to be set in "Others" for an archetype.
 #' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
 #' @param presence the definition of metagame presence (aka share) to use. 
@@ -671,18 +630,7 @@ detailed_winrate_and_presence_graph =
 #' @param beginning the date to be displayed in the title as the beginning of 
 #' the dataset
 #' @param end the date to be displayed in the title as the end of the dataset
-#' @param eventType the category of events to keep in the data. It can be:
-#' Event type:
-#' All sources = Everything (except MTGO Leagues - for any filter)
-#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
-#' Full Meta Events = Only events with the full metagame available
-#' (not MTGO Official results)
-#' ManaTraders = ManaTraders Series results
-#' Paper Events Full Meta = Full esults from MTG Melee
-#' Paper Events Top32 = Results of the top32 from MTG Melee
-#' MTGO Official Competitions = Results from the MTGO website
-#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
-#' MTGO Preliminaries = As per name
+#' @param eventType the category of events to keep in the data. See Parameters.R.
 #' @param mtgFormat the format of the events in the data
 #' @param presenceAxisLogScale draw the presence axis with a linear scale if TRUE
 #'
@@ -693,13 +641,11 @@ detailed_winrate_and_presence_graph =
 #'
 #' @examples
 simple_winrate_and_presence_graph = 
-  function(archetypeRankingDf,chartShare,presence,diameters,beginning,end,
+  function(archetypeTiersDf,chartShare,presence,diameters,beginning,end,
            eventType,mtgFormat,presenceAxisLogScale) {
-  
-    archetypeTiersDf = archetype_tiers(archetypeRankingDf, presence, chartShare)
 
-  average = mean(archetypeTiersDf$MeasuredWinrate)
-  sdeviation = sd(archetypeTiersDf$MeasuredWinrate)
+  average = mean(archetypeTiersDf$Measured.Win.Rate)
+  sdeviation = sd(archetypeTiersDf$Measured.Win.Rate)
   
   x_label = ifelse(presence=="Copies",
                    "Number of copies of each archetype (%)",
@@ -722,7 +668,7 @@ simple_winrate_and_presence_graph =
   avg_presence = mean(archetypeTiersDf$Presence)
   sd_presence = sd(archetypeTiersDf$Presence)
   
-  metric_plot = ggplot(archetypeTiersDf, aes(Presence, MeasuredWinrate)) +
+  metric_plot = ggplot(archetypeTiersDf, aes(Presence, Measured.Win.Rate)) +
     
     geom_point(aes(color = Archetype), 
                size = archetypeTiersDf$Presence/
@@ -770,18 +716,7 @@ simple_winrate_and_presence_graph =
 #' @param beginning the date to be displayed in the title as the beginning of 
 #' the dataset
 #' @param end the date to be displayed in the title as the end of the dataset
-#' @param eventType the category of events to keep in the data. It can be:
-#' Event type:
-#' All sources = Everything (except MTGO Leagues - for any filter)
-#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
-#' Full Meta Events = Only events with the full metagame available
-#' (not MTGO Official results)
-#' ManaTraders = ManaTraders Series results
-#' Paper Events Full Meta = Full esults from MTG Melee
-#' Paper Events Top32 = Results of the top32 from MTG Melee
-#' MTGO Official Competitions = Results from the MTGO website
-#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
-#' MTGO Preliminaries = As per name
+#' @param eventType the category of events to keep in the data. See Parameters.R.
 #' @param mtgFormat the format of the events in the data
 #'
 #' @return ggplot with a 2D table presenting the matchup results between all the

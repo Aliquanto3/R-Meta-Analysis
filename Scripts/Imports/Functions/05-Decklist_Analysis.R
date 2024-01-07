@@ -586,13 +586,13 @@ get_archetype_data_by_color = function(deckName, df){
     round(100*wins/(wins+defeats), digits = 2)
   },colorResults$Wins,colorResults$Defeats)
   
-  colorResults$WRCILowerBound = mapply(FUN = function(wins, defeats){
+  colorResults$WRLower.Bound.of.CI.on.WR = mapply(FUN = function(wins, defeats){
     round(binom.test(wins, wins + defeats, p = 0.5, alternative = "two.sided", 
                conf.level = CIPercent)$conf.int[1] * 100, digits = 2)
   }, colorResults$Wins, colorResults$Defeats)
   
   # Return the most reliable winrate (best lower bound of the confidence interval)
-  colorResults[order(colorResults$WRCILowerBound,decreasing=TRUE),]
+  colorResults[order(colorResults$WRLower.Bound.of.CI.on.WR,decreasing=TRUE),]
 }
 
 #' Get the decklist optimized by lowest bound on the winrate for an archetype 

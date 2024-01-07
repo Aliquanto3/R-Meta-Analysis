@@ -44,7 +44,7 @@ tournamentDf = generate_df(
 ############################   Compute analysis   ############################## 
 
 # Get the following columns: 
-# Archetype Copies Players Matches MeasuredWinrate CILowerBound CIUpperBound
+# Archetype Copies Players Matches Measured.Win.Rate Lower.Bound.of.CI.on.WR Upper.Bound.of.CI.on.WR
 archetypeMetricsDf = archetype_metrics(tournamentDf)
 
 # Update the cut value based on the data. If too small, set at 1% for graph
@@ -59,7 +59,7 @@ if(Share.autoupdate){
 }
 
 # Add the following columns:
-# NormalizedPresence NormalizedMeasuredWinrate NormalizedSum Rank
+# Normalized.Presence Normalized.Win.Rate Normalized.Sum.of.Presence.and.WR Rank
 archetypeRankingDf = archetype_ranking(archetypeMetricsDf, Presence)
 # Keep only the most played decks and add some columns:
 # Presence Tiers
@@ -495,32 +495,32 @@ tournamentDf[conditionCardPresenceAllboard,]$AnchorUri
 tournamentDf = updateDfForPT(tournamentDf)
 
 # Normal Winrate
-hist(archetypeRankingDf$MeasuredWinrate,breaks = 20)
-shapiro.test(archetypeRankingDf$MeasuredWinrate)
-ks.test(archetypeRankingDf$MeasuredWinrate, "pnorm")
+hist(archetypeRankingDf$Measured.Win.Rate,breaks = 20)
+shapiro.test(archetypeRankingDf$Measured.Win.Rate)
+ks.test(archetypeRankingDf$Measured.Win.Rate, "pnorm")
 library(fitdistrplus)
-summary(fitdist(archetypeRankingDf[archetypeRankingDf$MeasuredWinrate>0,]$MeasuredWinrate/100, 
+summary(fitdist(archetypeRankingDf[archetypeRankingDf$Measured.Win.Rate>0,]$Measured.Win.Rate/100, 
                 distr = "beta", method = "mle"))
 library(goft)
-lnorm_test(archetypeRankingDf[archetypeRankingDf$MeasuredWinrate>0,]$MeasuredWinrate)
-gamma_test(archetypeRankingDf[archetypeRankingDf$MeasuredWinrate>0,]$MeasuredWinrate)
-weibull_test(archetypeRankingDf[archetypeRankingDf$MeasuredWinrate>0,]$MeasuredWinrate)
-normal_test(archetypeRankingDf[archetypeRankingDf$MeasuredWinrate>0,]$MeasuredWinrate)
+lnorm_test(archetypeRankingDf[archetypeRankingDf$Measured.Win.Rate>0,]$Measured.Win.Rate)
+gamma_test(archetypeRankingDf[archetypeRankingDf$Measured.Win.Rate>0,]$Measured.Win.Rate)
+weibull_test(archetypeRankingDf[archetypeRankingDf$Measured.Win.Rate>0,]$Measured.Win.Rate)
+normal_test(archetypeRankingDf[archetypeRankingDf$Measured.Win.Rate>0,]$Measured.Win.Rate)
 # Exponential presence
 hist(archetypeRankingDf$Matches,breaks = 20)
 ks.test(archetypeRankingDf$Matches, "pexp")
 # Winrate and presence correlation
-cor.test(archetypeRankingDf$MeasuredWinrate, 
+cor.test(archetypeRankingDf$Measured.Win.Rate, 
          archetypeRankingDf$Matches/max(archetypeRankingDf$Matches),
          method = "pearson")
-regWRPres = lm(MeasuredWinrate ~ Matches, data = archetypeRankingDf)
+regWRPres = lm(Measured.Win.Rate ~ Matches, data = archetypeRankingDf)
 summary(regWRPres)
 nrow(archetypeRankingDf)
 # Normal normalized sum
-hist(archetypeRankingDf$NormalizedSum,breaks = 20)
-shapiro.test(archetypeRankingDf$NormalizedSum)
-ks.test(archetypeRankingDf$NormalizedSum, "pnorm")
-normal_test(archetypeRankingDf[archetypeRankingDf$NormalizedSum>0,]$NormalizedSum)
+hist(archetypeRankingDf$Normalized.Sum.of.Presence.and.WR,breaks = 20)
+shapiro.test(archetypeRankingDf$Normalized.Sum.of.Presence.and.WR)
+ks.test(archetypeRankingDf$Normalized.Sum.of.Presence.and.WR, "pnorm")
+normal_test(archetypeRankingDf[archetypeRankingDf$Normalized.Sum.of.Presence.and.WR>0,]$Normalized.Sum.of.Presence.and.WR)
 
 
 archetypeRankingDfAboveMean = 
@@ -528,24 +528,24 @@ archetypeRankingDfAboveMean =
                      >= mean(archetypeRankingDf$Matches),]
 
 # Normal Winrate
-hist(archetypeRankingDfAboveMean$MeasuredWinrate)
-shapiro.test(archetypeRankingDfAboveMean$MeasuredWinrate)
-ks.test(archetypeRankingDfAboveMean$MeasuredWinrate, "pnorm")
+hist(archetypeRankingDfAboveMean$Measured.Win.Rate)
+shapiro.test(archetypeRankingDfAboveMean$Measured.Win.Rate)
+ks.test(archetypeRankingDfAboveMean$Measured.Win.Rate, "pnorm")
 # Exponential presence
 hist(archetypeRankingDfAboveMean$Matches,breaks = 15)
 ks.test(archetypeRankingDfAboveMean$Matches, "pexp")
 # Winrate and presence correlation
-cor.test(archetypeRankingDfAboveMean$MeasuredWinrate, 
+cor.test(archetypeRankingDfAboveMean$Measured.Win.Rate, 
          archetypeRankingDfAboveMean$Matches/max(archetypeRankingDfAboveMean$Matches),
          method = "pearson")
-regWRPres = lm(MeasuredWinrate ~ Matches, data = archetypeRankingDfAboveMean)
+regWRPres = lm(Measured.Win.Rate ~ Matches, data = archetypeRankingDfAboveMean)
 summary(regWRPres)
 nrow(archetypeRankingDfAboveMean)
 # Normal normalized sum
-hist(archetypeRankingDfAboveMean$NormalizedSum)
-shapiro.test(archetypeRankingDfAboveMean$NormalizedSum)
-ks.test(archetypeRankingDfAboveMean$NormalizedSum, "pnorm")
-normal_test(archetypeRankingDfAboveMean[archetypeRankingDfAboveMean$NormalizedSum>0,]$NormalizedSum)
+hist(archetypeRankingDfAboveMean$Normalized.Sum.of.Presence.and.WR)
+shapiro.test(archetypeRankingDfAboveMean$Normalized.Sum.of.Presence.and.WR)
+ks.test(archetypeRankingDfAboveMean$Normalized.Sum.of.Presence.and.WR, "pnorm")
+normal_test(archetypeRankingDfAboveMean[archetypeRankingDfAboveMean$Normalized.Sum.of.Presence.and.WR>0,]$Normalized.Sum.of.Presence.and.WR)
 
 # Murktide WR distribution
 MurktideDf = tournamentDf[tournamentDf$Archetype$Archetype== "Murktide",]

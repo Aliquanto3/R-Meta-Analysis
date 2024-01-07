@@ -36,7 +36,7 @@ TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 Beginning = "2023-12-05"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2024-01-06"
+End = "2024-01-07"
 
 # Event type:
 # All sources = Everything (except from MTGO Leagues and Team events - for any filter)
@@ -73,7 +73,7 @@ EventTypes = c("1" = "All events",
                "20" = "MTGO Events X-1 or better",
                "21" = "MTGO Preliminaries")
 
-EventType = EventTypes[7]
+EventType = EventTypes[1]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2
@@ -91,9 +91,9 @@ Share.autoupdate = T
 Presence = "Matches"
 
 # The value used for sorting the data in the win rate graph.
-# It can be either "MeasuredWinrate" or "CILowerBound" (the lower bound of
+# It can be either "Measured.Win.Rate" or "Lower.Bound.of.CI.on.WR" (the lower bound of
 # the confidence interval on the win rate).
-SortValue = "CILowerBound"
+SortValue = "Lower.Bound.of.CI.on.WR"
 
 #The percentage used for the confidence interval. By default it can be 0.95
 CIPercent = 0.9
@@ -125,8 +125,9 @@ writeXLSX = T
 # Still incomplete for easy use
 addColor = F
 
-# # TRUE when you run the code only on a PT event to remove the limited rounds
-# PTResults = T 
+# TRUE when you want to add a weight depending on the elapsed weeks
+# Avoid using it if you want to look at the confidence intervals
+timeWeight = F
 
 MTGO_URL = "https://www.mtgo.com/"
 Manatraders_URL = "https://www.manatraders.com/webshop/personal/"
