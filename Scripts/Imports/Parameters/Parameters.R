@@ -24,7 +24,7 @@ MtgFormats = c("1" = "Sealed",
                "6" = "Legacy",
                "7" = "Vintage",
                "8" = "All_Formats")
-MtgFormat = MtgFormats[4]
+MtgFormat = MtgFormats[8]
 
 # MtgFormat = "Pioneer"
 
@@ -33,10 +33,10 @@ MtgFormat = MtgFormats[4]
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2023-12-05"
+Beginning = "2023-01-01"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2024-01-07"
+End = "2023-12-31"
 
 # Event type:
 # All sources = Everything (except from MTGO Leagues and Team events - for any filter)
@@ -66,14 +66,14 @@ EventTypes = c("1" = "All events",
                "13" = "Paper Events X-2 or better",
                "14" = "Paper Events X-1 or better",
                "15" = "MTGO Events", 
-               "16" = "MTGO Events with top8", 
+               "16" = "MTGO Challenges and Qualifiers", 
                "17" = "MTGO Events Top8", 
                "18" = "MTGO Events Top1",
                "19" = "MTGO Events X-2 or better",
                "20" = "MTGO Events X-1 or better",
                "21" = "MTGO Preliminaries")
 
-EventType = EventTypes[1]
+EventType = EventTypes[16]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2

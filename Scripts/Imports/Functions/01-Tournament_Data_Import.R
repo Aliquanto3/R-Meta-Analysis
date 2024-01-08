@@ -191,10 +191,10 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
       resultDf = MTGOData
       
     } else if (eventType == EventTypes[16]) {
-      # "16" = "MTGO Events with top8"
+      # "16" = "MTGO Challenges and Qualifiers"
       # MTGO tournaments with a top8, so not Preliminaries (nor Leagues,
       # already filtered)
-      resultDf = MTGOData[!grepl("Preliminary", MTGOData$Tournament),]
+      resultDf = MTGOData[grepl("Qualifier|Challenge", MTGOData$Tournament),]
       
     } else if (eventType == EventTypes[17]) {
       # "17" = "MTGO Events Top8"
