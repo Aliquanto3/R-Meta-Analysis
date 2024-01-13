@@ -15,7 +15,7 @@
 #'
 #' @return the player results with the following columns:
 #' - Wins
-#' - Defeats
+#' - Losses
 #' - Draws
 #' - Number.of.Top32
 #' - Number.of.Top8
@@ -48,8 +48,7 @@ get_player_data = function(df){
     playerData = df[i,]
     
     playerDataDf[playerDataDf$Players == playerData$Player, ]$Number.of.Events = 
-      playerDataDf[playerDataDf$Players == playerData$Player, ]$Number.of.Events 
-    + 1 
+      playerDataDf[playerDataDf$Players == playerData$Player, ]$Number.of.Events + 1 
     
     playerDataDf[playerDataDf$Players == playerData$Player, ]$Wins = 
       playerDataDf[playerDataDf$Players == playerData$Player, ]$Wins + 
@@ -109,7 +108,8 @@ get_player_data = function(df){
                conf.level = CIPercent)$conf.int[2] * 100, digits = 2)
   }, playerDataDf$Wins, playerDataDf$Losses)
   
-  playerDataDf = playerDataDf[order(playerDataDf$Win.Rate,decreasing=TRUE),]
+  playerDataDf = playerDataDf[order(playerDataDf$Win.Rate.CI.Lower.Bound,
+                                    decreasing=TRUE),]
   
   playerDataDf
   

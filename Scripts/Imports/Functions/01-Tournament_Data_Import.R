@@ -39,13 +39,14 @@ library("jsonlite")
 generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath, 
                        beginning, end) {
   
-  # For development only
-  rawData = fromJSON(TournamentResultFile)[[1]]
-  eventType = EventType
-  mtgFormat = MtgFormat
-  tournamentDataPath = TournamentResultFile
-  beginning = Beginning
-  end = End
+  # # For development only
+  # rawData = fromJSON(TournamentResultFile)[[1]]
+  # rawData = RawData 
+  # eventType = EventType
+  # mtgFormat = MtgFormat
+  # tournamentDataPath = TournamentResultFile
+  # beginning = Beginning
+  # end = End
 
   # if (!mtgFormat == "All_Formats") {
   #   # probably filtered before with right use of the parser and import of a
@@ -90,6 +91,10 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
   periodData = periodData[!grepl("League", periodData$Tournament),]
   # Remove the Team Trio events providing unusable data
   periodData = periodData[!grepl("Team", periodData$Tournament),]
+  
+  if(MtgFormat == "Vintage"){
+    periodData = periodData[!grepl("Canadian Highlander", periodData$Tournament),]
+  }
   
   # /!\ Some events only have a top32, or don't even have one (Preliminary)
   if (eventType == EventTypes[1]) {

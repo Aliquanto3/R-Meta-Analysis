@@ -52,8 +52,8 @@ if(timeWeight){
 
 # Get the following columns: 
 # Archetype, Copies, Players, Matches, Measured.Win.Rate, Lower.Bound.of.CI.on.WR,
-# Upper.Bound.of.CI.on.WR, Normalized.Presence, Normalized.Win.Rate, Normalized.Sum.of.Presence.and.WR, 
-# Rank
+# Upper.Bound.of.CI.on.WR, Normalized.Presence, Normalized.Win.Rate, 
+# Normalized.Sum.of.Presence.and.WR, Rank
 archetypeMetricsDf = archetype_metrics(tournamentDf, Presence)
 
 # Get the minimum presence to appear
@@ -61,7 +61,8 @@ StatShare = updateStatShare(archetypeMetricsDf, ChartShare)
 
 # Keep only the most present decks and add the following columns:
 # Normalized.Presence, Normalized.Win.Rate, Normalized.Sum.of.Presence.and.WR, 
-archetypeNormalizedSumDf = archetype_normalized_sum(archetypeMetricsDf, StatShare)
+archetypeNormalizedSumDf = 
+  archetype_normalized_sum(archetypeMetricsDf, StatShare)
 
 # Add the following columns :
 # Rank.from.Normalized.Sum, Tiers.based.on.Normalized.Sum.of.Presence.and.WR, 
@@ -120,13 +121,16 @@ ggsave(winrateBoxPlotName, width = 40, height = 20, units = "cm")
 dev.off()
 
 # Draw the repartition of archetypes by tier depending on their normalized score
-tierListName = paste0(plotDir,"05a_Scatterplot-of-",gsub("\\.", "-", TierNames[1]),
-                      "_", MtgFormat, "_", Beginning, "_", End, ".jpg")
-tier_list_graph(archetypeWithTiersDf, StatShare, Presence, Beginning, 
-                End, EventType, MtgFormat, Tiers[1])
-ggsave(tierListName, width = 80, height = 40, units = "cm")
-dev.off()
-tierListName = paste0(plotDir,"05b_Scatterplot-of-",gsub("\\.", "-", TierNames[2]),
+# tierListName = 
+#   paste0(plotDir,"05a_Scatterplot-of-",gsub("\\.", "-", TierNames[1]),
+#                       "_", MtgFormat, "_", Beginning, "_", End, ".jpg")
+# tier_list_graph(archetypeWithTiersDf, StatShare, Presence, Beginning, 
+#                 End, EventType, MtgFormat, Tiers[1])
+# ggsave(tierListName, width = 80, height = 40, units = "cm")
+# dev.off()
+
+tierListName = 
+  paste0(plotDir,"05_Scatterplot-of-",gsub("\\.", "-", TierNames[2]),
                       "_", MtgFormat, "_", Beginning, "_", End, ".jpg")
 tier_list_graph(archetypeWithTiersDf, StatShare, Presence, Beginning, 
                 End, EventType, MtgFormat, Tiers[2])
@@ -146,19 +150,19 @@ dev.off()
 # Draw the 2D map of the most present archetypes based on presence and win rate,
 # adding the metrics as labels
 
-winrateAndPresenceFullName = 
-  paste0(plotDir,"07a_Winrate-&-Presence-Detailed-Scatterplot-with-",
-         gsub("\\.", "-", TierNames[1]),"_", 
-         MtgFormat,"_",Beginning, "_", End,"_By-", Presence,".jpg")
-detailed_winrate_and_presence_graph(archetypeWithTiersDf, StatShare, Presence, 
-                                    Beginning, End, EventType, MtgFormat, 
-                                    PresenceAxisLogScale, TierNames[1])
-ggsave(winrateAndPresenceFullName, width = 60, height = 30, units = "cm")
+# winrateAndPresenceFullName = 
+#   paste0(plotDir,"07a_Winrate-&-Presence-Detailed-Scatterplot-with-",
+#          gsub("\\.", "-", TierNames[1]),"_", 
+#          MtgFormat,"_",Beginning, "_", End,"_By-", Presence,".jpg")
+# detailed_winrate_and_presence_graph(archetypeWithTiersDf, StatShare, Presence, 
+#                                     Beginning, End, EventType, MtgFormat, 
+#                                     PresenceAxisLogScale, TierNames[1])
+# ggsave(winrateAndPresenceFullName, width = 60, height = 30, units = "cm")
 
 winrateAndPresenceFullName = 
-  paste0(plotDir,"07b_Winrate-&-Presence-Detailed-Scatterplot-with-",
+  paste0(plotDir,"07_Winrate-&-Presence-Zoom-Scatterplot-with-",
          gsub("\\.", "-", TierNames[2]),"_", 
-         MtgFormat,"_",Beginning, "_", End,"_By-", Presence,".jpg")
+         MtgFormat,"_",Beginning, "_", End,".jpg")
 detailed_winrate_and_presence_graph(archetypeWithTiersDf, StatShare, Presence, 
                                     Beginning, End, EventType, MtgFormat, 
                                     PresenceAxisLogScale, TierNames[2])
@@ -177,9 +181,9 @@ dev.off()
 #############################   Write the CSVs   ############################### 
 ################################################################################
 
-# Write the player results
-exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
-                 PlayerDataResultDir,writeCSV,writeXLSX)
+# # Write the player results
+# exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
+#                  PlayerDataResultDir,writeCSV,writeXLSX)
 
 # Write the card results
 exportCardData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
@@ -191,4 +195,10 @@ archetypeCardData = lapply(archetypeWithTiersDf$Archetype, function(archetypeNam
   exportArchetypeCardData(archetypeName,tournamentDf,PathToLastDirs,Beginning,
                           End,MtgFormat,EventType,ArchetypeCardDataResultDir,
                           writeCSV,writeXLSX)
+  
+  exportAverageDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+                          End,MtgFormat,EventType,AverageDeckListResultDir)
+  
+  exportOptimizedDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+                        End,MtgFormat,EventType,OptimizedDeckListResultDir)
 })

@@ -16,7 +16,7 @@ ResultDir = "Results/"
 
 # Format of the wanted events
 # # Leave this vector untouched if used, to avoid typing mistakes
-MtgFormats = c("1" = "Sealed",
+MtgFormats = c("1" = "Limited",
                "2" = "Standard",
                "3" = "Pioneer",
                "4" = "Modern",
@@ -24,7 +24,7 @@ MtgFormats = c("1" = "Sealed",
                "6" = "Legacy",
                "7" = "Vintage",
                "8" = "All_Formats")
-MtgFormat = MtgFormats[8]
+MtgFormat = MtgFormats[4]
 
 # MtgFormat = "Pioneer"
 
@@ -33,10 +33,10 @@ MtgFormat = MtgFormats[8]
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2023-01-01"
+Beginning = "2023-12-05"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2023-12-31"
+End = "2024-01-13"
 
 # Event type:
 # All sources = Everything (except from MTGO Leagues and Team events - for any filter)
@@ -73,7 +73,7 @@ EventTypes = c("1" = "All events",
                "20" = "MTGO Events X-1 or better",
                "21" = "MTGO Preliminaries")
 
-EventType = EventTypes[16]
+EventType = EventTypes[1]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2
@@ -118,6 +118,8 @@ CardDataResultDir = paste0(CsvResultDir, "Card Data/")
 PeriodComparisonDir = paste0(CsvResultDir, "Period Comparison files/")
 PictureResultDir = "Picture files/"
 TextResultDir = "Text files/"
+AverageDeckListResultDir = paste0(TextResultDir, "Average Deck Lists/")
+OptimizedDeckListResultDir = paste0(TextResultDir, "Optimized Deck Lists/")
 writeCSV = F
 writeXLSX = T
 

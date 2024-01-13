@@ -59,7 +59,9 @@ createResultDirectories = function(resultDir,mtgFormat,beginning,end,eventType,
   return(pathToLastDirs)
 }
 
-#' Title
+#' Write a textual analysis of the results, such as the formats, number of 
+#' players, archetypes, matches, etc. And write another file with the links 
+#' to all the events used in the analysis.
 #'
 #' @param df the dataframe returned by generate_df() 
 #' @param pathToLastDirs the path returned by createResultDirectories(),
@@ -67,6 +69,7 @@ createResultDirectories = function(resultDir,mtgFormat,beginning,end,eventType,
 #' @param beginning the date to be displayed in the path as the beginning of 
 #' the dataset
 #' @param end the date to be displayed in the path as the end of the dataset
+#' @param mtgFormat the format of the events in the data
 #' @param eventType the category of events to keep in the data. It can be:
 #' Event type:
 #' All sources = Everything (except MTGO Leagues - for any filter)
@@ -84,8 +87,8 @@ createResultDirectories = function(resultDir,mtgFormat,beginning,end,eventType,
 #' @param textResultDir the name of the final directory for text files, 
 #' presumably "Text files" 
 #'
-#' @return
-#' @export
+#' @return N/A
+#' @export TXT Two txt files.
 #'
 #' @examples
 exportTextAnalysis = 
@@ -107,7 +110,7 @@ exportTextAnalysis =
   maxMatches = max(df$Matches)
   nEvents = length(unique(df$TournamentName))
   
-  eventInfo=paste("QUICK ANALYSIS OF THE DATA", 
+  eventInfo = paste("QUICK ANALYSIS OF THE DATA", 
                   "\nFormat: ", mtgFormat,
                   "\nBeginning: ", beginning,
                   "\nEnd: ", end,
@@ -127,14 +130,14 @@ exportTextAnalysis =
                   minMatches,
                   "\nMaximum number of rounds in the data (w/o top8): ",
                   maxMatches,
-                  "\nNumber of events in the data: ", nEvents,sep="")
+                  "\nNumber of events in the data: ", nEvents, sep="")
   
   analysisName = paste0(beginning,'-',end,"_",mtgFormat,"-",eventType,
                         '_Quick_Analysis.txt')
   cat(eventInfo, file = paste0(writingPath, analysisName))
   
   # Export the list of covered events with their URL
-  coveredEvents=setNames(data.frame(matrix(ncol=2, nrow=nEvents)), 
+  coveredEvents = setNames(data.frame(matrix(ncol=2, nrow=nEvents)), 
                          c("TournamentName", "URL"))
   coveredEvents$TournamentName=unique(df$TournamentName)
   for (i in 1:nEvents){
@@ -152,8 +155,41 @@ exportTextAnalysis =
   
   write.table(coveredEvents, paste0(writingPath, listName), 
               append=TRUE, row.names = FALSE, col.names = FALSE, sep = " - ")
-  }
+}
 
+#' Write a table in CSV and/or XLSX with the win rate, presence and top analysis
+#' of all the players.
+#'
+#' @param df the dataframe returned by generate_df() 
+#' @param pathToLastDirs the path returned by createResultDirectories(),
+#' where to write the current outputs in final directories
+#' @param beginning the date to be displayed in the path as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the path as the end of the dataset
+#' @param mtgFormat the format of the events in the data
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
+#' @param playerDataResultDir the name of the final directory for text files, 
+#' presumably "Player Data" 
+#' @param writeCSV parameter to write a CSV file or not
+#' @param writeCSV parameter to write a XSLX file or not
+#'
+#' @return N/A
+#' @export Table Up to one CSV and XLSX files with the player data
+#'
+#' @examples
 exportPlayerData = 
   function(df,pathToLastDirs,beginning,end,mtgFormat,eventType,
            playerDataResultDir,writeCSV,writeXLSX){
@@ -182,6 +218,39 @@ exportPlayerData =
   }
   }
 
+#' Write a table in CSV and/or XLSX with the win rate and presence analysis
+#' of all the cards
+#'
+#' @param df the dataframe returned by generate_df() 
+#' @param pathToLastDirs the path returned by createResultDirectories(),
+#' where to write the current outputs in final directories
+#' @param beginning the date to be displayed in the path as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the path as the end of the dataset
+#' @param mtgFormat the format of the events in the data
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
+#' @param cardDataResultDir the name of the final directory for text files, 
+#' presumably "Card Data" 
+#' @param writeCSV parameter to write a CSV file or not
+#' @param writeCSV parameter to write a XSLX file or not
+#'
+#' @return N/A
+#' @export Table Up to one CSV and XLSX files with the card data
+#'
+#' @examples
 exportCardData = 
   function(df,pathToLastDirs,beginning,end,mtgFormat,eventType,
            cardDataResultDir,writeCSV,writeXLSX){
@@ -211,6 +280,39 @@ exportCardData =
     }
   }
 
+#' Write a table in CSV and/or XLSX with the breakdown of the win rate and 
+#' presence of all cards in the archetype.
+#' 
+#' @param df the dataframe returned by generate_df() 
+#' @param pathToLastDirs the path returned by createResultDirectories(),
+#' where to write the current outputs in final directories
+#' @param beginning the date to be displayed in the path as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the path as the end of the dataset
+#' @param mtgFormat the format of the events in the data
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
+#' @param archetypeCardDataResultDir the name of the final directory for text files, 
+#' presumably "Archetype Card Data" 
+#' @param writeCSV parameter to write a CSV file or not
+#' @param writeCSV parameter to write a XSLX file or not
+#'
+#' @return N/A
+#' @export Table Up to one CSV and XLSX files with the archetype card data
+#'
+#' @examples
 exportArchetypeCardData = 
   function(archetypeName,df,pathToLastDirs,beginning,end,mtgFormat,eventType,
            archetypeCardDataResultDir,writeCSV,writeXLSX){
@@ -238,5 +340,137 @@ exportArchetypeCardData =
       write.xlsx(ArchetypeCardData, paste0(ArchetypeCardDataDirPath, ArchetypeCardDataFileName,'.xlsx'), 
                  row.names = FALSE)
     }
-    return(ArchetypeCardData)
+    # return(ArchetypeCardData)
+  }
+
+#' Write a text file with the average deck list for a given archetype in plain
+#' text (theoretically copy-pastable in websites for visual view)
+#' 
+#' @param df the dataframe returned by generate_df() 
+#' @param pathToLastDirs the path returned by createResultDirectories(),
+#' where to write the current outputs in final directories
+#' @param beginning the date to be displayed in the path as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the path as the end of the dataset
+#' @param mtgFormat the format of the events in the data
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
+#' @param averageDeckListResultDir the name of the final directory for text files, 
+#' presumably "Average Deck Lists" 
+#'
+#' @return N/A
+#' @export TXT A text file with the average deck list in plain text
+#'
+#' @examples
+exportAverageDeckList = 
+  function(archetypeName,df,pathToLastDirs,beginning,end,mtgFormat,eventType,
+           averageDeckListResultDir){
+    # # For development only
+    # archetypeName = "Rakdos Midrange"
+    # df = tournamentDf
+    # pathToLastDirs = PathToLastDirs
+    # beginning = Beginning
+    # end = End
+    # mtgFormat = MtgFormat
+    # eventType = EventType
+    # averageDeckListResultDir = AverageDeckListResultDir
+
+    averageDeckListData = get_average_decklist(
+      archetypeName, get_archetype_most_common_colors(archetypeName, df)[1], df)
+    
+   MainDeckText = paste(averageDeckListData$MainDeck$CardCountMD, 
+          averageDeckListData$MainDeck$CardNamesMD, collapse = "\n")
+   SideBoardText = paste(averageDeckListData$SideBoard$CardCountSB, 
+                         averageDeckListData$SideBoard$CardNamesSB, collapse = "\n")
+   
+   AverageDeckListText = paste(MainDeckText, SideBoardText, sep = "\n\n")
+   
+   AverageDeckListDirPath = paste0(pathToLastDirs,averageDeckListResultDir)
+   dir.create(file.path(AverageDeckListDirPath))
+   
+   AverageDeckListFileName = paste0(beginning,'_', end, ' - ', archetypeName,
+                                    ' - Average Deck List in ', mtgFormat, ' ', 
+                                    eventType, '.txt')
+   cat(AverageDeckListText, 
+       file = paste0(AverageDeckListDirPath, AverageDeckListFileName))
+    
+    # return(averageDeckListData)
+  }
+
+#' Write a text file with the optimized deck list for a given archetype in plain
+#' text (theoretically copy-pastable in websites for visual view)
+#' 
+#' @param df the dataframe returned by generate_df() 
+#' @param pathToLastDirs the path returned by createResultDirectories(),
+#' where to write the current outputs in final directories
+#' @param beginning the date to be displayed in the path as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the path as the end of the dataset
+#' @param mtgFormat the format of the events in the data
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
+#' @param optimizedDeckListResultDir the name of the final directory for text files, 
+#' presumably "Optimized Deck Lists" 
+#'
+#' @return N/A
+#' @export TXT A text file with the optimized deck list in plain text
+#'
+#' @examples
+exportOptimizedDeckList = 
+  function(archetypeName,df,pathToLastDirs,beginning,end,mtgFormat,eventType,
+           optimizedDeckListResultDir){
+    # # For development only
+    # archetypeName = "Rakdos Midrange"
+    # df = tournamentDf
+    # pathToLastDirs = PathToLastDirs
+    # beginning = Beginning
+    # end = End
+    # mtgFormat = MtgFormat
+    # eventType = EventType
+    # optimizedDeckListResultDir = OptimizedDeckListResultDir
+    
+    optimizedDeckListData = get_winrate_optimized_decklist(
+      archetypeName, get_archetype_most_common_colors(archetypeName, df)[1], df)
+    
+    OptimizedDeckListText = paste(
+      paste(optimizedDeckListData$MainDeck$Card.Count.and.Name.MD, 
+            collapse = "\n"), 
+      paste(optimizedDeckListData$SideBoard$Card.Count.and.Name.SB, 
+            collapse = "\n"), 
+      sep = "\n\n")
+    
+    OptimizedDeckListDirPath = paste0(pathToLastDirs,optimizedDeckListResultDir)
+    dir.create(file.path(OptimizedDeckListDirPath))
+    
+    OptimizedDeckListFileName = paste0(beginning,'_', end, ' - ', archetypeName,
+                                     ' - Optimized Deck List in ', mtgFormat, ' ', 
+                                     eventType, '.txt')
+    cat(OptimizedDeckListText, 
+        file = paste0(OptimizedDeckListDirPath, OptimizedDeckListFileName))
+    
+    # return(optimizedDeckListData)
   }

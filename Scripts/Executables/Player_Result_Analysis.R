@@ -42,3 +42,5 @@ tournamentDf = generate_df(
 # Write the player results
 exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
                  PlayerDataResultDir,writeCSV,writeXLSX)
+sort(unique(tournamentDf$Tournament))
+sort(unique(tournamentDf$TournamentName))

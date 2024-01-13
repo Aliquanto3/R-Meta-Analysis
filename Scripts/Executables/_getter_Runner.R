@@ -8,21 +8,17 @@
 ##### Use this file to manually run some simple getters on the data        #####
 ################################################################################
 
-# Set the working directory as the current R project directory 
-# Mostly useful because the code keeps changing directories to write graphs
-# Maybe it can do it otherwise and more efficiently?
-library(rprojroot)
-library(knitr)
-setwd(find_rstudio_root_file())
+########################   Import data and functions   ######################### 
 
 # Import the parameters, libraries and functions from other scripts
 # Once the code is stable, it should be turned into packages
-ScriptDir = paste0(find_rstudio_root_file(),"/Scripts/")
+ScriptDir = "Scripts/"
 importableScriptDir = paste0(ScriptDir,"Imports/")
 
 parameterScriptDir = paste0(importableScriptDir,"Parameters/")
 source(file.path(paste0(parameterScriptDir,"Parameters.R")))
 
+functionScriptDir = paste0(importableScriptDir,"Functions/")
 source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
 source(file.path(paste0(functionScriptDir,"02-Simple_Getters.R")))
 source(file.path(paste0(functionScriptDir,"03-Metagame_Data_Treatment.R")))

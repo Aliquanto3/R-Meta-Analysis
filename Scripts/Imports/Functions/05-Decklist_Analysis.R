@@ -550,7 +550,7 @@ get_average_decklist = function(deckName, color, df){
     }
   }
   
-  return(averageMaindeck)
+  return(list(MainDeck = averageMaindeck, SideBoard = averageSideboard))
 }
 
 #' Get the presence and winrate of the archetype depending on the color 
@@ -599,6 +599,8 @@ get_archetype_data_by_color = function(deckName, df){
 #' for the optimized color combination
 #'
 #' @param deckName a string with the name of the archetype to find
+#' @param optimizedColor a string with the color of the archetype to keep. 
+#' Ex: "WUBRG"
 #' @param df the dataframe returned by generate_df()
 #'
 #' @return a dataframe with the card names and their count in the archetype
@@ -738,5 +740,5 @@ get_winrate_optimized_decklist = function(deckName, optimizedColor, df){
   optimizedDeckText = paste0(optimizedMaindeckText,"\n\n",optimizedSideboardText, "\n\n")
   cat(optimizedDeckText)
   
-  return(list(Maindeck = optimizedMaindeck, Sideboard = optimizedSideboard))
+  return(list(MainDeck = optimizedMaindeck, SideBoard = optimizedSideboard))
 }
