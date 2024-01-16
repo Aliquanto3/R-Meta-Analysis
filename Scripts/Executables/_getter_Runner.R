@@ -64,12 +64,10 @@ archetypeTiersDf = archetype_tiers(archetypeRankingDf, Presence, StatShare)
 # archetypes
 muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)
 
-exportTextAnalysis(tournamentDf, PathToLastDirs, Beginning, End, MtgFormat, 
-                   EventType, ChartShare,TextResultDir)
 
 ############################################################ 
 
-cardName = "Counterspell"
+cardName = "Omnath Control"
 archetypeName = "Dimir Shadow"
 archetypeName2 = "Hammer Time"
 

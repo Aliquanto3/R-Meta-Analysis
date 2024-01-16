@@ -24,7 +24,7 @@ MtgFormats = c("1" = "Limited",
                "6" = "Legacy",
                "7" = "Vintage",
                "8" = "All_Formats")
-MtgFormat = MtgFormats[4]
+MtgFormat = MtgFormats[2]
 
 # MtgFormat = "Pioneer"
 
@@ -33,10 +33,10 @@ MtgFormat = MtgFormats[4]
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2023-12-05"
+Beginning = "2023-12-19"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2024-01-13"
+End = "2024-01-16"
 
 # Event type:
 # All sources = Everything (except from MTGO Leagues and Team events - for any filter)

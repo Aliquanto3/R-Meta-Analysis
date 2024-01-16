@@ -199,6 +199,6 @@ archetypeCardData = lapply(archetypeWithTiersDf$Archetype, function(archetypeNam
   exportAverageDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
                           End,MtgFormat,EventType,AverageDeckListResultDir)
   
-  exportOptimizedDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
-                        End,MtgFormat,EventType,OptimizedDeckListResultDir)
+  # exportOptimizedDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+  #                       End,MtgFormat,EventType,OptimizedDeckListResultDir)
 })
