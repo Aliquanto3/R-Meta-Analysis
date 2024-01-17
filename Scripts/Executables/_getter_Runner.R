@@ -183,39 +183,10 @@ muMatrixDataArchetype = generate_matchup_data(tournamentDf, ChartShare,
 generate_matchup_matrix(muMatrixDataArchetype, ChartShare, Presence, Beginning, 
                         End, MtgFormat, EventType)
 
-getArchetypeWinRate = function(tournamentDf, archetypeName){
-  archetypeDf = tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]
-  archetypePresence = paste0(round(nrow(archetypeDf)/nrow(tournamentDf),
-                                   digits=4)*100,"%")
-  archetypeWinRateWDraws = paste0(round(sum(archetypeDf$NWins)/
-                                          sum(archetypeDf$Matches),
-                                        digits=4)*100,"%")
-  archetypeWinRateWoDraws = paste0(round(sum(archetypeDf$NWins)/
-    (sum(archetypeDf$NWins) + sum(archetypeDf$Losses)),
-    digits=4)*100,"%")
-  archetypeDrawPercentage = paste0(round(sum(archetypeDf$Draws)/
-                                           sum(archetypeDf$Matches),
-                                         digits=4)*100,"%")
-  
-  colLabels = c("Archetype Name","Archetype Presence",
-                "Archetype Win Rate w Draws", "Archetype Win Rate w/o Draws",
-                "Archetype Draw Percentage")
-  
-  archetypeData = c(archetypeName, archetypePresence, archetypeWinRateWDraws,
-                    archetypeWinRateWoDraws, archetypeDrawPercentage)
-  archetypeDF = t(data.frame(archetypeData))
-  rownames(archetypeDF) = c()
-  colnames(archetypeDF) = colLabels
-  
-  print(kable(archetypeDF))
-}
-getArchetypeWinRate(tournamentDf, archetypeName)
 
-getArchetypeWR = function(tournamentDf, archetypeName){
-  archetypeDf = tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]
-  paste("The win rate (w/o draws) of",archetypeName,"is:",
-        round(100 * sum(archetypeDf$Wins)/(sum(archetypeDf$Wins) + sum(archetypeDf$Losses)),digits = 2),"%.")
-}
+getArchetypeWinRates(tournamentDf, archetypeName)
+
+
 archetypeName = "Bant Spirits"
 getArchetypeWR(tournamentDf, archetypeName)
 archetypeName = "Azorius Spirits"
@@ -292,8 +263,6 @@ getMainboardCardData = function(cardNames, tournamentDf, CIPercent,
   print(kable(cardsDF))
   return(cardsDF)
 }
-
-
 
 getMainboardCardData(cardNames, tournamentDf, CIPercent, 
                      EventType, MtgFormat, Beginning, End)
@@ -432,7 +401,6 @@ mainBoardCardData = function(cardNames, tournamentDf){
   View(cardsDF)
   return(cardsDF)
 }
-
 
 conditionCardPresenceAllboard = sapply(tournamentDf$Allboard, function(Allboard) {
   cardName %in% Allboard$CardName

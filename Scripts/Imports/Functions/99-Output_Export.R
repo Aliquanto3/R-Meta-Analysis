@@ -474,3 +474,127 @@ exportOptimizedDeckList =
     
     # return(optimizedDeckListData)
   }
+
+#' Write a text file with the URL of the deck list for a given archetype that 
+#' had the "best" performance in the data (highest wins - losses score, as 
+#' defined by Frank Karsten).
+#' 
+#' @param df the dataframe returned by generate_df() 
+#' @param pathToLastDirs the path returned by createResultDirectories(),
+#' where to write the current outputs in final directories
+#' @param beginning the date to be displayed in the path as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the path as the end of the dataset
+#' @param mtgFormat the format of the events in the data
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
+#' @param bestDeckResultDir the name of the final directory for text files, 
+#' presumably "Best Deck URL" 
+#'
+#' @return N/A
+#' @export TXT A text file with the URL of the "best" deck list in plain text
+#' for a given archetype
+#'
+#' @examples
+exportBestDeck = 
+  function(archetypeName,df,pathToLastDirs,beginning,end,mtgFormat,eventType,
+           bestDeckResultDir){
+    # # For development only
+    # archetypeName = "Rakdos Midrange"
+    # df = tournamentDf
+    # pathToLastDirs = PathToLastDirs
+    # beginning = Beginning
+    # end = End
+    # mtgFormat = MtgFormat
+    # eventType = EventType
+    # bestDeckResultDir = BestDeckResultDir
+    
+    bestDeckData = getBestDeck(archetypeName, df)
+    
+    bestDeckListText = paste(bestDeckData, collapse = "\n")
+    
+    bestDeckResultDirPath = paste0(pathToLastDirs,bestDeckResultDir)
+    dir.create(file.path(bestDeckResultDirPath))
+    
+    bestDeckFileName = paste0(beginning,'_', end, ' - ', archetypeName,
+                                       ' - Best Deck in ', mtgFormat, ' ', 
+                                       eventType, '.txt')
+    cat(bestDeckListText, 
+        file = paste0(bestDeckResultDirPath, bestDeckFileName))
+    
+    # return(bestDeckData)
+  }
+
+#' Write a text file with the URL of the deck list for a given archetype that 
+#' had the "best" performance in the data (highest wins - losses score, as 
+#' defined by Frank Karsten).
+#' 
+#' @param df the dataframe returned by generate_df() 
+#' @param pathToLastDirs the path returned by createResultDirectories(),
+#' where to write the current outputs in final directories
+#' @param beginning the date to be displayed in the path as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the path as the end of the dataset
+#' @param mtgFormat the format of the events in the data
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
+#' @param bestDeckResultDir the name of the final directory for text files, 
+#' presumably "All Deck URL" 
+#'
+#' @return N/A
+#' @export TXT A text file with the URL of the all the deck lists in plain text
+#' for a given archetype
+#'
+#' @examples
+exportAllDeckURL = 
+  function(archetypeName,df,pathToLastDirs,beginning,end,mtgFormat,eventType,
+           allDeckURLResultDir){
+    # # For development only
+    # archetypeName = "Rakdos Midrange"
+    # df = tournamentDf
+    # pathToLastDirs = PathToLastDirs
+    # beginning = Beginning
+    # end = End
+    # mtgFormat = MtgFormat
+    # eventType = EventType
+    # allDeckURLResultDir = AllDeckURLResultDir
+    
+    allDeckURLData = getURLofDeck(archetypeName, df)
+    
+    allDeckURLListText = paste(allDeckURLData, collapse = "\n")
+    
+    allDeckURLResultDirPath = paste0(pathToLastDirs,allDeckURLResultDir)
+    dir.create(file.path(allDeckURLResultDirPath))
+    
+    allDeckURLFileName = paste0(beginning,'_', end, ' - ', archetypeName,
+                              ' - Best Deck in ', mtgFormat, ' ', 
+                              eventType, '.txt')
+    cat(allDeckURLListText, 
+        file = paste0(allDeckURLResultDirPath, allDeckURLFileName))
+    
+    # return(allDeckURLData)
+  }

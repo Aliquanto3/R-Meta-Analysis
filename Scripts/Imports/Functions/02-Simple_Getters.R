@@ -11,9 +11,11 @@
 # install.packages("readr")
 # install.packages("devtools")
 # install.packages("data.table")
+# install.packages("knitr")
 library("readr")
 library("devtools")
 library("data.table")
+library("knitr")
 
 #' Get conflicted archetype URL
 #'
@@ -84,10 +86,15 @@ getURLofCard = function(cardName,df){
 #'
 #' @examples
 getURLofDeck = function(deckName,df){
-  return(df[df$Archetype$Archetype==deckName,]$AnchorUri)
+  
+  df2 = df[df$Archetype$Archetype == deckName,]
+  df2$WinLossScore = df2$Wins - df2$Losses
+  df2 = df2[order(df2$WinLossScore),]
+  
+  return(df2$AnchorUri)
 }
 
-#' Get the URL of the deck with the best win/loss ratio for a given archetype
+#' Get the URL of the deck with the best win - loss ratio for a given archetype
 #'
 #' @param deckName a string with the name of the archetype to find
 #' @param df the dataframe returned by generate_df()
@@ -100,20 +107,20 @@ getURLofDeck = function(deckName,df){
 #'
 #' @examples
 getBestDeck = function(deckName,df){
-  df2=df[df$Archetype$Archetype==deckName,]
+  df2 = df[df$Archetype$Archetype == deckName,]
   df2$WinLossScore = df2$Wins - df2$Losses
   if(nrow(df2)>0){
-    df2=df2[df2$WinLossScore==max(df2$WinLossScore),]
+    df2 = df2[df2$WinLossScore == max(df2$WinLossScore),]
   }
   return(df2$AnchorUri)
 }
 
-#' Get the decklist of the deck with the best win/loss ratio for a given archetype
+#' Get the deck list(s) with the best win - loss ratio for a given archetype
 #'
 #' @param deckName a string with the name of the archetype to find
 #' @param df the dataframe returned by generate_df()
 #'
-#' @return the URL of the most successful deck of a given archetype.
+#' @return the deck list(s) of the most successful deck(s) of a given archetype.
 #' The most successful is defined as having the highest difference between its
 #' wins and defeats. A 7-0 is equivalent to a 10-3. Idea by Frank Karsten.
 #' Empty if nothing fits (wrong name or not in the data).
@@ -121,12 +128,12 @@ getBestDeck = function(deckName,df){
 #'
 #' @examples
 getBestDeckList = function(deckName,df){
-  df2=df[df$Archetype$Archetype==deckName,]
+  df2 = df[df$Archetype$Archetype == deckName,]
   df2$WinLossScore = df2$Wins - df2$Losses
   if(nrow(df2)>0){
-    df2=df2[df2$WinLossScore==max(df2$WinLossScore),]
+    df2 = df2[df2$WinLossScore == max(df2$WinLossScore),]
   }
-  return(list(df2$Mainboard, df2$Sideboard))
+  return(list(Mainboards = df2$Mainboard, Sideboards = df2$Sideboard))
 }
 
 #' Matchup data between two given archetypes
@@ -158,3 +165,66 @@ get_matchup_data = function(df,arch1,arch2){
   return(c(Wins = winsArch1VS2, Losses = lossesArch1VS2))
 }
 
+#' Different types of win rates for a given archetype
+#'
+#' @param df the dataframe returned by generate_df()
+#' @param archetypeName a string with the name of the archetype
+#'
+#' @return a vector with the archetype name, the presence by copies and the
+#' values for the different types of win rates and draws.
+#' @export 
+#'
+#' @examples
+getArchetypeWinRates = function(tournamentDf, archetypeName){
+  
+  archetypeDf = tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]
+  
+  archetypePresence = paste0(round(sum(archetypeDf$Wins)/nrow(tournamentDf),
+                                   digits = 4) * 100,"%")
+  archetypeWinRateWDraws = paste0(round(sum(archetypeDf$Wins)/
+                                          sum(archetypeDf$Matches),
+                                        digits = 4) * 100,"%")
+  archetypeWinRateWoDraws = paste0(round(sum(archetypeDf$Wins)/
+                                           (sum(archetypeDf$Wins) + 
+                                              sum(archetypeDf$Losses)),
+                                         digits = 4) * 100,"%")
+  archetypeDrawPercentage = paste0(round(sum(archetypeDf$Draws)/
+                                           sum(archetypeDf$Matches),
+                                         digits = 4) * 100,"%")
+  
+  colLabels = c("Archetype Name",
+                "Archetype Presence",
+                "Archetype Win Rate w Draws", 
+                "Archetype Win Rate w/o Draws",
+                "Archetype Draw Percentage")
+  
+  archetypeData = c(archetypeName, 
+                    archetypePresence, 
+                    archetypeWinRateWDraws,
+                    archetypeWinRateWoDraws, 
+                    archetypeDrawPercentage)
+  
+  archetypeDF = t(data.frame(archetypeData))
+  rownames(archetypeDF) = c()
+  colnames(archetypeDF) = colLabels
+  
+  print(kable(archetypeDF))
+  return(archetypeDF)
+}
+
+#' Print the win rate of a given archetype.
+#'
+#' @param df the dataframe returned by generate_df()
+#' @param archetypeName a string with the name of the archetype
+#'
+#' @return 
+#' @export
+#'
+#' @examples
+getArchetypeWR = function(tournamentDf, archetypeName){
+  archetypeDf = tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]
+  paste("The win rate (w/o draws) of",archetypeName,"is:",
+        round(100 * sum(archetypeDf$Wins)/
+                (sum(archetypeDf$Wins) + 
+                   sum(archetypeDf$Losses)),digits = 2),"%.")
+}

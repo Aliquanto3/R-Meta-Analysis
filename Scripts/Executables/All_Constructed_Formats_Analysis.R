@@ -194,6 +194,12 @@ for(MtgFormat in ConstructedFormats){
     exportAverageDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
                           End,MtgFormat,EventType,AverageDeckListResultDir)
     
+    exportAverageDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+                          End,MtgFormat,EventType,BestDeckResultDir)
+    
+    exportAllDeckURL(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+                     End,MtgFormat,EventType,AllDeckURLResultDir)
+    
     # exportOptimizedDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
     #                       End,MtgFormat,EventType,OptimizedDeckListResultDir)
   })

@@ -24,7 +24,7 @@ MtgFormats = c("1" = "Limited",
                "6" = "Legacy",
                "7" = "Vintage",
                "8" = "All_Formats")
-MtgFormat = MtgFormats[2]
+MtgFormat = MtgFormats[4]
 
 # MtgFormat = "Pioneer"
 
@@ -120,6 +120,8 @@ PictureResultDir = "Picture files/"
 TextResultDir = "Text files/"
 AverageDeckListResultDir = paste0(TextResultDir, "Average Deck Lists/")
 OptimizedDeckListResultDir = paste0(TextResultDir, "Optimized Deck Lists/")
+BestDeckResultDir = paste0(TextResultDir, "Best Deck URL/")
+AllDeckURLResultDir = paste0(TextResultDir, "All Deck URL/")
 writeCSV = F
 writeXLSX = T
 
