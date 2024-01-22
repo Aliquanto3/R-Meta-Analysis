@@ -5,7 +5,7 @@
 #####            https://github.com/Badaro/MTGOArchetypeParser             #####
 ################################################################################
 #####                       week_comparison.R                              #####
-##### Use this file as a controller of the others to generate most results #####
+##### Use this file to generate a graph of the metagame evolution by week. #####
 ################################################################################
 
 ########################   Import data and functions   ######################### 
@@ -20,10 +20,12 @@ source(file.path(paste0(parameterScriptDir,"Parameters.R")))
 
 functionScriptDir = paste0(importableScriptDir,"Functions/")
 source(file.path(paste0(functionScriptDir,"01-Tournament_Data_Import.R")))
-source(file.path(paste0(functionScriptDir,"02-Metagame_Data_Treatment.R")))
-source(file.path(paste0(functionScriptDir,"03-Metagame_Graph_Generation.R")))
-source(file.path(paste0(functionScriptDir,"04-Decklist_Analysis.R")))
-source(file.path(paste0(functionScriptDir,"05-Player_Data_Treatment.R")))
+source(file.path(paste0(functionScriptDir,"02-Simple_Getters.R")))
+source(file.path(paste0(functionScriptDir,"03-Metagame_Data_Treatment.R")))
+source(file.path(paste0(functionScriptDir,"04-Metagame_Graph_Generation.R")))
+source(file.path(paste0(functionScriptDir,"05-Decklist_Analysis.R")))
+source(file.path(paste0(functionScriptDir,"06-Player_Data_Treatment.R")))
+source(file.path(paste0(functionScriptDir,"07-Card_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"99-Output_Export.R")))
 
 # Create all the directories where results will be written
@@ -34,100 +36,54 @@ PathToLastDirs =
 #Import raw data
 RawData = jsonlite::fromJSON(TournamentResultFile)[[1]] 
 
-# Generate data for the whole month
+# Generate data for the whole period
 tournamentDf = generate_df(
   RawData, EventType, MtgFormat, TournamentResultFile, Beginning, End)
-archetypeMetricsDf = archetype_metrics(tournamentDf)
+archetypeMetricsDf = archetype_metrics(tournamentDf, Presence)
 StatShare = 
   round(mean(unlist(archetypeMetricsDf[Presence])) / 
           sum(unlist(archetypeMetricsDf[Presence])) * 100, digits = 2)
 metagameDf = generate_metagame_data(tournamentDf, StatShare, Presence)
 
-# Split data by week
-beginnings = seq(as.Date(Beginning), as.Date(Beginning) + 27, "7 days")
-ends = seq(as.Date(Beginning) + 7, as.Date(Beginning) + 28, "7 days")
+# Get the list 
+dateList = seq(from = as.Date(Beginning), to = as.Date(End), by = "days")
+beginnings = dateList[which(wday(dateList)==2)] #List of Mondays
+ends = dateList[which(wday(dateList)==1)] #List of Sundays
 BeginningAndEnd = data.frame(beginnings = beginnings,ends = ends)
 weekCount = 1:nrow(BeginningAndEnd)
 
-weeklyResults = lapply(weekCount, function(weekIndex,RawData, EventType, MtgFormat, TournamentResultFile){
+# Split the raw data week by week in a list
+weeklyResults = lapply(weekCount, function(weekIndex, RawData, EventType, 
+                                           MtgFormat, TournamentResultFile){
   beginning = BeginningAndEnd$beginnings[weekIndex]
   end = BeginningAndEnd$ends[weekIndex]
   print(paste("Beginning:",beginning, " - End:",end))
   tournamentDf = generate_df(
     RawData, EventType, MtgFormat, TournamentResultFile, beginning, end)
-},RawData, EventType, MtgFormat, TournamentResultFile)
+}, RawData, EventType, MtgFormat, TournamentResultFile)
 
-weeklyMetrics = lapply(weeklyResults, archetype_metrics)
-weeklyMetrics = lapply(weeklyMetrics, function(weeklyMetric){
-  weeklyMetric$Share = 
-    round(weeklyMetric$Copies / sum(weeklyMetric$Copies)*100, digits = 2)
-  weeklyMetric
+# Get the archetype metrics by week
+weeklyMetricList = lapply(weeklyResults, function(weeklyResult){
+  print(paste("Beginning:",min(weeklyResult$Date), " - End:",max(weeklyResult$Date)))
+  archetype_metrics(weeklyResult, Presence)
 })
+# Merge the list of results by week in a data frame
+weeklyMetricDF = bind_rows(weeklyMetricList, .id = "Week")
+weeklyMetricDF$Week = paste0("Week",weeklyMetricDF$Week)
 
-# Combine weekly data in a single data frame
-weeklyMetric1 = weeklyMetrics[[1]]
-metagameDf$Week1Share = sapply(metagameDf$Archetype, function(archetype){
-  weeklyMetric1[weeklyMetric1$Archetype == archetype,]$Share
-})
-
-weeklyMetric2 = weeklyMetrics[[2]]
-metagameDf$Week2Share = sapply(metagameDf$Archetype, function(archetype){
-  weeklyMetric2[weeklyMetric2$Archetype == archetype,]$Share
-})
-
-weeklyMetric3 = weeklyMetrics[[3]]
-metagameDf$Week3Share = sapply(metagameDf$Archetype, function(archetype){
-  weeklyMetric3[weeklyMetric3$Archetype == archetype,]$Share
-})
-
-weeklyMetric4 = weeklyMetrics[[4]]
-metagameDf$Week4Share = sapply(metagameDf$Archetype, function(archetype){
-  weeklyMetric4[weeklyMetric4$Archetype == archetype,]$Share
-})
-
-# Remove "Others"
+# Remove "Others" from the overall data frame
 metagameDf = metagameDf[!grepl("Other",metagameDf$Archetype),]
-metagameDf
-
-# Load the ggplot2 and tidyr packages for plotting and reshaping
-library(ggplot2)
-library(tidyr)
-
-# Keep less archetypes for plotting, only top10
-metagameDfSmall = metagameDf[1:10, ]
-
+# Keep less archetypes for plotting, only overall top12 
+weeklyMetricDF = 
+  weeklyMetricDF[weeklyMetricDF$Archetype %in% metagameDf[1:12, ]$Archetype, ]
 # Convert the Archetype variable from factor to character
-metagameDfSmall$Archetype = as.character(metagameDfSmall$Archetype)
-
-# Convert the Week1Share, Week2Share, Week3Share, and Week4Share variables from lists to numerics
-metagameDfSmall$Week1Share = 
-  unlist(metagameDfSmall$Week1Share)
-metagameDfSmall$Week2Share = 
-  unlist(metagameDfSmall$Week2Share)
-metagameDfSmall$Week3Share = 
-  unlist(metagameDfSmall$Week3Share)
-metagameDfSmall$Week4Share = 
-  unlist(metagameDfSmall$Week4Share)
-
-# Rename the Share variable to TotalShare
-metagameDfSmall = 
-  rename(metagameDfSmall, TotalShare = Share)
-
-# Load the ggplot2 and tidyr packages for plotting and reshaping
-library(ggplot2)
-library(tidyr)
-
-# Reshape the dataframe to have a long format using the tidyr package
-metagameDfPivoted =
-  pivot_longer(metagameDfSmall, cols = starts_with("Week"), 
-               names_to = "Week", values_to = "Share")
+weeklyMetricDF$Archetype = as.character(weeklyMetricDF$Archetype)
 
 # Plot the evolution of the share week after week of the archetypes
-ggplot(metagameDfPivoted, aes(x = Week, y = Share, group = Archetype, color = Archetype)) +
+ggplot(weeklyMetricDF, aes(x = Week, y = Presence, group = Archetype, color = Archetype)) +
   geom_line(size = 1.5) +
   geom_point(size = 3) +
-  scale_x_discrete(labels = beginnings,
-                   limits = c("Week1Share", "Week2Share", "Week3Share", "Week4Share")) +
+  scale_x_discrete(labels = beginnings) +
   labs(title = paste("Evolution of the share week after week of the most present", 
   MtgFormat,"archetypes\nbetween", beginnings[1],"and",ends[1]),
        subtitle = "by Anaël Yahi",
@@ -135,24 +91,179 @@ ggplot(metagameDfPivoted, aes(x = Week, y = Share, group = Archetype, color = Ar
        y = "Share (%)",
        color = "Archetype") +
   theme_minimal()
+
+library(ggplot2)
+library(dplyr)
+library(ggrepel)
+library(rjson)
+
+# Définir une palette de couleurs à contraste élevé
+vibrant_palette <- c(
+  "#d32f2f", # Rouge vif
+  "#c2185b", # Rose foncé
+  "#7b1fa2", # Violet
+  "#512da8", # Indigo
+  "#303f9f", # Bleu foncé
+  "#1976d2", # Bleu
+  "#0288d1", # Bleu clair
+  "#0097a7", # Cyan
+  "#00796b", # Teal
+  "#388e3c", # Vert
+  "#689f38", # Lime vert
+  "#afb42b", # Jaune vert
+  "#fbc02d", # Jaune
+  "#ffa000", # Orange
+  "#f57c00", # Orange foncé
+  "#e64a19", # Rouge brique
+  "#5d4037", # Marron
+  "#616161", # Gris foncé
+  "#455a64"  # Bleu gris
+)
+
+# Filtrer les données pour ne garder que les entrées de la première et de la dernière semaine
+first_week_data <- weeklyMetricDF %>%
+  filter(Week == min(Week))
+last_week_data <- weeklyMetricDF %>%
+  filter(Week == max(Week))
+
+# Créer le graphique ggplot2 avec la palette de couleurs personnalisée
+ggplot(weeklyMetricDF, aes(x = Week, y = Presence, group = Archetype)) +
+  geom_line(aes(color = Archetype), size = 1.5) +
+  geom_point(aes(color = Archetype), size = 3) +
+  geom_label_repel(
+    data = first_week_data,
+    aes(label = Archetype, fill = 'white', color = Archetype),
+    fontface = 'bold',
+    size = 3,
+    box.padding = unit(0.35, "lines"),
+    point.padding = unit(0.5, "lines"),
+    label.size = 0.25,
+    label.padding = unit(0.15, "lines"),
+    label.r = unit(0.15, "lines"),
+    nudge_x = -0.5, # Ajuster la position des étiquettes pour la première semaine
+    direction = "y"
+  ) +
+  geom_label_repel(
+    data = last_week_data,
+    aes(label = Archetype, fill = 'white', color = Archetype),
+    fontface = 'bold',
+    size = 3,
+    box.padding = unit(0.35, "lines"),
+    point.padding = unit(0.5, "lines"),
+    label.size = 0.25,
+    label.padding = unit(0.15, "lines"),
+    label.r = unit(0.15, "lines"),
+    nudge_x = 0.5, # Ajuster la position des étiquettes pour la dernière semaine
+    direction = "y"
+  ) +
+  scale_color_manual(values = vibrant_palette) +
+  scale_fill_manual(values = rep('white', length(vibrant_palette))) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 12),
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  labs(
+    title = 
+      paste("Evolution of the metagame share week after week of the most present", 
+                  MtgFormat,"archetypes\nbetween", beginnings[1],"and",ends[1]),
+    subtitle = "by Anaël Yahi",
+    x = "Week",
+    y = "Share (%)"
+  ) +
+  scale_x_discrete(labels = beginnings)
+
 # Save the metagame weekly evolution chart
 plotDir = paste0(PathToLastDirs,PictureResultDir)
-weeklyEvolutionName = paste0(plotDir,"09_Weekly_Evolution_Chart_", MtgFormat ,"_", Beginning, 
+weeklyEvolutionName = 
+  paste0(plotDir,"09_Weekly_Meta_Share_Evolution_Chart_", MtgFormat ,"_", Beginning, 
                  "_", End,"_By-", Presence, ".jpg")
 ggsave(weeklyEvolutionName, width = 27, height = 20, units = "cm")
 dev.off()
 
+# Créer le graphique ggplot2 avec la palette de couleurs personnalisée
+ggplot(weeklyMetricDF, aes(x = Week, y = Measured.Win.Rate, group = Archetype)) +
+  geom_line(aes(color = Archetype), size = 1.5) +
+  geom_point(aes(color = Archetype), size = 3) +
+  geom_label_repel(
+    data = first_week_data,
+    aes(label = Archetype, fill = 'white', color = Archetype),
+    fontface = 'bold',
+    size = 3,
+    box.padding = unit(0.35, "lines"),
+    point.padding = unit(0.5, "lines"),
+    label.size = 0.25,
+    label.padding = unit(0.15, "lines"),
+    label.r = unit(0.15, "lines"),
+    nudge_x = -0.5, # Ajuster la position des étiquettes pour la première semaine
+    direction = "y"
+  ) +
+  geom_label_repel(
+    data = last_week_data,
+    aes(label = Archetype, fill = 'white', color = Archetype),
+    fontface = 'bold',
+    size = 3,
+    box.padding = unit(0.35, "lines"),
+    point.padding = unit(0.5, "lines"),
+    label.size = 0.25,
+    label.padding = unit(0.15, "lines"),
+    label.r = unit(0.15, "lines"),
+    nudge_x = 0.5, # Ajuster la position des étiquettes pour la dernière semaine
+    direction = "y"
+  ) +
+  scale_color_manual(values = vibrant_palette) +
+  scale_fill_manual(values = rep('white', length(vibrant_palette))) +
+  theme_minimal() +
+  theme(
+    text = element_text(size = 12),
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  labs(
+    title = 
+      paste("Evolution of the win rate week after week of the most present", 
+            MtgFormat,"archetypes\nbetween", beginnings[1],"and",ends[1]),
+    subtitle = "by Anaël Yahi",
+    x = "Week",
+    y = "Share (%)"
+  ) +
+  scale_x_discrete(labels = beginnings)
+
+# Save the metagame weekly evolution chart
+plotDir = paste0(PathToLastDirs,PictureResultDir)
+weeklyEvolutionName = 
+  paste0(plotDir,"09_Weekly_Win_Rate_Evolution_Chart_", MtgFormat ,"_", Beginning, 
+         "_", End,"_By-", Presence, ".jpg")
+ggsave(weeklyEvolutionName, width = 27, height = 20, units = "cm")
+dev.off()
+
 # Save tables of the full archetype evolution data
-archetypeWeeklyShareDirPath = paste0(PathToLastDirs, ArchetypeWeeklyShareResultDir)
-archetypeWeeklyShareFileName = paste0(Beginning,"_", End, " - Archetype Share over weeks in ", 
+archetypeWeeklyShareDirPath = 
+  paste0(PathToLastDirs, ArchetypeWeeklyShareResultDir)
+archetypeWeeklyShareFileName = 
+  paste0(Beginning,"_", End, " - Archetype Share over weeks in ", 
                                       MtgFormat, " based on ", EventType)
 dir.create(file.path(archetypeWeeklyShareDirPath))
-write.csv(metagameDf,
-          paste0(archetypeWeeklyShareDirPath, archetypeWeeklyShareFileName,'.csv'), 
-          row.names = FALSE)
-write.xlsx(metagameDf,
-           paste0(archetypeWeeklyShareDirPath, archetypeWeeklyShareFileName,'.xlsx'), 
-           row.names = FALSE)
+
+if(writeCSV){
+  write.csv(weeklyMetricDF,
+            paste0(archetypeWeeklyShareDirPath, 
+                   archetypeWeeklyShareFileName,'.csv'), 
+            row.names = FALSE)
+}
+if(writeXLSX){
+  write.xlsx(weeklyMetricDF,
+             paste0(archetypeWeeklyShareDirPath, 
+                    archetypeWeeklyShareFileName,'.xlsx'), 
+             row.names = FALSE)
+}
+
+if(writeJSON){
+  weeklyMetricJSON = toJSON(weeklyMetricDF)
+  write(weeklyMetricJSON, paste0(archetypeWeeklyShareDirPath, 
+                             archetypeWeeklyShareFileName,'.json'))
+}
 
 
 

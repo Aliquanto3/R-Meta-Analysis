@@ -179,9 +179,9 @@ generate_metagame_data = function(df,statShare,presence){
 #' @examples
 archetype_metrics = function(df, presence){
   
-  #For development only
-  df = tournamentDf
-  presence = Presence
+  # #For development only
+  # df = tournamentDf
+  # presence = Presence
   
   #GET THE LIST OF THE DIFFERENT ARCHETYPES IN THE DATA
   metric_df = generate_archetype_list(df)

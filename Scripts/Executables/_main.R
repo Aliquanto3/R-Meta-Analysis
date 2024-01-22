@@ -33,7 +33,10 @@ PathToLastDirs =
   createResultDirectories(ResultDir, MtgFormat, Beginning, End, EventType,
                           CsvResultDir, PictureResultDir, TextResultDir)
 
-#Import raw data
+# Import MTG JSON card data
+mtgJsonData = bind_rows(jsonlite::fromJSON(mtgJsonFile)$data, .id = "cardName")
+
+#Import tournament raw data
 RawData = jsonlite::fromJSON(TournamentResultFile)[[1]] 
 
 tournamentDf = generate_df(
@@ -195,6 +198,11 @@ archetypeCardData = lapply(archetypeWithTiersDf$Archetype, function(archetypeNam
   exportArchetypeCardData(archetypeName,tournamentDf,PathToLastDirs,Beginning,
                           End,MtgFormat,EventType,ArchetypeCardDataResultDir,
                           writeCSV,writeXLSX,writeJSON)
+  
+  exportArchetypeCardDataByCount(archetypeName,tournamentDf,PathToLastDirs,
+                                 Beginning,End,MtgFormat,EventType,
+                                 ArchetypeCardDataResultDir,writeCSV,writeXLSX,
+                                 writeJSON)
 
   exportAverageDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
                           End,MtgFormat,EventType,AverageDeckListResultDir)

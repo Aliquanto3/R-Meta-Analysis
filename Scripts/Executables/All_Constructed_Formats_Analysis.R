@@ -42,6 +42,10 @@ for(MtgFormat in ConstructedFormats){
     createResultDirectories(ResultDir, MtgFormat, Beginning, End, EventType,
                             CsvResultDir, PictureResultDir, TextResultDir)
   
+  # Import MTG JSON card data
+  mtgJsonFile = paste0(cardDataDir,MtgFormat,"Atomic.json")
+  mtgJsonData = bind_rows(jsonlite::fromJSON(mtgJsonFile)$data, .id = "cardName")
+  
   #Import raw data
   RawData = jsonlite::fromJSON(TournamentResultFile)[[1]] 
   
@@ -190,6 +194,11 @@ for(MtgFormat in ConstructedFormats){
     exportArchetypeCardData(archetypeName,tournamentDf,PathToLastDirs,Beginning,
                             End,MtgFormat,EventType,ArchetypeCardDataResultDir,
                             writeCSV,writeXLSX,writeJSON)
+    
+    exportArchetypeCardDataByCount(archetypeName,tournamentDf,PathToLastDirs,
+                                   Beginning,End,MtgFormat,EventType,
+                                   ArchetypeCardDataResultDir,writeCSV,
+                                   writeXLSX,writeJSON)
     
     exportAverageDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
                           End,MtgFormat,EventType,AverageDeckListResultDir)

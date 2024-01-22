@@ -12,6 +12,8 @@
 # Names of the main directories in the project
 DataDir = "Data/"
 tournamentDataDir = paste0(DataDir,"Tournament/")
+cardDataDir = paste0(DataDir,"Card/")
+playerDataDir = paste0(DataDir,"Player/")
 ResultDir = "Results/"
 
 # Format of the wanted events
@@ -31,9 +33,12 @@ MtgFormat = MtgFormats[4]
 # Name of the tournament result data source file for the corresponding format
 # Currently automatically updated based on the format name
 TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
+# Name of the MTG JSON card data source file for the corresponding format
+# Currently automatically updated based on the format name
+mtgJsonFile = paste0(cardDataDir,MtgFormat,"Atomic.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2023-12-05"
+Beginning = "2023-12-04"
 
 #Latest date - if NA, goes up to the end of the data
 End = "2024-01-21"
@@ -124,7 +129,7 @@ BestDeckResultDir = paste0(TextResultDir, "Best Deck URL/")
 AllDeckURLResultDir = paste0(TextResultDir, "All Deck URL/")
 writeCSV = F
 writeXLSX = T
-writeJSON = T
+writeJSON = F
 
 # TRUE when you want to manually add colors to some archetype names
 # Still incomplete for easy use

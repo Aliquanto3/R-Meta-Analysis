@@ -544,16 +544,16 @@ detailed_winrate_and_presence_graph =
   function (archetypeTiersDf, chartShare, presence, beginning, end, eventType,
             mtgFormat, presenceAxisLogScale, tier){
     
-    # For development only
-    archetypeTiersDf = archetypeWithTiersDf
-    mtgFormat = MtgFormat
-    chartShare = StatShare
-    presence = Presence
-    beginning = Beginning
-    end = End
-    eventType = EventType
-    presenceAxisLogScale = PresenceAxisLogScale
-    tier = TierNames[2]
+    # # For development only
+    # archetypeTiersDf = archetypeWithTiersDf
+    # mtgFormat = MtgFormat
+    # chartShare = StatShare
+    # presence = Presence
+    # beginning = Beginning
+    # end = End
+    # eventType = EventType
+    # presenceAxisLogScale = PresenceAxisLogScale
+    # tier = TierNames[2]
     
   # Keep only the most present decks and compute their tiers
   archetypeTiersDf$Label = paste0(archetypeTiersDf$Archetype,

@@ -365,6 +365,85 @@ exportArchetypeCardData =
     # return(ArchetypeCardData)
   }
 
+#' Write a table in CSV and/or XLSX with the breakdown of the win rate and 
+#' presence of all cards in the archetype. 
+#' The details of the cards are broken down by the number of copies.
+#' 
+#' @param df the dataframe returned by generate_df() 
+#' @param pathToLastDirs the path returned by createResultDirectories(),
+#' where to write the current outputs in final directories
+#' @param beginning the date to be displayed in the path as the beginning of 
+#' the dataset
+#' @param end the date to be displayed in the path as the end of the dataset
+#' @param mtgFormat the format of the events in the data
+#' @param eventType the category of events to keep in the data. It can be:
+#' Event type:
+#' All sources = Everything (except MTGO Leagues - for any filter)
+#' All Events Top32 = Only events with a top32 (aka not MTGO Preliminaries)
+#' Full Meta Events = Only events with the full metagame available
+#' (not MTGO Official results)
+#' ManaTraders = ManaTraders Series results
+#' Paper Events Full Meta = Full esults from MTG Melee
+#' Paper Events Top32 = Results of the top32 from MTG Melee
+#' MTGO Official Competitions = Results from the MTGO website
+#' MTGO Events Top32 = MTGO results with a top32 (so not Preliminaries)
+#' MTGO Preliminaries = As per name
+#' @param chartShare the value of the cut to be set in "Others" for an archetype.
+#' It must be a numeric value. For a cut at 2%, use chartShare=2 (not 0.02).
+#' @param archetypeCardDataResultDir the name of the final directory for text files, 
+#' presumably "Archetype Card Data" 
+#' @param writeCSV parameter to write a CSV file or not
+#' @param writeXSLX parameter to write a XSLX file or not
+#' @param writeJSON parameter to write a JSON file or not
+#'
+#' @return N/A
+#' @export Table Up to one CSV and XLSX files with the archetype card data
+#'
+#' @examples
+exportArchetypeCardDataByCount = 
+  function(archetypeName,df,pathToLastDirs,beginning,end,mtgFormat,eventType,
+           ArchetypeCardDataByCountResultDir,writeCSV,writeXLSX,writeJSON){
+    # # For development only
+    # archetypeName = "Rakdos Scam"
+    # df = tournamentDf
+    # pathToLastDirs = PathToLastDirs
+    # beginning = Beginning
+    # end = End
+    # mtgFormat = MtgFormat
+    # eventType = EventType
+    # ArchetypeCardDataByCountResultDir = ArchetypeCardDataByCountResultDir
+    
+    ArchetypeCardDataByCount = 
+      get_archetype_card_data_by_count(archetypeName, "All", df)
+    names(ArchetypeCardDataByCount) = 
+      gsub("\\.", "-", names(ArchetypeCardDataByCount))
+    ArchetypeCardDataByCountDirPath = 
+      paste0(pathToLastDirs, ArchetypeCardDataByCountResultDir)
+    ArchetypeCardDataByCountFileName = 
+      paste0(beginning,'_', end, ' - ', archetypeName,' Card Data By Count in ', 
+             mtgFormat, ' ', eventType)
+    dir.create(file.path(ArchetypeCardDataByCountDirPath))
+    if(writeCSV){
+      write.csv(as.matrix(ArchetypeCardDataByCount), 
+                paste0(ArchetypeCardDataByCountDirPath, 
+                       ArchetypeCardDataByCountFileName,'.csv'), 
+                row.names = FALSE)
+    }
+    if(writeXLSX){
+      write.xlsx(ArchetypeCardDataByCount, 
+                 paste0(ArchetypeCardDataByCountDirPath, 
+                        ArchetypeCardDataByCountFileName,'.xlsx'), 
+                 row.names = FALSE)
+    }
+    if(writeJSON){
+      ArchetypeCardDataByCountJSON = toJSON(ArchetypeCardDataByCount)
+      write(ArchetypeCardDataByCountJSON, 
+            paste0(ArchetypeCardDataByCountDirPath, 
+                   ArchetypeCardDataByCountFileName,'.json'))
+    }
+    # return(ArchetypeCardDataByCount)
+  }
+
 #' Write a text file with the average deck list for a given archetype in plain
 #' text (theoretically copy-pastable in websites for visual view)
 #' 

@@ -263,8 +263,6 @@ get_archetype_card_data_by_count = function(deckName, color, df){
   {rep(numberLosses,length(MDCards$CardName))}, 
   archetypeDf$Mainboard, archetypeDf$Losses)))
   
-  
-  
   cardNamesSB = unlist(lapply(archetypeDf$Sideboard, 
                               function(archetypeBoardVector) 
                               {archetypeBoardVector$CardName}))
@@ -314,14 +312,16 @@ get_archetype_card_data_by_count = function(deckName, color, df){
     mapply(function(Wins,NLosses)
     {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative = "two.sided", 
-                                       conf.level=CIPercent)$conf.int[1] * 100, digits = 2),0)},
+                                       conf.level=CIPercent)$conf.int[1] * 100, 
+                            digits = 2),0)},
     archetypeCardData$Wins.In.MD,
     archetypeCardData$Losses.In.MD)
   archetypeCardData$Upper.CI.WR.In.MD =  
     mapply(function(Wins,NLosses)
     {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative="two.sided", 
-                                       conf.level=CIPercent)$conf.int[2] * 100, digits = 2),0)},
+                                       conf.level=CIPercent)$conf.int[2] * 100, 
+                            digits = 2),0)},
     archetypeCardData$Wins.In.MD,
     archetypeCardData$Losses.In.MD)
   
@@ -333,14 +333,16 @@ get_archetype_card_data_by_count = function(deckName, color, df){
     mapply(function(Wins,NLosses)
     {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative="two.sided", 
-                                       conf.level=CIPercent)$conf.int[1] * 100, digits = 2),0)},
+                                       conf.level=CIPercent)$conf.int[1] * 100, 
+                            digits = 2),0)},
     archetypeCardData$Wins.In.SB,
     archetypeCardData$Losses.In.SB)
   archetypeCardData$Upper.CI.WR.In.SB =  
     mapply(function(Wins,NLosses)
     {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative="two.sided", 
-                                       conf.level=CIPercent)$conf.int[2] * 100, digits = 2),0)},
+                                       conf.level=CIPercent)$conf.int[2] * 100, 
+                            digits = 2),0)},
     archetypeCardData$Wins.In.SB,
     archetypeCardData$Losses.In.SB)
   
@@ -352,14 +354,16 @@ get_archetype_card_data_by_count = function(deckName, color, df){
     mapply(function(Wins,NLosses)
     {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative="two.sided", 
-                                       conf.level=CIPercent)$conf.int[1] * 100, digits = 2),0)},
+                                       conf.level=CIPercent)$conf.int[1] * 100, 
+                            digits = 2),0)},
     archetypeCardData$Wins.In.Decks,
     archetypeCardData$Losses.In.Decks)
   archetypeCardData$Upper.CI.WR.In.Decks =  
     mapply(function(Wins,NLosses)
     {ifelse(NLosses>0,round(binom.test(Wins, Wins + NLosses, 
                                        p=0.5,alternative="two.sided", 
-                                       conf.level=CIPercent)$conf.int[2] * 100, digits = 2),0)},
+                                       conf.level=CIPercent)$conf.int[2] * 100, 
+                            digits = 2),0)},
     archetypeCardData$Wins.In.Decks,
     archetypeCardData$Losses.In.Decks)
   
@@ -382,12 +386,14 @@ get_archetype_card_data_by_count = function(deckName, color, df){
   archetypeCardData$Average.MD.Count.If.Present =
     round(sapply(archetypeCardData$Count.and.Name,
                  function(currentCard) 
-                 {mean(MDCards[MDCards$Count.and.Name == currentCard,]$Copies.In.MD)}), 
+                 {mean(MDCards[MDCards$Count.and.Name == 
+                                 currentCard,]$Copies.In.MD)}), 
           digits = 2)
   archetypeCardData$Average.SB.Count.If.Present =
     round(sapply(archetypeCardData$Count.and.Name,
                  function(currentCard)
-                 {mean(SBCards[SBCards$Count.and.Name == currentCard,]$Copies.In.SB)}), 
+                 {mean(SBCards[SBCards$Count.and.Name == 
+                                 currentCard,]$Copies.In.SB)}), 
           digits = 2)
   
   archetypeCardData$Most.Common.MD.Count = 
@@ -410,7 +416,8 @@ get_archetype_card_data_by_count = function(deckName, color, df){
   archetypeCardData[is.na(archetypeCardData)] = 0
   
   archetypeCardData = archetypeCardData %>%
-    select(c("Count.and.Name","Share.Of.MD","Share.Of.SB","WR.In.MD","WR.In.SB"), everything())
+    select(c("Count.and.Name","Share.Of.MD","Share.Of.SB","WR.In.MD","WR.In.SB"), 
+           everything())
   
   return(archetypeCardData)
 }
