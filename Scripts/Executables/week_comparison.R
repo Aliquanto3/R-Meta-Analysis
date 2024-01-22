@@ -32,7 +32,7 @@ PathToLastDirs =
                           CsvResultDir, PictureResultDir, TextResultDir)
 
 #Import raw data
-RawData = fromJSON(TournamentResultFile)[[1]] 
+RawData = jsonlite::fromJSON(TournamentResultFile)[[1]] 
 
 # Generate data for the whole month
 tournamentDf = generate_df(

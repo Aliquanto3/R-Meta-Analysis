@@ -33,7 +33,7 @@ PathToLastDirs =
                           CsvResultDir, PictureResultDir, TextResultDir)
 
 #Import raw data
-RawData = fromJSON(TournamentResultFile)[[1]]
+RawData = jsonlite::fromJSON(TournamentResultFile)[[1]]
 tournamentDf = generate_df(
   RawData, EventType, MtgFormat, TournamentResultFile, Beginning, End)
 

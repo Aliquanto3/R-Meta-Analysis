@@ -10,6 +10,7 @@
 ################################################################################
 
 library(xlsx)
+library(rjson)
 
 #' Create the directories where to write the outputs
 #'
@@ -184,7 +185,8 @@ exportTextAnalysis =
 #' @param playerDataResultDir the name of the final directory for text files, 
 #' presumably "Player Data" 
 #' @param writeCSV parameter to write a CSV file or not
-#' @param writeCSV parameter to write a XSLX file or not
+#' @param writeXLSX parameter to write a XSLX file or not
+#' @param writeJSON parameter to write a JSON file or not
 #'
 #' @return N/A
 #' @export Table Up to one CSV and XLSX files with the player data
@@ -192,7 +194,7 @@ exportTextAnalysis =
 #' @examples
 exportPlayerData = 
   function(df,pathToLastDirs,beginning,end,mtgFormat,eventType,
-           playerDataResultDir,writeCSV,writeXLSX){
+           playerDataResultDir,writeCSV,writeXLSX,writeJSON){
     # # For development only
     # df = tournamentDf
     # pathToLastDirs = PathToLastDirs
@@ -216,7 +218,11 @@ exportPlayerData =
     write.xlsx(PlayerData, paste0(PlayerDataDirPath, PlayerDataFileName,'.xlsx'), 
                row.names = FALSE)
   }
+  if(writeJSON){
+    PlayerDataJSON = toJSON(PlayerData)
+    write(PlayerDataJSON, paste0(PlayerDataDirPath, PlayerDataFileName,'.json'))
   }
+}
 
 #' Write a table in CSV and/or XLSX with the win rate and presence analysis
 #' of all the cards
@@ -245,7 +251,8 @@ exportPlayerData =
 #' @param cardDataResultDir the name of the final directory for text files, 
 #' presumably "Card Data" 
 #' @param writeCSV parameter to write a CSV file or not
-#' @param writeCSV parameter to write a XSLX file or not
+#' @param writeXSLX parameter to write a XSLX file or not
+#' @param writeJSON parameter to write a JSON file or not
 #'
 #' @return N/A
 #' @export Table Up to one CSV and XLSX files with the card data
@@ -253,7 +260,7 @@ exportPlayerData =
 #' @examples
 exportCardData = 
   function(df,pathToLastDirs,beginning,end,mtgFormat,eventType,
-           cardDataResultDir,writeCSV,writeXLSX){
+           cardDataResultDir,writeCSV,writeXLSX,writeJSON){
     # # For development only
     # df = tournamentDf
     # pathToLastDirs = PathToLastDirs
@@ -277,6 +284,10 @@ exportCardData =
     if(writeXLSX){
       write.xlsx(cardData, paste0(cardDataDirPath, cardDataFileName,'.xlsx'), 
                  row.names = FALSE)
+    }
+    if(writeJSON){
+      cardDataJSON = toJSON(cardData)
+      write(cardDataJSON, paste0(cardDataDirPath, cardDataFileName,'.json'))
     }
   }
 
@@ -307,7 +318,8 @@ exportCardData =
 #' @param archetypeCardDataResultDir the name of the final directory for text files, 
 #' presumably "Archetype Card Data" 
 #' @param writeCSV parameter to write a CSV file or not
-#' @param writeCSV parameter to write a XSLX file or not
+#' @param writeXSLX parameter to write a XSLX file or not
+#' @param writeJSON parameter to write a JSON file or not
 #'
 #' @return N/A
 #' @export Table Up to one CSV and XLSX files with the archetype card data
@@ -315,7 +327,7 @@ exportCardData =
 #' @examples
 exportArchetypeCardData = 
   function(archetypeName,df,pathToLastDirs,beginning,end,mtgFormat,eventType,
-           archetypeCardDataResultDir,writeCSV,writeXLSX){
+           archetypeCardDataResultDir,writeCSV,writeXLSX,writeJSON){
     # # For development only
     # archetypeName = "Rakdos Scam"
     # df = tournamentDf
@@ -333,12 +345,22 @@ exportArchetypeCardData =
                                        ' Card Data in ', mtgFormat, ' ', eventType)
     dir.create(file.path(ArchetypeCardDataDirPath))
     if(writeCSV){
-      write.csv(as.matrix(ArchetypeCardData), paste0(ArchetypeCardDataDirPath, ArchetypeCardDataFileName,'.csv'), 
+      write.csv(as.matrix(ArchetypeCardData), 
+                paste0(ArchetypeCardDataDirPath, 
+                       ArchetypeCardDataFileName,'.csv'), 
                 row.names = FALSE)
     }
     if(writeXLSX){
-      write.xlsx(ArchetypeCardData, paste0(ArchetypeCardDataDirPath, ArchetypeCardDataFileName,'.xlsx'), 
+      write.xlsx(ArchetypeCardData, 
+                 paste0(ArchetypeCardDataDirPath, 
+                        ArchetypeCardDataFileName,'.xlsx'), 
                  row.names = FALSE)
+    }
+    if(writeJSON){
+      ArchetypeCardDataJSON = toJSON(ArchetypeCardData)
+      write(ArchetypeCardDataJSON, 
+            paste0(ArchetypeCardDataDirPath, 
+                   ArchetypeCardDataFileName,'.json'))
     }
     # return(ArchetypeCardData)
   }

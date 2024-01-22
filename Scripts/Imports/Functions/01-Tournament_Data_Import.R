@@ -40,7 +40,7 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
                        beginning, end) {
   
   # # For development only
-  # rawData = fromJSON(TournamentResultFile)[[1]]
+  # rawData = jsonlite::fromJSON(TournamentResultFile)[[1]]
   # rawData = RawData 
   # eventType = EventType
   # mtgFormat = MtgFormat

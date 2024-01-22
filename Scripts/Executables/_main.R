@@ -34,7 +34,7 @@ PathToLastDirs =
                           CsvResultDir, PictureResultDir, TextResultDir)
 
 #Import raw data
-RawData = fromJSON(TournamentResultFile)[[1]] 
+RawData = jsonlite::fromJSON(TournamentResultFile)[[1]] 
 
 tournamentDf = generate_df(
   RawData, EventType, MtgFormat, TournamentResultFile, Beginning, End)
@@ -183,18 +183,18 @@ dev.off()
 
 # # Write the player results
 # exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
-#                  PlayerDataResultDir,writeCSV,writeXLSX)
+#                  PlayerDataResultDir,writeCSV,writeXLSX,writeJSON)
 
 # Write the card results
 exportCardData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
-                 CardDataResultDir,writeCSV,writeXLSX)
+                 CardDataResultDir,writeCSV,writeXLSX,writeJSON)
 
 # Write the archetype card results
 archetypeCardData = lapply(archetypeWithTiersDf$Archetype, function(archetypeName){
   print(archetypeName)
   exportArchetypeCardData(archetypeName,tournamentDf,PathToLastDirs,Beginning,
                           End,MtgFormat,EventType,ArchetypeCardDataResultDir,
-                          writeCSV,writeXLSX)
+                          writeCSV,writeXLSX,writeJSON)
 
   exportAverageDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
                           End,MtgFormat,EventType,AverageDeckListResultDir)
