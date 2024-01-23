@@ -692,7 +692,7 @@ exportAllDeckURL =
     dir.create(file.path(allDeckURLResultDirPath))
     
     allDeckURLFileName = paste0(beginning,'_', end, ' - ', archetypeName,
-                              ' - Best Deck in ', mtgFormat, ' ', 
+                              ' - All Decks in ', mtgFormat, ' ', 
                               eventType, '.txt')
     cat(allDeckURLListText, 
         file = paste0(allDeckURLResultDirPath, allDeckURLFileName))

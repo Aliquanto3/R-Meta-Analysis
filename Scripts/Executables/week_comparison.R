@@ -226,7 +226,7 @@ ggplot(weeklyMetricDF, aes(x = Week, y = Measured.Win.Rate, group = Archetype)) 
             MtgFormat,"archetypes\nbetween", beginnings[1],"and",ends[1]),
     subtitle = "by Anaël Yahi",
     x = "Week",
-    y = "Share (%)"
+    y = "Win rate (%)"
   ) +
   scale_x_discrete(labels = beginnings)
 
