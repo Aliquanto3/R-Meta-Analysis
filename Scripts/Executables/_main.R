@@ -33,8 +33,8 @@ PathToLastDirs =
   createResultDirectories(ResultDir, MtgFormat, Beginning, End, EventType,
                           CsvResultDir, PictureResultDir, TextResultDir)
 
-# Import MTG JSON card data
-mtgJsonData = bind_rows(jsonlite::fromJSON(mtgJsonFile)$data, .id = "cardName")
+# # Import MTG JSON card data
+# mtgJsonData = bind_rows(jsonlite::fromJSON(mtgJsonFile)$data, .id = "cardName")
 
 #Import tournament raw data
 RawData = jsonlite::fromJSON(TournamentResultFile)[[1]] 

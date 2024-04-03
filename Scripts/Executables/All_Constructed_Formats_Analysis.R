@@ -43,8 +43,8 @@ for(MtgFormat in ConstructedFormats){
                             CsvResultDir, PictureResultDir, TextResultDir)
   
   # Import MTG JSON card data
-  mtgJsonFile = paste0(cardDataDir,MtgFormat,"Atomic.json")
-  mtgJsonData = bind_rows(jsonlite::fromJSON(mtgJsonFile)$data, .id = "cardName")
+  # mtgJsonFile = paste0(cardDataDir,MtgFormat,"Atomic.json")
+  # mtgJsonData = bind_rows(jsonlite::fromJSON(mtgJsonFile)$data, .id = "cardName")
   
   #Import raw data
   RawData = jsonlite::fromJSON(TournamentResultFile)[[1]] 
