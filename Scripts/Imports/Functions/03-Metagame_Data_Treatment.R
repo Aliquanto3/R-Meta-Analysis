@@ -250,7 +250,7 @@ archetype_metrics = function(df, presence){
     
     if (nrow(data_subset) > 1) {  # Ensure there's enough data to fit a model
       model <- lm_robust(WinRate ~ 1, weights = TotalMatches, data = data_subset, clusters = data_subset$Player, se_type = "stata")
-      ci <- confint(model, level = 0.98)
+      ci <- confint(model, level = CIPercent)
       
       # Update the confidence intervals in metric_df for all matching indices
       metric_df$Lower.Bound.of.CI.on.WR[indices] <- ci[1] * 100  # multiplying by 100 to convert to percentage
