@@ -101,7 +101,7 @@ Presence = "Matches"
 SortValue = "Lower.Bound.of.CI.on.WR"
 
 #The percentage used for the confidence interval. By default it can be 0.95
-CIPercent = 0.9
+CIPercent = 0.95
 
 # Draw the presence axis with a logarithmic scale if TRUE, linear if FALSE
 PresenceAxisLogScale = T
