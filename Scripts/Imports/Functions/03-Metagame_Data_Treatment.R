@@ -249,7 +249,7 @@ archetype_metrics = function(df, presence){
     indices <- which(metric_df$Archetype == archetype)
     
     if (nrow(data_subset) > 1) {  # Ensure there's enough data to fit a model
-      model <- lm_robust(WinRate ~ 1, weights = TotalMatches, data = data_subset, clusters = data_subset$Player, se_type = "stata")
+      model <- lm_robust(WinRate ~ 1, weights = TotalMatches, data = data_subset, clusters = data_subset$Player, se_type = "CR2")
       ci <- confint(model, level = CIPercent)
       
       # Update the confidence intervals in metric_df for all matching indices
