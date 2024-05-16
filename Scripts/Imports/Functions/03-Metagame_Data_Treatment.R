@@ -234,31 +234,41 @@ archetype_metrics = function(df, presence){
               TotalLosses = sum(Losses),
               TotalMatches = sum(Wins + Losses),
               .groups = 'drop')
-  
   # Compute win rates at this aggregated level
   player_archetype_aggregates <- player_archetype_aggregates %>%
     filter(TotalMatches > 0) %>%
     mutate(WinRate = TotalWins / TotalMatches)
-  
-  # Fit a model with clustered standard errors by Player
-  metric_df$Lower.Bound.of.CI.on.WR <- rep(NA, nrow(metric_df))
-  metric_df$Upper.Bound.of.CI.on.WR <- rep(NA, nrow(metric_df))
-  for (archetype in unique(player_archetype_aggregates$`Archetype$Archetype`)) {
+
+  # Define a function to apply to each archetype
+  update_CI <- function(archetype) {
     data_subset <- player_archetype_aggregates[player_archetype_aggregates$`Archetype$Archetype` == archetype, ]
-    
-    # Find the corresponding index in metric_df for the current archetype
-    indices <- which(metric_df$Archetype == archetype)
     
     if (nrow(data_subset) > 1) {  # Ensure there's enough data to fit a model
       model <- lm_robust(WinRate ~ 1, weights = TotalMatches, data = data_subset, clusters = data_subset$Player, se_type = "CR2")
       ci <- confint(model, level = CIPercent)
       
-      # Update the confidence intervals in metric_df for all matching indices
-      metric_df$Lower.Bound.of.CI.on.WR[indices] <- ci[1] * 100  # multiplying by 100 to convert to percentage
-      metric_df$Upper.Bound.of.CI.on.WR[indices] <- ci[2] * 100  # multiplying by 100 to convert to percentage
+      # Return confidence intervals multiplied by 100 to convert to percentage
+      return(list(Lower = ci[1] * 100, Upper = ci[2] * 100))
+    } else {
+      return(list(Lower = NA, Upper = NA))
     }
   }
-  
+  # Apply the function to each unique archetype and collect results
+  ci_results <- sapply(unique(player_archetype_aggregates$`Archetype$Archetype`), update_CI, simplify = FALSE)
+  ci_data <- do.call(rbind, lapply(ci_results, function(x) data.frame(Lower = x$Lower, Upper = x$Upper)))
+  rownames(ci_data) <- unique(player_archetype_aggregates$`Archetype$Archetype`)  # Setting row names as archetype names
+
+  # Update metric_df
+  get_CI_value <- function(archetype, bound_type) {
+    if(archetype %in% rownames(ci_data)) {
+      return(ci_data[archetype, bound_type])
+    } else {
+      return(NA)
+    }
+  }
+  metric_df$Lower.Bound.of.CI.on.WR <- sapply(metric_df$Archetype, get_CI_value, bound_type = "Lower")
+  metric_df$Upper.Bound.of.CI.on.WR <- sapply(metric_df$Archetype, get_CI_value, bound_type = "Upper")
+
   # Initial count for reference
   initial_count <- nrow(metric_df)
   # Adjust lower and upper bounds
