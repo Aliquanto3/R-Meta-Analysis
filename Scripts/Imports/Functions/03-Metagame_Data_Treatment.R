@@ -238,7 +238,7 @@ archetype_metrics = function(df, presence){
   # Compute win rates at this aggregated level
   player_archetype_aggregates <- player_archetype_aggregates %>%
     filter(TotalMatches > 0) %>%
-    mutate(WinRate = TotalWins / (TotalWins + TotalLosses))
+    mutate(WinRate = TotalWins / TotalMatches)
   
   # Fit a model with clustered standard errors by Player
   metric_df$Lower.Bound.of.CI.on.WR <- rep(NA, nrow(metric_df))
