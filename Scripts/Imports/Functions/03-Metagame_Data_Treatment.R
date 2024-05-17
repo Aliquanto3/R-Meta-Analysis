@@ -593,7 +593,7 @@ generate_matchup_data = function(df, chartShare, presence, archetype = NA){
   plotTableWR$ArchShare1 = paste0("<span style = 'font-size:10pt'><b>",
                                   plotTableWR$Archetype1,"</b></span>",
                                   "<br>Share: ",plotTableWR$Share,
-                                  " %<br>Win Rate: ",plotTableWR$WinRateArch,"%")
+                                  " %<br><b>Overall Win Rate: ",plotTableWR$WinRateArch,"</b>%")
   plotTableWR$Archetype2 = paste0("vs ",plotTableWR$Archetype2)
   
   plotTableWR$Archetype2 = factor(plotTableWR$Archetype2, 
