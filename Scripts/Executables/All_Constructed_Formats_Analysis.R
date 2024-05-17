@@ -28,7 +28,7 @@ source(file.path(paste0(functionScriptDir,"06-Player_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"07-Card_Data_Treatment.R")))
 source(file.path(paste0(functionScriptDir,"99-Output_Export.R")))
 
-ConstructedFormats = MtgFormats[-c(1,8)]
+ConstructedFormats = MtgFormats[c(2:7)]
 
 for(MtgFormat in ConstructedFormats){
   
@@ -179,39 +179,39 @@ for(MtgFormat in ConstructedFormats){
   #############################   Write the CSVs   ############################### 
   ################################################################################
   
-  print(paste("FORMAT:",MtgFormat,"- Write the CSVs"))
-  # Write the player results
-  exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
-                   PlayerDataResultDir,writeCSV,writeXLSX,writeJSON)
-  
-  # Write the card results
-  exportCardData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
-                 CardDataResultDir,writeCSV,writeXLSX,writeJSON)
-  
-  # Write the archetype card results
-  archetypeCardData = lapply(archetypeWithTiersDf$Archetype, function(archetypeName){
-    print(archetypeName)
-    exportArchetypeCardData(archetypeName,tournamentDf,PathToLastDirs,Beginning,
-                            End,MtgFormat,EventType,ArchetypeCardDataResultDir,
-                            writeCSV,writeXLSX,writeJSON)
-    
-    exportArchetypeCardDataByCount(archetypeName,tournamentDf,PathToLastDirs,
-                                   Beginning,End,MtgFormat,EventType,
-                                   ArchetypeCardDataResultDir,writeCSV,
-                                   writeXLSX,writeJSON)
-    
-    exportAverageDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
-                          End,MtgFormat,EventType,AverageDeckListResultDir)
-    
-    exportAverageDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
-                          End,MtgFormat,EventType,BestDeckResultDir)
-    
-    exportAllDeckURL(archetypeName,tournamentDf,PathToLastDirs,Beginning,
-                     End,MtgFormat,EventType,AllDeckURLResultDir)
-    
-    # exportOptimizedDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
-    #                       End,MtgFormat,EventType,OptimizedDeckListResultDir)
-  })
+  # print(paste("FORMAT:",MtgFormat,"- Write the CSVs"))
+  # # Write the player results
+  # exportPlayerData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
+  #                  PlayerDataResultDir,writeCSV,writeXLSX,writeJSON)
+  # 
+  # # Write the card results
+  # exportCardData(tournamentDf,PathToLastDirs,Beginning,End,MtgFormat,EventType,
+  #                CardDataResultDir,writeCSV,writeXLSX,writeJSON)
+  # 
+  # # Write the archetype card results
+  # archetypeCardData = lapply(archetypeWithTiersDf$Archetype, function(archetypeName){
+  #   print(archetypeName)
+  #   exportArchetypeCardData(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+  #                           End,MtgFormat,EventType,ArchetypeCardDataResultDir,
+  #                           writeCSV,writeXLSX,writeJSON)
+  #   
+  #   exportArchetypeCardDataByCount(archetypeName,tournamentDf,PathToLastDirs,
+  #                                  Beginning,End,MtgFormat,EventType,
+  #                                  ArchetypeCardDataResultDir,writeCSV,
+  #                                  writeXLSX,writeJSON)
+  #   
+  #   exportAverageDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+  #                         End,MtgFormat,EventType,AverageDeckListResultDir)
+  #   
+  #   exportAverageDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+  #                         End,MtgFormat,EventType,BestDeckResultDir)
+  #   
+  #   exportAllDeckURL(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+  #                    End,MtgFormat,EventType,AllDeckURLResultDir)
+  #   
+  #   # exportOptimizedDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+  #   #                       End,MtgFormat,EventType,OptimizedDeckListResultDir)
+  # })
 }
 
 

@@ -68,7 +68,7 @@ muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)
 ############################################################ 
 
 cardName = "Omnath Control"
-archetypeName = "Dimir Shadow"
+archetypeName = "Hardened Scales"
 archetypeName2 = "Hammer Time"
 
 addArchetypeColor = T
