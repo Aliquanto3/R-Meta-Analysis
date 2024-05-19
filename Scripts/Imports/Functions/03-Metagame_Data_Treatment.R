@@ -224,15 +224,15 @@ archetype_metrics = function(df, presence){
   metric_df$Presence = unlist(100 * metric_df[presence]/sum(metric_df[presence]))
   
   # Compute the win rate and confidence interval on it
-  metric_df$Measured.Win.Rate = metric_df$Wins * 100 / 
-    (metric_df$Wins + metric_df$Defeats)
+  metric_df$Measured.Win.Rate = (metric_df$Wins + metric_df$Draws / 3) * 100 /
+    metric_df$Matches
 
   # Aggregate wins and losses by player and archetype
   player_archetype_aggregates <- df %>%
     group_by(Player, Archetype$Archetype) %>%
-    summarise(TotalWins = sum(Wins),
+    summarise(TotalWins = sum(Wins) + sum(Draws) / 3,
               TotalLosses = sum(Losses),
-              TotalMatches = sum(Wins + Losses),
+              TotalMatches = sum(Wins + Losses + Draws),
               .groups = 'drop')
   # Compute win rates at this aggregated level
   player_archetype_aggregates <- player_archetype_aggregates %>%
