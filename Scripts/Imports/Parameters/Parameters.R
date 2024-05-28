@@ -26,7 +26,7 @@ MtgFormats = c("1" = "Limited",
                "6" = "Legacy",
                "7" = "Vintage",
                "8" = "All_Formats")
-MtgFormat = MtgFormats[2]
+MtgFormat = MtgFormats[4]
 
 # MtgFormat = "Pioneer"
 
@@ -41,7 +41,7 @@ mtgJsonFile = paste0(cardDataDir,MtgFormat,"Atomic.json")
 Beginning = "2024-04-16"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2024-05-13"
+End = "2024-05-27"
 
 # Event type:
 # All sources = Everything (except from MTGO Leagues and Team events - for any filter)
@@ -78,7 +78,7 @@ EventTypes = c("1" = "All events",
                "20" = "MTGO Events X-1 or better",
                "21" = "MTGO Preliminaries")
 
-EventType = EventTypes[1]
+EventType = EventTypes[15]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2

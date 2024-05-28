@@ -509,14 +509,26 @@ shapiro.test(archetypeRankingDfAboveMean$Normalized.Sum.of.Presence.and.WR)
 ks.test(archetypeRankingDfAboveMean$Normalized.Sum.of.Presence.and.WR, "pnorm")
 normal_test(archetypeRankingDfAboveMean[archetypeRankingDfAboveMean$Normalized.Sum.of.Presence.and.WR>0,]$Normalized.Sum.of.Presence.and.WR)
 
-# Murktide WR distribution
-MurktideDf = tournamentDf[tournamentDf$Archetype$Archetype== "Murktide",]
-nrow(MurktideDf)
-hist(MurktideDf$Wins)
-hist(MurktideDf$Wins/(MurktideDf$Wins+MurktideDf$Losses), breaks = 20)
-plot(density(MurktideDf$Wins/(MurktideDf$Wins+MurktideDf$Losses)))
-MurktideDfZeros = MurktideDf[MurktideDf$Wins==0,]
-View(MurktideDfZeros[c("TournamentFile","Result","Wins","Losses","Draws")])
+# Archetype WR distribution
+archetypeName = "Mono Black Scam"
+ArchetypeDf = tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]
+nrow(ArchetypeDf)
+hist(ArchetypeDf$Wins)
+hist(ArchetypeDf$Wins/(ArchetypeDf$Wins+ArchetypeDf$Losses), breaks = 20)
+plot(density(ArchetypeDf$Wins/(ArchetypeDf$Wins+ArchetypeDf$Losses)))
+ArchetypeDfZeros = ArchetypeDf[ArchetypeDf$Wins==0,]
+# View(ArchetypeDfZeros[c("TournamentFile","Result","Wins","Losses","Draws")])
 # install.packages("psych")              
 library("psych")   
-harmonic.mean(MurktideDf$Wins/(MurktideDf$Wins+MurktideDf$Losses))
+harmonic.mean(ArchetypeDf$Wins/(ArchetypeDf$Wins+ArchetypeDf$Losses))
+
+ArchetypeDfPlayerResults = ArchetypeDf %>%
+ select(Player,Wins,Losses) %>% 
+  group_by(Player) %>%
+  summarise(Wins = sum(Wins), Losses = sum(Losses)) %>%
+  mutate(Matches = Wins + Losses) %>%
+  mutate(Win.Rate = Wins / (Wins + Losses) * 100) %>%
+  arrange(desc(Matches))
+ArchetypeDfPlayerResults$PlayerPresence = 
+  ArchetypeDfPlayerResults$Matches/sum(ArchetypeDfPlayerResults$Matches)*100
+View(ArchetypeDfPlayerResults)

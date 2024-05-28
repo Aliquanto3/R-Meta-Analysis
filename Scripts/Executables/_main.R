@@ -213,6 +213,6 @@ archetypeCardData = lapply(archetypeWithTiersDf$Archetype, function(archetypeNam
   exportAllDeckURL(archetypeName,tournamentDf,PathToLastDirs,Beginning,
                  End,MtgFormat,EventType,AllDeckURLResultDir)
 
-  exportOptimizedDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
-                        End,MtgFormat,EventType,OptimizedDeckListResultDir)
+  # exportOptimizedDeckList(archetypeName,tournamentDf,PathToLastDirs,Beginning,
+  #                       End,MtgFormat,EventType,OptimizedDeckListResultDir)
 })
