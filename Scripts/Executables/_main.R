@@ -41,6 +41,13 @@ RawData = jsonlite::fromJSON(TournamentResultFile)[[1]]
 
 tournamentDf = generate_df(
   RawData, EventType, MtgFormat, TournamentResultFile, Beginning, End)
+# tournamentDf = tournamentDf[tournamentDf$Tournament ==
+#                "Pro Tour Modern Horizons 3",]
+# tournamentDf$Archetype$Archetype <-
+#   ifelse(grepl("Nadu", tournamentDf$Archetype$Archetype),
+#          "Nadu", tournamentDf$Archetype$Archetype)
+
+tournamentDf = updateDfForPT(tournamentDf)
 
 # Add a weight to the results depending on the number of weeks 
 # The most recent results become more important to determine the share and WR
@@ -76,7 +83,8 @@ archetypeWithTiersDf = archetype_tiers(archetypeNormalizedSumDf, TierNames)
 
 # Get the required data to build the match up matrix of the most present
 # archetypes
-muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)
+if(includeMU){
+muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)}
 
 ################################################################################
 ########################   Write the text synthesis   ########################## 
@@ -171,6 +179,7 @@ detailed_winrate_and_presence_graph(archetypeWithTiersDf, StatShare, Presence,
                                     PresenceAxisLogScale, TierNames[2])
 ggsave(winrateAndPresenceFullName, width = 60, height = 30, units = "cm")
 
+if(includeMU){
 # Draw the corresponding matchup matrix
 matchupMatrixName = 
   paste0(plotDir,"08_Matchup-Matrix_", MtgFormat,"_", Beginning, "_", End,
@@ -179,6 +188,7 @@ generate_matchup_matrix(muMatrixData, ChartShare, Presence, Beginning, End,
                         MtgFormat, EventType)
 ggsave(matchupMatrixName, width = 60, height = 30, units = "cm")
 dev.off()
+}
 
 ################################################################################
 #############################   Write the CSVs   ############################### 

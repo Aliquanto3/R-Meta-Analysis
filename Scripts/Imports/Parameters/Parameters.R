@@ -23,12 +23,13 @@ MtgFormats = c("1" = "Limited",
                "3" = "Pioneer",
                "4" = "Modern",
                "5" = "Pauper",
-               "6" = "Legacy",
-               "7" = "Vintage",
-               "8" = "All_Formats")
-MtgFormat = MtgFormats[4]
+               "6" = "Duel-Commander",
+               "7" = "Legacy",
+               "8" = "Vintage",
+               "9" = "All_Formats")
+MtgFormat = MtgFormats[6]
 
-# MtgFormat = "Pioneer"
+# MtgFormat = "Vintage"
 
 # Name of the tournament result data source file for the corresponding format
 # Currently automatically updated based on the format name
@@ -38,10 +39,10 @@ TournamentResultFile = paste0(tournamentDataDir,MtgFormat,"_data.json")
 mtgJsonFile = paste0(cardDataDir,MtgFormat,"Atomic.json")
 
 #Earliest date - if NA, starts from the beginning of the data
-Beginning = "2024-04-16"
+Beginning = "2024-09-20"
 
 #Latest date - if NA, goes up to the end of the data
-End = "2024-05-27"
+End = "2024-09-23"
 
 # Event type:
 # All sources = Everything (except from MTGO Leagues and Team events - for any filter)
@@ -78,7 +79,7 @@ EventTypes = c("1" = "All events",
                "20" = "MTGO Events X-1 or better",
                "21" = "MTGO Preliminaries")
 
-EventType = EventTypes[15]
+EventType = EventTypes[2]
 
 #Required metagame share to appear on charts (gets converted to % later)
 ChartShare = 2
@@ -130,6 +131,7 @@ AllDeckURLResultDir = paste0(TextResultDir, "All Deck URL/")
 writeCSV = F
 writeXLSX = T
 writeJSON = F
+includeMU = F
 
 # TRUE when you want to manually add colors to some archetype names
 # Still incomplete for easy use

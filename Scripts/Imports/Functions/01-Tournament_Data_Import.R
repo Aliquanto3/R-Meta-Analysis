@@ -39,14 +39,14 @@ library("jsonlite")
 generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath, 
                        beginning, end) {
   
-  # # For development only
-  # rawData = jsonlite::fromJSON(TournamentResultFile)[[1]]
-  # rawData = RawData 
-  # eventType = EventType
-  # mtgFormat = MtgFormat
-  # tournamentDataPath = TournamentResultFile
-  # beginning = Beginning
-  # end = End
+  # For development only
+  rawData = jsonlite::fromJSON(TournamentResultFile)[[1]]
+  # rawData = RawData
+  eventType = EventType
+  mtgFormat = MtgFormat
+  tournamentDataPath = TournamentResultFile
+  beginning = Beginning
+  end = End
 
   # if (!mtgFormat == "All_Formats") {
   #   # probably filtered before with right use of the parser and import of a
@@ -92,8 +92,14 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
   # Remove the Team Trio events providing unusable data
   periodData = periodData[!grepl("Team", periodData$Tournament),]
   
-  if(MtgFormat == "Vintage"){
+  if(mtgFormat == "Vintage"){
     periodData = periodData[!grepl("Canadian Highlander", periodData$Tournament),]
+  }
+  
+  if(mtgFormat == "Duel-Commander"){
+    periodData$Archetype$Archetype = sapply(periodData$Sideboard, function(sideboard){
+      paste(sideboard$CardName, collapse = " // ")
+    }) 
   }
   
   # /!\ Some events only have a top32, or don't even have one (Preliminary)
@@ -262,3 +268,43 @@ generate_df = function(rawData, eventType, mtgFormat, tournamentDataPath,
   return(resultDf)
 }
 
+
+#' Compute the PT results without draft rounds
+#'
+#' @param df the dataframe returned by generate_df()
+#'
+#' @return the dataframe using only the constructed rounds for the PT.
+#' Top8 matches are included in the rounds data.
+#'
+#' @export
+#'
+#' @examples
+updateDfForPT = function(df){
+
+  conditionPT = grepl("Pro Tour", df$Tournament)
+
+  # df[conditionPT,]$Matchups = mapply(function(Matchups){
+  #   list(Matchups[-c(1,2,3,9,10,11),])
+  # },df[conditionPT,]$Matchups)
+
+  df[conditionPT,]$Wins = mapply(function(Matchups){
+    sum(Matchups$Wins > Matchups$Losses)
+  },df[conditionPT,]$Matchups)
+
+  df[conditionPT,]$Losses = mapply(function(Matchups){
+    return(sum(Matchups$Wins < Matchups$Losses))
+  },df[conditionPT,]$Matchups)
+
+  df[conditionPT,]$Draws = mapply(function(Matchups){
+    sum(Matchups$Wins == Matchups$Losses)
+  },df[conditionPT,]$Matchups)
+  
+  # # Run it to check if the results are correct
+  # table(df$Wins+df$Losses+df$Draws)
+
+  df[conditionPT,]$T8Defeats = rep(NA,nrow(df[conditionPT,]))
+  df[conditionPT,]$T8Matches = rep(NA,nrow(df[conditionPT,]))
+  df[conditionPT,]$T8Points = rep(NA,nrow(df[conditionPT,]))
+
+  df
+}

@@ -67,7 +67,7 @@ muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)
 
 ############################################################ 
 
-cardName = "Omnath Control"
+cardName = "The One Ring"
 archetypeName = "Hardened Scales"
 archetypeName2 = "Hammer Time"
 
@@ -125,6 +125,32 @@ if(splitArchetypeByCard){
                           Beginning, End, MtgFormat, EventType)
 }
 
+splitTournamentDfByCard = T
+if(splitTournamentDfByCard){
+  conditionCardPresenceMainboard = sapply(tournamentDf$Mainboard, function(mainboard) {
+    (cardName %in% mainboard$CardName)
+  } )
+  conditionCardPresenceSideboard = sapply(tournamentDf$Sideboard, function(sideboard) {
+    (cardName %in% sideboard$CardName)
+  } )
+  conditionCardPresence = conditionCardPresenceMainboard | conditionCardPresenceSideboard
+  
+  tournamentDfWithCard = tournamentDf[conditionCardPresence,]
+  tournamentDfWithoutCard = tournamentDf[!conditionCardPresence,]
+  
+  print(paste("The win rate of decks with", cardName, "is",
+              round(100*sum(tournamentDfWithCard$Wins)/
+                      (sum(tournamentDfWithCard$Wins) + 
+                         sum(tournamentDfWithCard$Losses)),digits = 2),"%.",
+              nrow(tournamentDfWithCard),"decks played it."))
+  print(paste("The win rate of decks without", cardName, "is",
+              round(100*sum(tournamentDfWithoutCard$Wins)/
+                      (sum(tournamentDfWithoutCard$Wins) + 
+                         sum(tournamentDfWithoutCard$Losses)),digits = 2),"%.",
+              nrow(tournamentDfWithoutCard),"decks didn't play it."))
+  
+}
+
 archetypeDfWithCardInSB = tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]
 archetypeDfWithCardInSB = archetypeDfWithCardInSB[sapply(archetypeDfWithCardInSB$Sideboard, 
        function(sideboard){cardName %in% sideboard$CardName}),]
@@ -169,6 +195,7 @@ getUnknown(tournamentDf)
 # getURLofCard(cardName, tournamentDf)
 getURLofDeck(archetypeName, tournamentDf)
 getBestDeck(archetypeName, tournamentDf)
+getBestDeckList(archetypeName, tournamentDf)
 get_matchup_data(tournamentDf, archetypeName, archetypeName2)
 
 muMatrixData = generate_matchup_data(tournamentDf, ChartShare, Presence)
@@ -446,6 +473,8 @@ cardNames = "The One Ring"
 allboardCardData(cardNames, tournamentDf)
 mainBoardCardData(cardNames, tournamentDf)
 
+cardDf = tournamentDf[conditionCardPresenceMainboard,]
+
 MonoBlackDf = tournamentDf[tournamentDf$Archetype$Color == "B",]
 MonoBlackDf$Archetype
 
@@ -510,9 +539,11 @@ ks.test(archetypeRankingDfAboveMean$Normalized.Sum.of.Presence.and.WR, "pnorm")
 normal_test(archetypeRankingDfAboveMean[archetypeRankingDfAboveMean$Normalized.Sum.of.Presence.and.WR>0,]$Normalized.Sum.of.Presence.and.WR)
 
 # Archetype WR distribution
-archetypeName = "Mono Black Scam"
+sort(unique(tournamentDf$Archetype$Archetype))
+archetypeName = "Omnath Control"
 ArchetypeDf = tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]
 nrow(ArchetypeDf)
+par(mfrow = c(2,2))
 hist(ArchetypeDf$Wins)
 hist(ArchetypeDf$Wins/(ArchetypeDf$Wins+ArchetypeDf$Losses), breaks = 20)
 plot(density(ArchetypeDf$Wins/(ArchetypeDf$Wins+ArchetypeDf$Losses)))
@@ -522,6 +553,8 @@ ArchetypeDfZeros = ArchetypeDf[ArchetypeDf$Wins==0,]
 library("psych")   
 harmonic.mean(ArchetypeDf$Wins/(ArchetypeDf$Wins+ArchetypeDf$Losses))
 
+archetypeName = "Mono White Humans"
+ArchetypeDf = tournamentDf[tournamentDf$Archetype$Archetype == archetypeName,]
 ArchetypeDfPlayerResults = ArchetypeDf %>%
  select(Player,Wins,Losses) %>% 
   group_by(Player) %>%

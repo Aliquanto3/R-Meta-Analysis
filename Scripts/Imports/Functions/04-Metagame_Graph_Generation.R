@@ -32,6 +32,7 @@ library(paletteer)
 
 #' Title of metagame share graphs
 #'
+#' @param df the dataframe returned by generate_df()
 #' @param presence the definition of metagame presence (aka share) to use. 
 #' It can be:
 #' - "Copies": the number of lines in the dataframe dedicated to that archetype
@@ -48,10 +49,11 @@ library(paletteer)
 #'
 #' @examples
 generate_metagame_graph_title = 
-  function(presence, beginning, end, eventType, mtgFormat){
+  function(df,presence, beginning, end, eventType, mtgFormat){
     return(paste0("Metagame share of ", mtgFormat ," archetypes in ", 
                  eventType," between\n", beginning, " and ", end,
-                 " based on number of ", presence))
+                 " based on number of ", presence, " for ", nrow(df),
+                 " decklists"))
   }
 
 #' Pie chart of the most played archetypes
@@ -112,7 +114,7 @@ metagame_pie_chart = function(df, chartShare, presence, beginning, end,
     
     labs(x = NULL, y = NULL, fill = NULL, subtitle = "by Anaël Yahi",
          title = generate_metagame_graph_title(
-           presence, beginning, end, eventType, mtgFormat)) + 
+           df,presence, beginning, end, eventType, mtgFormat)) + 
     
     guides(color = FALSE, size = FALSE, scale = "none")
 }
@@ -149,8 +151,8 @@ metagame_bar_chart =
                                   as.numeric(metagame_df$Presence))
   
   # Generate a title
-  bar_chart_title=paste(generate_metagame_graph_title(
-    presence,beginning,end,eventType,mtgFormat),
+  bar_chart_title = paste(generate_metagame_graph_title(
+    df,presence,beginning,end,eventType,mtgFormat),
     "\nArchetype cut at",chartShare,"%")
   
   # Another nice color palette
@@ -199,8 +201,8 @@ metagame_bar_chart =
 #' @param eventType the category of events to keep in the data. See Parameters.R.
 #' @param mtgFormat the format of the events in the data
 #' @param sortValue the value used for sorting the data in the graph.
-#' It can be either "Measured.Win.Rate" or "Lower.Bound.of.CI.on.WR" (the lower bound of
-#' the confidence interval on the win rate).
+#' It can be either "Measured.Win.Rate" or "Lower.Bound.of.CI.on.WR" (the lower 
+#' bound of the confidence interval on the win rate).
 #'
 #' @return a ggplot with the win rate and the confidence intervals.
 #' @export
@@ -216,13 +218,15 @@ winrates_graph = function(archetypeRankingDf,chartShare,presence,beginning,end,
   
   # Reorder archetypes by ascending average winrate
   most_present_archetypes$Archetype = 
-    reorder(most_present_archetypes$Archetype, unlist(most_present_archetypes[sortValue]))
+    reorder(most_present_archetypes$Archetype, 
+            unlist(most_present_archetypes[sortValue]))
   
   # Plot the average winrate and the confidence intervals
   yLabelWinrate = "Winrates of the most popular archetypes (%)"
   
   winrateGraphTitle = paste0(
-    CIPercent*100,"% confidence intervals on the winrates of the most present ",mtgFormat,
+    CIPercent*100,"% confidence intervals on the winrates of the most present ",
+    mtgFormat,
     " archetypes\n",  "(at least ",chartShare,"% of the ",presence,") between ", 
     beginning, " and ", end, " in ", EventType)
   
@@ -254,7 +258,8 @@ winrates_graph = function(archetypeRankingDf,chartShare,presence,beginning,end,
           plot.subtitle = element_text(hjust = 0.5, size = 14),
           text = element_text(size = 16)) + 
     
-    geom_errorbar(aes(ymax = Upper.Bound.of.CI.on.WR, ymin = Lower.Bound.of.CI.on.WR)) + 
+    geom_errorbar(aes(ymax = Upper.Bound.of.CI.on.WR, 
+                      ymin = Lower.Bound.of.CI.on.WR)) + 
     
     geom_hline(yintercept = mean(most_present_archetypes$Measured.Win.Rate), 
                color="green", linetype="dashed", linewidth = 1)+ 
@@ -292,14 +297,15 @@ winrates_graph = function(archetypeRankingDf,chartShare,presence,beginning,end,
 #' @examples
 boxplot_winrates = function(archetypeRankingDf,tournamentDf,chartShare,presence,beginning,end,
                             eventType,mtgFormat,sortValue){
+  # # for debug only
+  # chartShare = StatShare
+  # presence = Presence
+  # beginning = Beginning
+  # end = End
+  # eventType = EventType
+  # mtgFormat = MtgFormat
+  # sortValue = SortValue
   
-  chartShare = StatShare
-  presence = Presence
-  beginning = Beginning
-  end = End
-  eventType = EventType
-  mtgFormat = MtgFormat
-  sortValue = SortValue
   # Keep only the most present decks
   presence_min = chartShare/100*sum(archetypeRankingDf[presence])
   most_present_archetypes_data = 
